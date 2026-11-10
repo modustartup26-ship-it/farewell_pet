@@ -6,14 +6,17 @@
   const shell=document.querySelector('#wizard-shell');
   const gate=document.querySelector('#profile-gate');
   const $=s=>document.querySelector(s);
+  let guestMode=false;
   const BREEDS=['믹스견','말티즈','푸들','포메라니안','시추','치와와','요크셔테리어','비숑프리제','스피츠','닥스훈트','코카스패니얼','프렌치불독','퍼그','미니어처 슈나우저','카발리에','웰시코기','비글','시바견','진돗개','보더콜리','사모예드','골든리트리버','래브라도 리트리버','저먼셰퍼드','기타'];
   const radio=(name,values,selected)=>values.map(v=>`<label class="chip"><input type="radio" name="${name}" value="${esc(v)}" ${v===selected?'checked':''}>${esc(v)}</label>`).join('');
 
   async function persist(){
     state.pet=pet;
-    try{await FPChat.savePetProfile(pet);}
-    catch(error){console.error('Unable to save pet profile.',error);showError('아이 정보를 계정에 저장하지 못했어요. 연결을 확인하고 다시 시도해 주세요.');return false;}
-    if(!FP.save(state))FP.toast('계정에는 저장됐지만 이 기기에 표시용 정보를 저장하지 못했어요.');
+    if(!guestMode){
+      try{await FPChat.savePetProfile(pet);}
+      catch(error){console.error('Unable to save pet profile.',error);showError('아이 정보를 계정에 저장하지 못했어요. 연결을 확인하고 다시 시도해 주세요.');return false;}
+    }
+    if(!FP.save(state))FP.toast(guestMode?'아이 정보를 이 브라우저에 저장하지 못했어요.':'계정에는 저장됐지만 이 기기에 표시용 정보를 저장하지 못했어요.');
     return true;
   }
 
@@ -210,6 +213,13 @@
     shell.hidden=true;gate.hidden=false;
     const authError=$('#profile-auth-error');
     if(message){authError.textContent=message;authError.hidden=false;}
+    $('#guest-profile').addEventListener('click',()=>{
+      guestMode=true;
+      gate.hidden=true;shell.hidden=false;
+      const start=new URLSearchParams(location.search).get('step');
+      const si=steps.findIndex(s=>s.key===start);
+      show(si>0&&pet.name?si:0,0);
+    },{once:true});
     $('#profile-login').addEventListener('submit',async event=>{
       event.preventDefault();
       const button=event.currentTarget.querySelector('button[type=submit]');
@@ -224,7 +234,7 @@
   }
 
   async function initialize(){
-    if(!window.FPChat||!FPChat.client){showGate('로그인 연결을 사용할 수 없어요. 새로고침 후 다시 시도해 주세요.');return;}
+    if(!window.FPChat||!FPChat.client){showGate('로그인 연결을 사용할 수 없어요. 로그인 없이 임시 등록은 계속할 수 있어요.');return;}
     try{
       const legacyPet={...state.pet};
       const result=await FPChat.loadPetProfile(legacyPet);

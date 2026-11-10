@@ -12,6 +12,7 @@
 .kakao{background:#FEE500;border-color:#FEE500;color:#191919}
 .naver{background:#03C75A;border-color:#03C75A;color:#fff}
 .provider:hover{filter:brightness(.97)}
+.guest-provider{margin-top:4px;text-decoration:none;color:var(--primary);background:var(--primary-tint);border-color:var(--primary-tint)}
 .notice{margin:18px 0 0!important;font-size:13px!important;color:var(--ink-3)!important}
 .back{display:inline-block;margin-top:14px;font-size:14px;color:var(--ink-2)}
 .muted-p{color:var(--ink-2);margin:4px 0 8px}
