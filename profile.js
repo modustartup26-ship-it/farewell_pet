@@ -16,7 +16,7 @@
       try{await FPChat.savePetProfile(pet);}
       catch(error){console.error('Unable to save pet profile.',error);showError('아이 정보를 계정에 저장하지 못했어요. 연결을 확인하고 다시 시도해 주세요.');return false;}
     }
-    if(!FP.save(state))FP.toast(guestMode?'아이 정보를 이 브라우저에 저장하지 못했어요.':'계정에는 저장됐지만 이 기기에 표시용 정보를 저장하지 못했어요.');
+    if(!FP.save(state))FP.toast(guestMode?'아이 정보를 현재 탭에 저장하지 못했어요.':'계정에는 저장됐지만 이 기기에 표시용 정보를 저장하지 못했어요.');
     return true;
   }
 
@@ -173,6 +173,7 @@
     $('#optional').hidden=!s.optional;
     $('#answer').innerHTML=s.render(pet);
     $('#skip').hidden=!s.optional;
+    $('#skip').disabled=false;
     $('#skip').textContent=s.studio?'꾸미지 않고 넘어갈게요':'나중에 입력할게요';
     $('#next').textContent=i===total-1?'완성하기':'다음';$('#next').disabled=false;
     $('#back').style.visibility='visible';

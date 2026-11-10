@@ -3,7 +3,7 @@
   const LEGACY_STORAGE_KEY='farewell-pet-ai-chat-v1';
   const CHAT_TTL=24*60*60*1000;
   const MAX_HISTORY=12;
-  const WELCOME='안녕하세요! 반려동물 돌봄이나 farewell pet 이용에 대해 궁금한 점을 편하게 물어보세요. 메세지는 24시간 이후 자동 삭제됩니다.';
+  const WELCOME='안녕하세요! 반려동물 돌봄이나 farewell pet 이용에 대해 궁금한 점을 편하게 물어보세요. 대화는 현재 탭에만 저장되고, 마지막 메시지 후 24시간이 지나거나 탭을 닫으면 자동 삭제됩니다.';
   const host=document.createElement('div');
   host.className='ai-chat';
   host.innerHTML=`
@@ -19,7 +19,7 @@
         </div>
       </header>
       <div class="ai-chat-messages" role="log" aria-live="polite" aria-relevant="additions text"></div>
-      <p class="ai-chat-note">일반 정보 안내용 AI예요. 진단·응급 상황은 동물병원에 문의해 주세요. 질문은 Google Gemini에 전송돼요. 무료 등급은 대화가 Google 제품 개선에 사용될 수 있으니 민감한 정보를 입력하지 마세요. 대화는 마지막 메시지 후 24시간이 지나면 자동 삭제돼요.</p>
+      <p class="ai-chat-note">일반 정보 안내용 AI예요. 진단·응급 상황은 동물병원에 문의해 주세요. 질문은 Google Gemini에 전송돼요. 무료 등급은 대화가 Google 제품 개선에 사용될 수 있으니 민감한 정보를 입력하지 마세요. 대화는 현재 탭에만 저장되며, 마지막 메시지 후 24시간이 지나거나 탭을 닫으면 자동 삭제돼요.</p>
       <p class="ai-chat-status" role="status" aria-live="polite"></p>
       <form class="ai-chat-compose">
         <label class="sr-only" for="ai-chat-input">메시지</label>
@@ -38,21 +38,24 @@
   const form=host.querySelector('.ai-chat-compose');
   const input=host.querySelector('#ai-chat-input');
   const send=host.querySelector('.ai-chat-send');
+  let expiryTimer;
   let history=loadHistory();
   let busy=false;
-  let expiryTimer;
 
   function loadHistory(){
     try{
+      localStorage.removeItem(STORAGE_KEY);
       localStorage.removeItem(LEGACY_STORAGE_KEY);
+    }catch(error){console.error('Unable to clear the previous browser chat history.',error);}
+    try{
       sessionStorage.removeItem(LEGACY_STORAGE_KEY);
-      const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
+      const saved=JSON.parse(sessionStorage.getItem(STORAGE_KEY)||'null');
       if(!saved||!Number.isFinite(saved.updatedAt)||saved.updatedAt>Date.now()||Date.now()-saved.updatedAt>=CHAT_TTL){
-        localStorage.removeItem(STORAGE_KEY);
+        sessionStorage.removeItem(STORAGE_KEY);
         return [];
       }
       if(!Array.isArray(saved.messages)){
-        localStorage.removeItem(STORAGE_KEY);
+        sessionStorage.removeItem(STORAGE_KEY);
         return [];
       }
       scheduleExpiration(saved.updatedAt);
@@ -64,7 +67,7 @@
   function saveHistory(){
     try{
       const updatedAt=Date.now();
-      localStorage.setItem(STORAGE_KEY,JSON.stringify({updatedAt,messages:history}));
+      sessionStorage.setItem(STORAGE_KEY,JSON.stringify({updatedAt,messages:history}));
       scheduleExpiration(updatedAt);
     }catch{}
   }
@@ -72,9 +75,9 @@
     clearTimeout(expiryTimer);
     expiryTimer=setTimeout(()=>{
       try{
-        const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
+        const saved=JSON.parse(sessionStorage.getItem(STORAGE_KEY)||'null');
         if(saved&&saved.updatedAt===updatedAt){
-          localStorage.removeItem(STORAGE_KEY);
+          sessionStorage.removeItem(STORAGE_KEY);
           history=[];
           renderHistory();
         }

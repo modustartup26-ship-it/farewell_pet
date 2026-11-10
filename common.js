@@ -1,6 +1,7 @@
 /* 공통: 저장소, 이름 조사, 아이콘, 토스트 */
 (function(){
   const KEY='farewell-pet-v1';
+  try{localStorage.removeItem(KEY);}catch(error){console.error('Unable to clear the previous browser profile cache.',error);}
   const ICONS={
     'arrow-left':'<path d="M15 5l-7 7 7 7"/>',
     'arrow-right':'<path d="M5 12h14M13 6l6 6-6 6"/>',
@@ -48,8 +49,8 @@
   }
   const icon=(name,cls='')=>`<svg class="i ${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  function load(){let s={};try{s=JSON.parse(localStorage.getItem(KEY))||{};}catch{}return {saved:[],records:[],...s,pet:{...(s.pet||{})}};}
-  function save(state){try{localStorage.setItem(KEY,JSON.stringify(state));return true;}catch{return false;}}
+  function load(){let s={};try{s=JSON.parse(sessionStorage.getItem(KEY))||{};}catch{}return {saved:[],records:[],...s,pet:{...(s.pet||{})}};}
+  function save(state){try{sessionStorage.setItem(KEY,JSON.stringify(state));return true;}catch{return false;}}
   function clearPetCache(state=load()){delete state.pet;return save(state);}
   /* 받침이 있으면 '이'를 붙여 부르는 이름으로: 콩 → 콩이, 초롱이 → 초롱이 */
   function hasBatchim(word){const ch=String(word).trim().slice(-1);const c=ch.charCodeAt(0);if(c<0xAC00||c>0xD7A3)return false;return (c-0xAC00)%28!==0;}

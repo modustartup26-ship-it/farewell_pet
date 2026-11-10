@@ -28,12 +28,13 @@
     map.svg.setAttribute('aria-label',`${josa.of(petName)} 산책 지도`);
     $('#me').innerHTML=`<span class="me-avatar">${avatar()}</span><span class="me-name">${hasPet?esc(josa.name(pet.name)):'아이 등록'}</span>`;
     $('#me').setAttribute('aria-label',`${hasPet?pet.name+' 메뉴':'아이 메뉴'} 열기`);
+    const accountAction=user
+      ?`<button type="button" id="logout"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg><span>로그아웃</span></button>`
+      :`<a href="inbox.html"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg><span>로그인</span></a>`;
     $('#profile-menu').innerHTML=hasPet
       ?`<span class="profile-menu-pet">${esc(josa.name(pet.name))}</span>
-        <a href="profile.html"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg><span>아이 정보 수정</span></a>
-        <button type="button" id="logout"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg><span>로그아웃</span></button>`
-      :`<a href="profile.html"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg><span>아이 등록</span></a>
-        <a href="inbox.html"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg><span>로그인</span></a>`;
+        <a href="profile.html"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg><span>아이 정보 수정</span></a>${accountAction}`
+      :`<a href="profile.html"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg><span>아이 등록</span></a>${accountAction}`;
     $('#saved-count').textContent=state.saved.length;
     $('#saved-count').hidden=!state.saved.length;
     $('#map-title').textContent=hasPet?`${josa.of(pet.name)} 산책 지도`:'산책 지도';
@@ -405,7 +406,7 @@
       console.error('Unable to load pet profile.',error);
       if(legacyPet.name){
         Object.assign(pet,legacyPet);
-        toast('계정 정보를 불러오지 못해 이 브라우저에 저장된 아이 정보로 표시해요.');
+        toast('계정 정보를 불러오지 못해 이 탭에 임시 저장된 아이 정보로 표시해요.');
       }else toast('아이 정보를 불러오지 못했어요. 연결을 확인해 주세요.');
     }
     hasPet=!!pet.name;
