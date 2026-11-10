@@ -7,9 +7,10 @@
 <meta name="theme-color" content="#FFFFFF">
 <link rel="stylesheet" href="theme.css">
 <link rel="stylesheet" href="profile.css">
+<link rel="stylesheet" href="ai-chat.css">
 </head>
 <body class="wizard">
-<div class="shell">
+<main class="shell" id="wizard-shell" hidden>
   <header class="wz-head">
     <button class="icon-btn" id="back" type="button" aria-label="이전 질문"><svg class="i" aria-hidden="true"><use href="#i-arrow-left"/></svg></button>
     <div class="progress" aria-hidden="true"><div class="progress-track"><div class="progress-fill" id="progress-fill"></div><span class="progress-paw" id="progress-paw"><svg viewBox="0 0 24 24"><use href="#i-paw"/></svg></span></div></div>
@@ -31,11 +32,26 @@
     <button class="btn-ghost" id="skip" type="button">나중에 입력할게요</button>
     <button class="btn btn-primary" id="next" type="submit" form="wizard">다음</button>
   </footer>
-</div>
+</main>
+<main class="shell" id="profile-gate" aria-live="polite">
+  <section class="profile-auth">
+    <h1>로그인하고 아이를 등록해 주세요</h1>
+    <p>아이 정보는 로그인한 계정에 안전하게 저장돼요. 이메일로 로그인 링크를 보내 드릴게요.</p>
+    <form id="profile-login" class="profile-login">
+      <label class="field"><span class="sr-only">이메일</span><input type="email" name="email" required autocomplete="email" inputmode="email" placeholder="이메일 주소"></label>
+      <button class="btn btn-primary" type="submit">로그인 링크 받기</button>
+      <p class="error" id="profile-auth-error" role="alert" hidden></p>
+    </form>
+    <a class="btn-ghost" href="index.html">처음으로</a>
+  </section>
+</main>
 <script src="common.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+<script src="supabase-client.js"></script>
 <script src="minimi.js"></script>
 <script src="concerns.js"></script>
 <script src="mcpq.js"></script>
 <script src="profile.js"></script>
+<script src="ai-chat.js"></script>
 </body>
 </html>

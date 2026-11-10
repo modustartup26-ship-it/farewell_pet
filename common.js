@@ -50,6 +50,7 @@
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function load(){let s={};try{s=JSON.parse(localStorage.getItem(KEY))||{};}catch{}return {saved:[],records:[],...s,pet:{...(s.pet||{})}};}
   function save(state){try{localStorage.setItem(KEY,JSON.stringify(state));return true;}catch{return false;}}
+  function clearPetCache(state=load()){delete state.pet;return save(state);}
   /* 받침이 있으면 '이'를 붙여 부르는 이름으로: 콩 → 콩이, 초롱이 → 초롱이 */
   function hasBatchim(word){const ch=String(word).trim().slice(-1);const c=ch.charCodeAt(0);if(c<0xAC00||c>0xD7A3)return false;return (c-0xAC00)%28!==0;}
   const call=name=>{name=String(name||'').trim()||'우리 아이';return hasBatchim(name)?name+'이':name;};
@@ -67,11 +68,11 @@
     {id:'grooming',kind:'grooming',label:'미용실',pos:[-.6,-.8],bend:1},
     {id:'hospital',kind:'hospital',label:'병원',pos:[.58,-.82],bend:-1},
     {id:'star',kind:'star',label:'별들의 공간',pos:[-.98,-.06],cpos:[-.8,.02],soon:true,detached:true},
-    {id:'consult',kind:'consult',label:'실시간·전문가 상담',pos:[.96,-.06],cpos:[.8,.02],clines:['실시간·','전문가 상담'],soon:true,detached:true},
+    {id:'consult',kind:'consult',label:'실시간·전문가 상담',pos:[.96,-.06],cpos:[.8,.02],clines:['실시간·','전문가 상담'],detached:true},
     {id:'kinder',kind:'kinder',label:'유치원',pos:[-.66,.8],bend:1},
     {id:'hotel',kind:'hotel',label:'호텔',pos:[.64,.8],bend:-1},
     {id:'together',kind:'together',label:'커뮤니티',pos:[0,1.02],cpos:[0,1.02],soon:true,detached:true}
   ];
-  window.FP={KEY,NODES,icon,esc,load,save,josa,call,sizeFromWeight,toast,sprite};
+  window.FP={KEY,NODES,icon,esc,load,save,clearPetCache,josa,call,sizeFromWeight,toast,sprite};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sprite);else sprite();
 })();

@@ -51,7 +51,14 @@
     });
   }
 
-  async function logout(){closeChannels();await chat.client.auth.signOut();user=null;activeId=null;setUrl(null);renderLogin();}
+  async function logout(){
+    closeChannels();
+    const {error}=await chat.client.auth.signOut();
+    if(error){console.error('Unable to sign out.',error);toast('로그아웃하지 못했어요. 잠시 뒤 다시 시도해 주세요.');return;}
+    const cacheCleared=FP.clearPetCache();
+    user=null;activeId=null;setUrl(null);renderLogin();
+    if(!cacheCleared)toast('로그아웃했지만 이 기기의 아이 정보 캐시를 지우지 못했어요.');
+  }
   function closeChannels(){
     if(threadChannel){chat.client.removeChannel(threadChannel);threadChannel=null;}
     if(listChannel){chat.client.removeChannel(listChannel);listChannel=null;}

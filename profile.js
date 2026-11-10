@@ -3,11 +3,19 @@
   const state=FP.load();
   const pet={breed:'',years:'',months:'',sex:'',dogs:'',people:'',separation:'',weight:'',concerns:[],hasMedication:'',medications:[],photo:'',...state.pet};
   const form=document.querySelector('#wizard');
+  const shell=document.querySelector('#wizard-shell');
+  const gate=document.querySelector('#profile-gate');
   const $=s=>document.querySelector(s);
   const BREEDS=['믹스견','말티즈','푸들','포메라니안','시추','치와와','요크셔테리어','비숑프리제','스피츠','닥스훈트','코카스패니얼','프렌치불독','퍼그','미니어처 슈나우저','카발리에','웰시코기','비글','시바견','진돗개','보더콜리','사모예드','골든리트리버','래브라도 리트리버','저먼셰퍼드','기타'];
   const radio=(name,values,selected)=>values.map(v=>`<label class="chip"><input type="radio" name="${name}" value="${esc(v)}" ${v===selected?'checked':''}>${esc(v)}</label>`).join('');
 
-  function persist(){state.pet=pet;if(!FP.save(state))FP.toast('저장 공간을 쓸 수 없어 이 화면에서만 유지돼요.');}
+  async function persist(){
+    state.pet=pet;
+    try{await FPChat.savePetProfile(pet);}
+    catch(error){console.error('Unable to save pet profile.',error);showError('아이 정보를 계정에 저장하지 못했어요. 연결을 확인하고 다시 시도해 주세요.');return false;}
+    if(!FP.save(state))FP.toast('계정에는 저장됐지만 이 기기에 표시용 정보를 저장하지 못했어요.');
+    return true;
+  }
 
   const steps=[
     {key:'name',
@@ -72,12 +80,12 @@
      read:f=>{const v=f.hasMedication.value;if(!v)return;if(v==='없어요'){pet.hasMedication='없음';pet.medications=[];return;}const meds=[...document.querySelectorAll('.med')].map(r=>Object.fromEntries([...r.querySelectorAll('[data-med]')].map(i=>[i.dataset.med,i.value.trim()]))).filter(m=>m.name||m.schedule);if(!meds.length||meds.some(m=>!m.name))return '약 이름을 입력해 주세요.';pet.hasMedication='있음';pet.medications=meds;}},
     {key:'photo',optional:true,
      q:p=>`${josa.of(p.name)} 사진을 올려 주세요`,
-     hint:()=>'프로필과 병원 문의에 쓰여요. 사진은 이 브라우저에만 저장돼요.',
+     hint:()=>'프로필과 병원 문의에 쓰여요. 사진도 계정에 함께 저장돼요.',
      render:p=>`<label class="photo-drop" id="photo-drop">${p.photo?`<img src="${p.photo}" alt="${esc(p.name)} 사진">`:`${icon('camera')}<span>사진 고르기</span>`}<input type="file" name="photo" accept="image/*" aria-label="사진 고르기"></label><div class="photo-actions">${p.photo?`<button type="button" class="btn-ghost" id="photo-remove">${icon('trash')} 사진 지우기</button>`:''}</div>`,
      bind:()=>{
-       form.elements.photo.addEventListener('change',()=>{const file=form.elements.photo.files[0];if(!file)return;if(!file.type.startsWith('image/')){showError('이미지 파일을 골라 주세요.');return;}
-         const img=new Image();const url=URL.createObjectURL(file);img.onload=()=>{const max=420,s=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);pet.photo=c.toDataURL('image/jpeg',.82);URL.revokeObjectURL(url);persist();show(index,0);};img.onerror=()=>showError('사진을 읽지 못했어요. 다른 사진을 골라 주세요.');img.src=url;});
-       const rm=$('#photo-remove');if(rm)rm.onclick=()=>{pet.photo='';persist();show(index,0);};
+       form.elements.photo.addEventListener('change',async()=>{const file=form.elements.photo.files[0];if(!file)return;if(!file.type.startsWith('image/')){showError('이미지 파일을 골라 주세요.');return;}
+         const img=new Image();const url=URL.createObjectURL(file);img.onload=async()=>{const max=420,s=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);pet.photo=c.toDataURL('image/jpeg',.82);URL.revokeObjectURL(url);if(await persist())show(index,0);};img.onerror=()=>showError('사진을 읽지 못했어요. 다른 사진을 골라 주세요.');img.src=url;});
+       const rm=$('#photo-remove');if(rm)rm.onclick=async()=>{pet.photo='';if(await persist())show(index,0);};
      },
      read:()=>{}},
     {key:'minimi',optional:true,studio:true,
@@ -171,7 +179,7 @@
   }
 
   function done(){
-    persist();progress(total);
+    progress(total);
     $('#count').textContent='';$('#skip').hidden=true;
     const summary=[pet.breed,pet.years!==''&&pet.years!=null?`${pet.years}살${pet.months?` ${pet.months}개월`:''}`:'',pet.weight?`${pet.weight}kg · ${pet.size}`:'',pet.concerns&&pet.concerns.length?`건강 고민: ${Concerns.labels(pet.concerns).join(', ')}`:'',pet.hasMedication==='있음'?`약 ${pet.medications.length}가지`:pet.hasMedication==='없음'?'먹는 약 없음':'',pet.mcpq&&pet.mcpq.type?pet.mcpq.type:''].filter(Boolean);
     document.querySelector('.ask').hidden=true;showError('');
@@ -179,19 +187,60 @@
     $('#next').textContent='산책 지도로 가기';
   }
 
-  form.addEventListener('submit',e=>{
+  form.addEventListener('submit',async e=>{
     e.preventDefault();
     if(index>=total){location.href='services.html';return;}
     if(steps[index].onNext&&steps[index].onNext())return;
     const err=steps[index].read(form.elements);
     if(err){showError(err);const bad=form.querySelector('input:not([type=radio]):not([type=file])');if(bad)bad.focus();return;}
-    persist();show(index+1,1);
+    $('#next').disabled=true;
+    if(await persist())show(index+1,1);
+    else $('#next').disabled=false;
   });
-  $('#skip').addEventListener('click',()=>{if(steps[index]&&steps[index].test&&mc.mode!=='intro')mc.mode=pet.mcpq&&pet.mcpq.scores?'result':'intro';persist();show(index+1,1);});
+  $('#skip').addEventListener('click',async()=>{
+    if(steps[index]&&steps[index].test&&mc.mode!=='intro')mc.mode=pet.mcpq&&pet.mcpq.scores?'result':'intro';
+    $('#skip').disabled=true;
+    if(await persist())show(index+1,1);
+    else $('#skip').disabled=false;
+  });
   $('#back').addEventListener('click',()=>{if(steps[index]&&steps[index].onBack&&steps[index].onBack())return;if(index===0){location.href=state.pet&&state.pet.name?'services.html':'index.html';return;}show(index-1,-1);});
   form.addEventListener('input',()=>showError(''));
 
-  const start=new URLSearchParams(location.search).get('step');
-  const si=steps.findIndex(s=>s.key===start);
-  show(si>0&&pet.name?si:0,0);
+  function showGate(message=''){
+    shell.hidden=true;gate.hidden=false;
+    const authError=$('#profile-auth-error');
+    if(message){authError.textContent=message;authError.hidden=false;}
+    $('#profile-login').addEventListener('submit',async event=>{
+      event.preventDefault();
+      const button=event.currentTarget.querySelector('button[type=submit]');
+      const email=new FormData(event.currentTarget).get('email').trim();
+      authError.hidden=true;button.disabled=true;
+      let signInError;
+      try{signInError=await FPChat.signIn(email,'profile.html');}
+      catch(requestError){console.error('Unable to request profile sign-in.',requestError);authError.textContent='로그인 링크를 보내지 못했어요. 잠시 뒤 다시 시도해 주세요.';authError.hidden=false;button.disabled=false;return;}
+      if(signInError){authError.textContent=FPChat.loginErrorText(signInError);authError.hidden=false;button.disabled=false;return;}
+      gate.querySelector('.profile-auth').innerHTML=`<h1>메일을 확인해 주세요</h1><p><b>${esc(email)}</b>로 로그인 링크를 보냈어요. 메일의 링크를 누르면 아이 등록 화면으로 돌아와요.</p><p class="error">메일이 보이지 않으면 스팸함도 확인해 주세요.</p>`;
+    });
+  }
+
+  async function initialize(){
+    if(!window.FPChat||!FPChat.client){showGate('로그인 연결을 사용할 수 없어요. 새로고침 후 다시 시도해 주세요.');return;}
+    try{
+      const legacyPet={...state.pet};
+      const result=await FPChat.loadPetProfile(legacyPet);
+      if(!result.user){showGate();return;}
+      for(const key of Object.keys(pet))delete pet[key];
+      Object.assign(pet,result.pet||{});
+      state.pet=pet;
+      if(!FP.save(state))FP.toast('아이 정보는 계정에 저장돼 있지만 이 기기에 표시용 정보를 저장하지 못했어요.');
+      gate.hidden=true;shell.hidden=false;
+      const start=new URLSearchParams(location.search).get('step');
+      const si=steps.findIndex(s=>s.key===start);
+      show(si>0&&pet.name?si:0,0);
+    }catch(error){
+      console.error('Unable to load pet profile.',error);
+      showGate('아이 정보를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.');
+    }
+  }
+  initialize();
 })();

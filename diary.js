@@ -157,5 +157,5 @@
   /* 두 번 눌러야 지워지게 (브라우저 확인창 없이) */
   function confirmDelete(b){if(b.dataset.armed){return true;}b.dataset.armed='1';b.lastChild.textContent='한 번 더 누르면 지워져요';setTimeout(()=>{delete b.dataset.armed;b.lastChild.textContent='지우기';},2500);return false;}
 
-  window.Diary={init(c){ctx=c;migrate(c.state);bind();},render,openForm,forPlace,MOODS};
+  window.Diary={init(c){ctx=c;migrate(c.state);bind();},updatePetProfile(pet,petName){ctx.pet=pet;ctx.petName=petName;render();},render,openForm,forPlace,MOODS};
 })();

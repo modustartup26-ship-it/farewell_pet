@@ -19,6 +19,7 @@
 
   function create(host,opts){
     const o={nodes:[],interactive:true,hidden:false,seed:7,...opts};
+    const isInteractive=n=>typeof o.interactive==='function'?o.interactive(n):o.interactive;
     const svg=el('svg',{class:'trailmap',role:o.interactive?'group':'img','aria-label':o.label||'산책 지도'});
     host.append(svg);
     const state={revealed:new Set(o.hidden?[]:o.nodes.map(n=>n.id)),geo:{},walking:false};
@@ -94,7 +95,7 @@
       o.nodes.forEach(n=>{
         const q=state.geo[n.id];
         const g=el('g',{class:'node'+(state.revealed.has(n.id)?' on':'')+(n.soon?' soon':'')+(n.detached?' detached':''),'data-id':n.id,transform:`translate(${q.x.toFixed(1)} ${q.y.toFixed(1)}) scale(${(k*(svg.classList.contains('compact')&&n.detached?.88:1)).toFixed(3)})`});
-        if(o.interactive){g.setAttribute('role','button');g.setAttribute('tabindex','0');g.setAttribute('aria-label',n.label+(n.soon?' (준비 중)':''));}
+        if(isInteractive(n)){g.setAttribute('role','button');g.setAttribute('tabindex','0');g.setAttribute('aria-label',n.label+(n.soon?' (준비 중)':''));}
         const compact=svg.classList.contains('compact');const lines=(compact&&n.clines)||[n.label];const ph=30+(lines.length-1)*21;
         const tw=Math.max(66,Math.max(...lines.map(l=>l.length))*(o._cw||15.5)+26);
         g.innerHTML=`<g class="lift"><rect class="hit" x="${-Math.max(60,tw/2)}" y="-66" width="${Math.max(120,tw)}" height="136" fill="transparent"/>${n.detached?'<ellipse cx="0" cy="32" rx="58" ry="15" fill="#F6FAEE" stroke="#BCD39E" stroke-width="2" stroke-dasharray="5 7"/>':'<ellipse cx="0" cy="32" rx="46" ry="11" fill="#D8BC93" opacity=".9"/>'}${ART[n.kind]||''}<g class="plate" transform="translate(0 52)"><rect x="${-tw/2}" y="-15" width="${tw}" height="${ph}" rx="15" fill="#FFFFFF" stroke="${OUT}" stroke-width="2.6"/>${lines.map((l,j)=>`<text y="${5.5+j*21}" text-anchor="middle">${l}</text>`).join('')}${n.soon?`<g transform="translate(${tw/2-4} -15)"><rect x="-14" y="-10" width="40" height="18" rx="9" fill="#FFD400" stroke="${OUT}" stroke-width="2"/><text class="soon-t" x="6" y="3.5" text-anchor="middle">준비중</text></g>`:''}</g></g>`;
@@ -105,6 +106,8 @@
       if(o.interactive){
         nodes.querySelectorAll('.node').forEach(g=>{
           const id=g.dataset.id;
+          const node=o.nodes.find(n=>n.id===id);
+          if(!isInteractive(node))return;
           const go=()=>{if(!state.walking&&o.onSelect)o.onSelect(id);};
           g.addEventListener('click',go);
           g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}});

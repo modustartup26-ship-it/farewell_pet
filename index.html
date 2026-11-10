@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#FFFFFF">
 <link rel="stylesheet" href="theme.css">
 <link rel="stylesheet" href="intro.css">
+<link rel="stylesheet" href="ai-chat.css">
 </head>
 <body class="intro">
 <header class="topbar">
@@ -22,7 +23,7 @@
   <div class="cta" id="cta">
     <p>혼자 다 채우지 않아도 괜찮아요. 우리 아이를 알려주시면, 맞는 곳까지 산책로를 이어 드릴게요.</p>
     <div class="cta-row">
-      <a class="btn btn-primary" id="start" href="profile.html">우리 아이 등록하기 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+      <a class="btn btn-primary" id="start" href="signup.html">내 아이 등록하기 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
       <a class="btn btn-soft" href="services.html">먼저 둘러볼게요</a>
     </div>
     <button class="replay" id="replay" type="button"><svg class="i" aria-hidden="true"><use href="#i-refresh"/></svg> 이야기 다시 보기</button>
@@ -68,12 +69,15 @@
 
   <div class="story-cta">
     <p>우리 아이에게도 맞는 곳을 찾아 볼까요?</p>
-    <a class="btn btn-primary" href="profile.html">우리 아이 등록하기 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+    <a class="btn btn-primary" href="signup.html">우리 아이 등록하기 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
   </div>
 </section>
 <script src="common.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+<script src="supabase-client.js"></script>
 <script src="minimi.js"></script>
 <script src="trailmap.js"></script>
 <script src="intro.js"></script>
+<script src="ai-chat.js"></script>
 </body>
 </html>

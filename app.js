@@ -2,18 +2,38 @@
   const {esc,icon,josa,toast}=FP;
   const $=s=>document.querySelector(s);
   const state=FP.load();
-  const pet=state.pet||{};
-  const hasPet=!!pet.name;
-  const petName=hasPet?pet.name:'우리 아이';
+  const legacyPet={...state.pet};
+  const pet={};
+  let hasPet=false,petName='우리 아이',user=null,lastPetSnapshot='{}';
   let view='map', current=null, filterState={}, lastResults=null;
 
-  const save=()=>{if(!FP.save(state))toast('저장 공간을 쓸 수 없어 이 화면에서만 유지돼요.');};
+  const save=()=>{
+    if(!FP.save(state))toast('저장 공간을 쓸 수 없어 이 화면에서만 유지돼요.');
+    const snapshot=JSON.stringify(pet);
+    if(user&&snapshot!==lastPetSnapshot){
+      const previousSnapshot=lastPetSnapshot;
+      lastPetSnapshot=snapshot;
+      FPChat.savePetProfile(pet).catch(error=>{
+        lastPetSnapshot=previousSnapshot;
+        console.error('Unable to save pet profile.',error);
+        toast('아이 정보를 계정에 저장하지 못했어요. 연결을 확인해 주세요.');
+      });
+    }
+  };
   const DIST=['우리 동네','가까운 동네','옆 동네','시내','먼 동네'];
 
   /* ---------- 상단 · 프로필 ---------- */
   function avatar(){return pet.photo?`<img src="${pet.photo}" alt="">`:Minimi.svg(Minimi.config(pet));}
   function renderHeader(){
+    map.svg.setAttribute('aria-label',`${josa.of(petName)} 산책 지도`);
     $('#me').innerHTML=`<span class="me-avatar">${avatar()}</span><span class="me-name">${hasPet?esc(josa.name(pet.name)):'아이 등록'}</span>`;
+    $('#me').setAttribute('aria-label',`${hasPet?pet.name+' 메뉴':'아이 메뉴'} 열기`);
+    $('#profile-menu').innerHTML=hasPet
+      ?`<span class="profile-menu-pet">${esc(josa.name(pet.name))}</span>
+        <a href="profile.html"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg><span>아이 정보 수정</span></a>
+        <button type="button" id="logout"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg><span>로그아웃</span></button>`
+      :`<a href="profile.html"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg><span>아이 등록</span></a>
+        <a href="inbox.html"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg><span>로그인</span></a>`;
     $('#saved-count').textContent=state.saved.length;
     $('#saved-count').hidden=!state.saved.length;
     $('#map-title').textContent=hasPet?`${josa.of(pet.name)} 산책 지도`:'산책 지도';
@@ -38,11 +58,15 @@
     nodes:FP.NODES,interactive:true,seed:23,
     label:`${josa.of(petName)} 산책 지도`,
     center:()=>Minimi.svg(Minimi.config(pet),{inner:true}),
-    onSelect:id=>map.walkTo(id,()=>openNode(id))
+    onSelect:id=>{
+      if(id==='consult'){location.href='consult.html';return;}
+      map.walkTo(id,()=>openNode(id));
+    }
   });
 
   function openNode(id){
     if(FILTERS[id]){current=id;openFilter();}
+    else if(id==='consult')location.href='consult.html';
     else if(SOON[id])openSoon(id);
   }
 
@@ -315,6 +339,37 @@
 
   /* ---------- 이벤트 ---------- */
   document.addEventListener('click',e=>{
+    const menu=$('#profile-menu'),menuButton=$('#me');
+    if(!e.target.closest('.me-menu-wrap')){
+      menu.hidden=true;
+      menuButton.setAttribute('aria-expanded','false');
+    }
+    if(e.target.closest('#me')){
+      menu.hidden=!menu.hidden;
+      menuButton.setAttribute('aria-expanded',String(!menu.hidden));
+      return;
+    }
+    if(e.target.closest('#logout')){
+      const client=window.FPChat&&window.FPChat.client;
+      if(!client){toast('로그인 연결을 사용할 수 없어요.');return;}
+      const button=$('#logout');
+      button.disabled=true;
+      client.auth.signOut().then(({error})=>{
+        if(error){console.error('Unable to sign out.',error);toast('로그아웃하지 못했어요. 잠시 뒤 다시 시도해 주세요.');return;}
+        const cacheCleared=FP.clearPetCache(state);
+        Object.keys(pet).forEach(key=>delete pet[key]);
+        user=null;hasPet=false;petName='우리 아이';lastPetSnapshot='{}';
+        menu.hidden=true;
+        menuButton.setAttribute('aria-expanded','false');
+        Diary.updatePetProfile(pet,petName);
+        renderHeader();map.redraw();
+        toast(cacheCleared?'로그아웃했어요. 아이 정보는 계정에 저장돼 있어요.':'로그아웃했지만 이 기기의 아이 정보 캐시를 지우지 못했어요.');
+      }).catch(error=>{
+        console.error('Unable to sign out.',error);
+        toast('로그아웃하지 못했어요. 잠시 뒤 다시 시도해 주세요.');
+      }).finally(()=>{button.disabled=false;});
+      return;
+    }
     const t=e.target.closest('button,a');if(!t)return;
     if(t.dataset.view)setView(t.dataset.view);
     if(t.dataset.goto)setView(t.dataset.goto);
@@ -322,14 +377,40 @@
     if(t.dataset.open)openDetail(t.dataset.open);
     if(t.hasAttribute('data-close'))t.closest('dialog').close();
   });
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&!$('#profile-menu').hidden){
+      $('#profile-menu').hidden=true;
+      $('#me').setAttribute('aria-expanded','false');
+      $('#me').focus();
+    }
+  });
   
   document.querySelectorAll('dialog').forEach(d=>{
     d.addEventListener('click',e=>{if(e.target===d)d.close();});
     d.addEventListener('close',()=>{if(![...document.querySelectorAll('dialog')].some(x=>x.open))map.home();});
   });
 
-  Diary.init({state,save,PLACES,pet,petName,modal,toast,setView,close:()=>$('#modal').close()});
-  renderHeader();
-  const go=new URLSearchParams(location.search).get('go');
-  if(go&&FILTERS[go])setTimeout(()=>map.walkTo(go,()=>openNode(go)),500);
+  async function initializeProfile(){
+    try{
+      if(!window.FPChat||!FPChat.client)throw new Error('supabase_unavailable');
+      const result=await FPChat.loadPetProfile(legacyPet);
+      user=result.user;
+      if(result.pet)Object.assign(pet,result.pet);
+      if(user){
+        state.pet=pet;
+        if(!FP.save(state))toast('아이 정보는 계정에 저장돼 있지만 이 기기에 표시용 정보를 저장하지 못했어요.');
+      }
+    }catch(error){
+      console.error('Unable to load pet profile.',error);
+      toast('아이 정보를 불러오지 못했어요. 연결을 확인해 주세요.');
+    }
+    hasPet=!!pet.name;
+    petName=hasPet?pet.name:'우리 아이';
+    lastPetSnapshot=JSON.stringify(pet);
+    Diary.init({state,save,PLACES,pet,petName,modal,toast,setView,close:()=>$('#modal').close()});
+    renderHeader();map.redraw();
+    const go=new URLSearchParams(location.search).get('go');
+    if(go&&FILTERS[go])setTimeout(()=>map.walkTo(go,()=>openNode(go)),500);
+  }
+  initializeProfile();
 })();

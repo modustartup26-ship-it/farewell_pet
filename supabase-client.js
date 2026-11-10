@@ -4,9 +4,32 @@
   const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indvd2lxYXV3Y3htaHJncGx0cWV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2OTg3MDcsImV4cCI6MjEwOTI3NDcwN30.KXJNAShiQX7ShaWNu55Vk253w-zv2i8sp25NOkBT3WE';
   const PENDING='farewell-pet-pending-inquiry';
   if(!window.supabase||!window.supabase.createClient)return;
-  const client=window.supabase.createClient(URL_,KEY);
+  const client=window.supabase.createClient(URL_,KEY,{auth:{storage:window.sessionStorage}});
 
-  async function currentUser(){const {data}=await client.auth.getSession();return data.session?data.session.user:null;}
+  async function currentUser(){
+    if(!client)throw new Error('supabase_unavailable');
+    const {data,error}=await client.auth.getSession();
+    if(error)throw error;
+    return data.session?data.session.user:null;
+  }
+  async function loadPetProfile(legacyPet){
+    const user=await currentUser();
+    if(!user)return {user:null,pet:null};
+    const {data,error}=await client.from('pet_profiles').select('pet').eq('user_id',user.id).maybeSingle();
+    if(error)throw error;
+    if(data)return {user,pet:data.pet};
+    if(legacyPet&&legacyPet.name){
+      await savePetProfile(legacyPet);
+      return {user,pet:legacyPet};
+    }
+    return {user,pet:null};
+  }
+  async function savePetProfile(pet){
+    const user=await currentUser();
+    if(!user)throw new Error('not_signed_in');
+    const {error}=await client.from('pet_profiles').upsert({user_id:user.id,pet,updated_at:new Date().toISOString()});
+    if(error)throw error;
+  }
   async function signIn(email,page){
     const {error}=await client.auth.signInWithOtp({email,options:{emailRedirectTo:new URL(page,location.href).href}});
     return error||null;
@@ -50,5 +73,5 @@
   function savePending(p){try{localStorage.setItem(PENDING,JSON.stringify(p));return true;}catch{return false;}}
   function takePending(){try{const v=localStorage.getItem(PENDING);localStorage.removeItem(PENDING);return v?JSON.parse(v):null;}catch{return null;}}
 
-  window.FPChat={client,currentUser,signIn,loginErrorText,isAccepting,sendInquiry,savePending,takePending};
+  window.FPChat={client,currentUser,loadPetProfile,savePetProfile,signIn,loginErrorText,isAccepting,sendInquiry,savePending,takePending};
 })();

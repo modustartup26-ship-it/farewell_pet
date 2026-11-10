@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#FFFFFF">
 <link rel="stylesheet" href="theme.css">
 <link rel="stylesheet" href="signup.css">
+<link rel="stylesheet" href="ai-chat.css">
 </head>
 <body class="signup-page">
 <header class="topbar">
@@ -39,5 +40,6 @@
 document.querySelector('#signup-art').innerHTML=Minimi.svg(Minimi.config(FP.load().pet));
 document.querySelectorAll('[data-provider]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.provider==='이메일'){location.href='inbox.html';return;}document.querySelector('#notice-title').textContent=b.dataset.provider+' 가입 준비 중';document.querySelector('#signup-notice').showModal();}));
 </script>
+<script src="ai-chat.js"></script>
 </body>
 </html>

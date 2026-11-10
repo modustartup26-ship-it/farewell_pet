@@ -12,6 +12,13 @@ body.app{min-height:100dvh;background:var(--meadow)}
 .me-avatar{width:36px;height:36px;border-radius:50%;overflow:hidden;background:var(--soil-pale);display:grid;place-items:center}
 .me-avatar img{width:100%;height:100%;object-fit:cover}
 .me-avatar .minimi{width:118%;height:118%;margin-top:22%}
+.me-menu-wrap{position:relative;flex:none}
+.me[aria-expanded=true]{border-color:var(--primary)}
+.profile-menu{position:absolute;top:calc(100% + 8px);right:0;z-index:10;width:220px;padding:7px;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:var(--shadow)}
+.profile-menu-pet{display:block;padding:9px 11px 10px;color:var(--ink-3);font-size:13px;font-weight:700}
+.profile-menu>a,.profile-menu>button{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:0 11px;border:0;border-radius:10px;background:transparent;color:var(--ink-2);font-size:14px;font-weight:700;text-align:left;text-decoration:none}
+.profile-menu>a:hover,.profile-menu>button:hover{background:var(--surface-2);color:var(--primary)}
+.profile-menu>button:disabled{opacity:.55;cursor:wait}
 
 main{max-width:1280px;margin:0 auto}
 .view-map{display:flex;flex-direction:column;min-height:calc(100dvh - 68px)}
