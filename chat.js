@@ -6,7 +6,6 @@
   const isFacility=role==='facility';
   const app=document.querySelector('#chat-app');
   const chat=window.FPChat;
-  const page=isFacility?'partner.html':'inbox.html';
   const TABLE='inquiry_messages';
   const COLS='id,sender_role,kind,body,payload,created_at';
   let user=null,conversations=[],facilityNames=new Map(),testIds=new Set(),staffIds=[];
@@ -20,8 +19,6 @@
   const hm=d=>d.toLocaleTimeString('ko-KR',{hour:'numeric',minute:'2-digit'});
   function panel(html){app.innerHTML=`<section class="chat-gate">${html}</section>`;}
   function setUrl(id){const u=new URL(location.href);if(id)u.searchParams.set('c',id);else u.searchParams.delete('c');u.hash='';history.replaceState(null,'',u);}
-  function linkError(){return /error_code=|error=/.test(location.hash)?'로그인 링크가 만료됐거나 이미 사용됐어요. 새 링크를 받아 주세요.':'';}
-
   /* ---------- 아래에서 올라오는 시트 ---------- */
   const sheet=document.createElement('dialog');
   sheet.className='sheet';sheet.id='cmodal';sheet.setAttribute('aria-labelledby','cmodal-title');
@@ -38,21 +35,11 @@
   }
 
   function renderLogin(){
-    const err=linkError();
     panel(`<h1>${isFacility?'업체 문의함':'내 문의함'}</h1>
-      <p>${isFacility?'보호자가 보낸 문의를 확인하고 답할 수 있어요.':'업체에 보낸 문의와 답변을 모아 볼 수 있어요.'} 이메일로 로그인 링크를 보내 드릴게요.</p>
-      ${err?`<p class="chat-error" role="alert">${esc(err)}</p>`:''}
-      <form id="login" class="chat-form"><label class="field-l">이메일<input type="email" name="email" required autocomplete="email" inputmode="email" placeholder="name@example.com"></label><button class="btn btn-primary" type="submit">로그인 링크 받기</button><p class="chat-error" id="login-error" role="alert" hidden></p></form>
+      <p>${isFacility?'보호자가 보낸 문의를 확인하고 답할 수 있어요.':'업체에 보낸 문의와 답변을 모아 볼 수 있어요.'}</p>
+      <button class="btn btn-primary" id="chat-auth" type="button">로그인 · 회원가입</button>
       <a class="chat-switch" href="${isFacility?'inbox.html':'partner.html'}">${isFacility?'보호자이신가요? 내 문의함으로':'업체이신가요? 업체 문의함으로'}</a>`);
-    document.querySelector('#login').addEventListener('submit',async e=>{
-      e.preventDefault();
-      const btn=e.target.querySelector('button'),errEl=document.querySelector('#login-error');
-      btn.disabled=true;errEl.hidden=true;
-      const email=new FormData(e.target).get('email').trim();
-      const error=await chat.signIn(email,page);
-      if(error){errEl.textContent=chat.loginErrorText(error);errEl.hidden=false;btn.disabled=false;return;}
-      panel(`<h1>메일을 확인해 주세요</h1><p><b>${esc(email)}</b>로 로그인 링크를 보냈어요. 메일의 링크를 누르면 이 화면으로 돌아와요.</p><p class="muted">메일이 보이지 않으면 스팸함도 확인해 주세요.</p>`);
-    });
+    document.querySelector('#chat-auth').addEventListener('click',()=>window.FPAuth.open({onSuccess:boot}));
   }
 
   function renderInvite(){

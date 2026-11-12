@@ -6,8 +6,10 @@
 - 우리 아이 등록(질문 한 개씩 + 건강 고민 + 미니미 꾸미기 + 성격 검사 MCPQ-R): `profile.html`
 - 산책 지도 · 필터링 · 상세: `services.html`
 - 보호자 문의함: `inbox.html` / 업체 문의함: `partner.html` (Supabase, 스키마는 `supabase/migrations/`)
-- 수의사 1:1 상담: `consult.html` (Supabase 이메일 인증·실시간 채팅)
+- 수의사 1:1 상담: `consult.html` (Supabase 이메일·비밀번호 로그인·실시간 채팅)
 - 강아지 앨범·용량·포토북·생애 기록 신청: `album.html`
+
+이메일 계정은 사이트의 로그인·회원가입 창에서 이메일과 비밀번호로 만들고 로그인합니다. 회원가입은 이메일 인증 코드를 확인한 뒤 완료됩니다. Supabase 대시보드의 **Authentication → Providers → Email**에서 이메일 확인(Confirm email)을 켜고, **Authentication → Email Templates → Confirm signup** 본문에 `{{ .Token }}`을 넣어 일회용 코드를 보내도록 설정하세요. 확인 코드의 유효 시간과 발송 제한은 Supabase Auth 설정을 따릅니다. 공용 비밀번호나 인증 우회 문구를 코드·저장소에 넣지 마세요.
 
 ### 돌봄 기록 (2026-11-12)
 - 문의 대화는 `inquiry_messages` 테이블을 씁니다. (같은 프로젝트의 `messages`는 다른 용도로 쓰이고 있어 건드리지 않았습니다.)
@@ -27,7 +29,7 @@
 
 로그인하지 않아도 아이 등록 페이지에서 임시 프로필을 만들고 서비스를 둘러볼 수 있습니다. 임시 프로필은 현재 탭에서만 유지되며 탭을 닫으면 초기화됩니다. 로그인한 사용자의 프로필은 계정에 저장되므로 이후 로그인하면 다시 불러옵니다. 아이 정보를 계정별로 저장하려면 `supabase/migrations/20261112_create_pet_profiles.sql`을 사이트에서 사용하는 Supabase 프로젝트의 SQL Editor에서 실행하고 로그인하세요. 로그인한 첫 계정에는 현재 탭의 임시 프로필이 한 번 옮겨지며, 이후에는 계정에 저장된 프로필을 사용합니다. 로그아웃하면 이 기기의 계정 프로필 캐시만 지우며, 계정에 저장된 정보는 유지됩니다. 찜한 곳, 일기와 AI 대화는 현재 탭에서만 유지되며 탭을 닫으면 초기화됩니다.
 
-수의사 상담을 활성화하려면 `supabase/migrations/20261110_create_vet_consultations.sql`도 SQL Editor에서 실행하고, Auth의 Redirect URLs에 `http://localhost:5175/profile.html`, `http://localhost:5175/consult.html`과 배포 도메인의 `/profile.html`, `/consult.html`을 등록하세요. 수의사는 이메일 로그인 후 프로필과 면허 번호를 제출합니다. 운영자는 면허를 별도로 확인한 뒤 신청자의 `user_id`를 확인하고 승인할 수 있습니다.
+수의사 상담을 활성화하려면 `supabase/migrations/20261110_create_vet_consultations.sql`도 SQL Editor에서 실행하세요. 수의사는 계정을 만든 뒤 로그인해 프로필과 면허 번호를 제출합니다. 운영자는 면허를 별도로 확인한 뒤 신청자의 `user_id`를 확인하고 승인할 수 있습니다.
 
 ```sql
 update public.veterinarian_applications

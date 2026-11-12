@@ -5,7 +5,6 @@ body.wizard{min-height:100dvh;background:var(--meadow)}
 .profile-auth>p{margin:0;color:var(--ink-2);line-height:1.6}
 .profile-auth .guest-profile{min-height:50px}
 .profile-auth .guest-profile-note{margin-top:-10px;font-size:13px;color:var(--ink-3)}
-.profile-login{display:grid;gap:12px}
 .profile-auth>.btn-ghost{justify-self:start}
 .wz-head{display:grid;grid-template-columns:44px 1fr 64px;align-items:center;gap:10px;height:68px;margin:0 -8px}
 .count{font-size:14px;font-weight:700;color:var(--ink-3);text-align:right;padding-right:8px;white-space:nowrap}

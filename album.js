@@ -37,16 +37,9 @@
 
   /* ---------- 로그인 ---------- */
   function renderLogin(){
-    app.innerHTML=`<section class="chat-gate"><h1>${icon('camera')}우리 아이 앨범</h1><p>업체가 보낸 사진과 내가 찍은 사진을 한곳에 모아요. 이메일로 로그인 링크를 보내 드릴게요.</p>
-      <form id="login" class="chat-form"><label class="field-l">이메일<input type="email" name="email" required autocomplete="email" inputmode="email" placeholder="name@example.com"></label><button class="btn btn-primary" type="submit">로그인 링크 받기</button><p class="chat-error" id="login-error" role="alert" hidden></p></form></section>`;
-    document.querySelector('#login').addEventListener('submit',async e=>{
-      e.preventDefault();
-      const btn=e.target.querySelector('button'),err=document.querySelector('#login-error');btn.disabled=true;err.hidden=true;
-      const email=new FormData(e.target).get('email').trim();
-      const error=await chat.signIn(email,'album.html');
-      if(error){err.textContent=chat.loginErrorText(error);err.hidden=false;btn.disabled=false;return;}
-      app.innerHTML=`<section class="chat-gate"><h1>메일을 확인해 주세요</h1><p><b>${esc(email)}</b>로 로그인 링크를 보냈어요.</p></section>`;
-    });
+    app.innerHTML=`<section class="chat-gate"><h1>${icon('camera')}우리 아이 앨범</h1><p>업체가 보낸 사진과 내가 찍은 사진을 한곳에 모아요.</p>
+      <button class="btn btn-primary" id="album-auth" type="button">로그인 · 회원가입</button></section>`;
+    document.querySelector('#album-auth').addEventListener('click',()=>window.FPAuth.open({onSuccess:boot}));
   }
 
   /* ---------- 데이터 ---------- */

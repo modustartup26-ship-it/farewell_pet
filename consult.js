@@ -34,21 +34,9 @@
   function header(title,subtitle){
     return `<div class="consult-heading"><div><h1>${esc(title)}</h1><p>${esc(subtitle)}</p></div>${accountActions()}</div>`;
   }
-  function loginForm(){
-    return `<section class="consult-auth" id="consult-auth">
-      <h2>상담을 이용하려면 로그인해 주세요</h2>
-      <p>로그인 링크를 이메일로 보내 드릴게요. 메일을 열면 상담으로 돌아옵니다.</p>
-      <form class="consult-form" id="login-form">
-        <label class="consult-field wide">이메일<input type="email" name="email" required autocomplete="email" inputmode="email" placeholder="name@example.com"></label>
-        <div class="consult-form-actions"><button class="consult-btn" type="submit">로그인 링크 받기</button></div>
-      </form><p class="consult-small-error" id="auth-feedback" role="alert"></p>
-    </section>`;
-  }
   function renderLogin(){
-    app.innerHTML=`${header('로그인','수의사 상담을 이용하려면 먼저 로그인해 주세요.')}${loginForm()}`;
-    const section=app.querySelector('#consult-auth');
-    section.dataset.kind=params.get('mode')==='vet'?'vet':'client';
-    section.dataset.vet=requestedVet||'';
+    app.innerHTML='<p class="consult-loading">로그인하면 상담을 시작할 수 있어요.</p>';
+    window.FPAuth.open({onSuccess:initialize});
   }
   function applicationFields(data){
     const item=data||{};
@@ -116,7 +104,7 @@
       listMarkup=vets.length?vets.map(vetCard).join():'<p class="consult-empty">아직 등록된 수의사가 없어요. 나중에 다시 확인해 주세요.</p>';
     }else{
       if(!user){
-        listMarkup='<p class="consult-empty">상담 내역을 보려면 이메일로 로그인해 주세요.</p>';
+        listMarkup='<p class="consult-empty">상담 내역을 보려면 로그인해 주세요.</p>';
       }else{
         const consultations=await getClientConversations();
         const vetMap=await getVetsByIds([...new Set(consultations.map(item=>item.veterinarian_id))]);
@@ -201,7 +189,7 @@
   }
   async function startConsultation(veterinarianId){
     if(!user){
-      openLogin('client',veterinarianId);
+      openLogin();
       return;
     }
     const petName=String(petProfile.name||'우리 아이').trim().slice(0,40)||'우리 아이';
@@ -291,14 +279,8 @@
       })
       .subscribe();
   }
-  function openLogin(kind,targetVet){
-    const section=app.querySelector('#consult-auth');
-    if(!section){return;}
-    section.hidden=false;
-    section.dataset.kind=kind;
-    section.dataset.vet=targetVet||'';
-    section.scrollIntoView({behavior:'smooth',block:'center'});
-    section.querySelector('input[name=email]').focus();
+  function openLogin(){
+    window.FPAuth.open({onSuccess:initialize});
   }
   function parseApplication(form){
     const data=new FormData(form);
@@ -352,24 +334,6 @@
   async function handleSubmit(event){
     const form=event.target;
     if(!(form instanceof HTMLFormElement))return;
-    if(form.id==='login-form'){
-      event.preventDefault();
-      const button=form.querySelector('button[type=submit]');
-      button.disabled=true;
-      const email=String(new FormData(form).get('email')||'').trim();
-      const section=app.querySelector('#consult-auth');
-      const pageParams=new URLSearchParams();
-      if(section.dataset.kind==='vet')pageParams.set('mode','vet');
-      const vetId=section.dataset.vet;
-      if(vetId)pageParams.set('vet',vetId);
-      const page='consult.html'+(pageParams.size?'?'+pageParams.toString():'');
-      const error=await chat.signIn(email,page);
-      button.disabled=false;
-      const target=app.querySelector('#auth-feedback');
-      if(error){target.textContent=chat.loginErrorText(error);return;}
-      target.textContent='로그인 링크를 보냈어요. 메일을 확인해 주세요.';
-      return;
-    }
     if(form.id==='application-form'){
       event.preventDefault();
       const button=form.querySelector('button[type=submit]');
@@ -420,7 +384,7 @@
         renderLogin();
       }else if(action==='vet-login'){
         if(user)await renderApplicationAfterLogin();
-        else openLogin('vet','');
+        else openLogin();
       }
       else if(action==='close-auth'){const auth=app.querySelector('#consult-auth');if(auth)auth.hidden=true;}
       else if(action==='client-tab'){

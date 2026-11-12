@@ -30,18 +30,6 @@
     const {error}=await client.from('pet_profiles').upsert({user_id:user.id,pet,updated_at:new Date().toISOString()});
     if(error)throw error;
   }
-  async function signIn(email,page){
-    const {error}=await client.auth.signInWithOtp({email,options:{emailRedirectTo:new URL(page,location.href).href}});
-    return error||null;
-  }
-  function loginErrorText(error){
-    const c=error&&(error.code||'');
-    if(c==='email_address_not_authorized')return '지금은 시범 운영 중이라 등록된 이메일로만 로그인할 수 있어요.';
-    if(c==='over_email_send_rate_limit'||c==='over_request_rate_limit'||(error&&error.status===429))return '메일을 너무 자주 요청했어요. 잠시 뒤에 다시 시도해 주세요.';
-    if(c==='validation_failed'||c==='email_address_invalid')return '이메일 주소를 다시 확인해 주세요.';
-    return '메일을 보내지 못했어요. 잠시 뒤에 다시 시도해 주세요.';
-  }
-
   let acceptingCache=null;
   function accepting(){
     if(!acceptingCache)acceptingCache=client.from('facilities').select('id').eq('accepting_inquiries',true)
@@ -73,5 +61,5 @@
   function savePending(p){try{localStorage.setItem(PENDING,JSON.stringify(p));return true;}catch{return false;}}
   function takePending(){try{const v=localStorage.getItem(PENDING);localStorage.removeItem(PENDING);return v?JSON.parse(v):null;}catch{return null;}}
 
-  window.FPChat={client,currentUser,loadPetProfile,savePetProfile,signIn,loginErrorText,isAccepting,sendInquiry,savePending,takePending};
+  window.FPChat={client,currentUser,loadPetProfile,savePetProfile,isAccepting,sendInquiry,savePending,takePending};
 })();

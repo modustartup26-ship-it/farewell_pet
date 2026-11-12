@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="theme.css">
 <link rel="stylesheet" href="signup.css">
 <link rel="stylesheet" href="ai-chat.css">
+<link rel="stylesheet" href="auth.css">
 </head>
 <body class="signup-page">
 <header class="topbar">
@@ -21,25 +22,34 @@
     <p>편한 방법으로 시작해 주세요.<br>필요한 병원과 돌봄을 한곳에서 만나보세요.</p>
     <div class="providers">
       <button type="button" class="provider kakao" data-provider="카카오"><span class="p-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4C7 4 3 7.1 3 11c0 2.5 1.7 4.7 4.2 6l-.9 3.4 3.9-2.6c.6.1 1.2.1 1.8.1 5 0 9-3.1 9-7S17 4 12 4z" fill="currentColor"/></svg></span>카카오로 가입</button>
-      <button type="button" class="provider email" data-provider="이메일"><span class="p-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M4 7l8 6 8-6"/></svg></span>이메일로 시작</button>
+      <button type="button" class="provider email" data-provider="이메일"><span class="p-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M4 7l8 6 8-6"/></svg></span>이메일로 로그인 · 회원가입</button>
       <button type="button" class="provider naver" data-provider="네이버"><span class="p-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5h4.6l4.8 7V5H19v14h-4.6l-4.8-7v7H5z" fill="currentColor"/></svg></span>네이버로 가입</button>
     </div>
     <a class="provider guest-provider" href="profile.html">로그인 없이 아이 등록하고 둘러보기</a>
-    <p class="notice">이메일 로그인으로 업체 문의를 보낼 수 있어요. 카카오·네이버 가입은 준비 중이에요.</p>
+    <p class="notice">이메일과 비밀번호로 계정을 만들 수 있어요. 카카오·네이버 가입은 준비 중이에요.</p>
     <a class="back" href="index.html">처음 화면으로</a>
   </section>
 </main>
 <dialog class="sheet" id="signup-notice" aria-labelledby="notice-title">
   <div class="grip" aria-hidden="true"></div>
   <div class="sheet-head"><span></span><h2 id="notice-title"></h2><span></span></div>
-  <div class="sheet-body"><p class="muted-p">이 방법은 아직 연결 전이에요. 이메일 로그인을 쓰거나, 로그인 없이 먼저 둘러볼 수 있어요.</p></div>
+  <div class="sheet-body"><p class="muted-p">이 방법은 아직 연결 전이에요. 이메일로 가입하거나, 로그인 없이 먼저 둘러볼 수 있어요.</p></div>
   <div class="sheet-foot"><form method="dialog"><button class="btn btn-soft">닫기</button></form><a class="btn btn-primary" href="profile.html">우리 아이 먼저 등록하기</a></div>
 </dialog>
 <script src="common.js"></script>
 <script src="minimi.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+<script src="supabase-client.js"></script>
+<script src="auth-ui.js"></script>
 <script>
 document.querySelector('#signup-art').innerHTML=Minimi.svg(Minimi.config(FP.load().pet));
-document.querySelectorAll('[data-provider]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.provider==='이메일'){location.href='inbox.html';return;}document.querySelector('#notice-title').textContent=b.dataset.provider+' 가입 준비 중';document.querySelector('#signup-notice').showModal();}));
+const requestedNext=new URLSearchParams(location.search).get('next')||'profile.html';
+const nextPage=/^(consult|profile|inbox|partner|services)\.html(?:\?.*)?$/.test(requestedNext)?requestedNext:'profile.html';
+document.querySelectorAll('[data-provider]').forEach(b=>b.addEventListener('click',()=>{
+  if(b.dataset.provider==='이메일'){FPAuth.open({onSuccess:()=>location.assign(nextPage)});return;}
+  document.querySelector('#notice-title').textContent=b.dataset.provider+' 가입 준비 중';
+  document.querySelector('#signup-notice').showModal();
+}));
 </script>
 <script src="ai-chat.js"></script>
 </body>

@@ -303,12 +303,7 @@
     }
   }
   function askLogin(){
-    modal('이메일로 로그인',`<p class="muted">업체 답변을 받으려면 로그인이 필요해요. 메일로 받은 링크를 이 브라우저에서 열면 작성한 문의가 바로 전달돼요.</p><label class="field-l">이메일<input type="email" name="email" required autocomplete="email" inputmode="email" placeholder="name@example.com"></label><p class="muted" id="ask-login-error" role="alert" hidden></p>`,`<button type="submit" form="modal-form" class="btn btn-primary" id="ask-login">로그인 링크 받기</button>`,async fd=>{
-      const btn=$('#ask-login'),email=String(fd.get('email')).trim();btn.disabled=true;
-      const error=await window.FPChat.signIn(email,'inbox.html');
-      if(error){const el=$('#ask-login-error');el.textContent=window.FPChat.loginErrorText(error);el.hidden=false;btn.disabled=false;return;}
-      modal('메일을 확인해 주세요',`<p class="muted">${esc(email)}로 로그인 링크를 보냈어요. 링크를 열면 작성한 문의가 전달되고 문의함으로 이동해요.</p>`,`<button type="button" class="btn btn-primary" data-close>닫기</button>`);
-    });
+    window.FPAuth.open({onSuccess:()=>{location.href='inbox.html';}});
   }
   async function copy(text,msg,close){try{await navigator.clipboard.writeText(text);toast(msg);if(close)$('#modal').close();}catch{toast('복사하지 못했어요. 내용을 길게 눌러 직접 복사해 주세요.');}}
   function openSoon(id){

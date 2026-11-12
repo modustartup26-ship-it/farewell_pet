@@ -221,17 +221,7 @@
       const si=steps.findIndex(s=>s.key===start);
       show(si>0&&pet.name?si:0,0);
     },{once:true});
-    $('#profile-login').addEventListener('submit',async event=>{
-      event.preventDefault();
-      const button=event.currentTarget.querySelector('button[type=submit]');
-      const email=new FormData(event.currentTarget).get('email').trim();
-      authError.hidden=true;button.disabled=true;
-      let signInError;
-      try{signInError=await FPChat.signIn(email,'profile.html');}
-      catch(requestError){console.error('Unable to request profile sign-in.',requestError);authError.textContent='로그인 링크를 보내지 못했어요. 잠시 뒤 다시 시도해 주세요.';authError.hidden=false;button.disabled=false;return;}
-      if(signInError){authError.textContent=FPChat.loginErrorText(signInError);authError.hidden=false;button.disabled=false;return;}
-      gate.querySelector('.profile-auth').innerHTML=`<h1>메일을 확인해 주세요</h1><p><b>${esc(email)}</b>로 로그인 링크를 보냈어요. 메일의 링크를 누르면 아이 등록 화면으로 돌아와요.</p><p class="error">메일이 보이지 않으면 스팸함도 확인해 주세요.</p>`;
-    });
+    $('#profile-auth').addEventListener('click',()=>window.FPAuth.open({onSuccess:initialize}));
   }
 
   async function initialize(){
