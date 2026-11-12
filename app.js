@@ -46,6 +46,7 @@
       if(pet.breed)facts.push([pet.breed]);
       if(pet.concerns&&pet.concerns.length)facts.push([`건강 고민 ${pet.concerns.length}가지`,'sun']);
       if(pet.hasMedication==='있음')facts.push(['약 먹는 중','sun']);
+      if(Concerns.isSenior(pet))facts.push(['노령견 맞춤','sun']);
       if(pet.mcpq&&pet.mcpq.type)facts.push([pet.mcpq.type,'type']);
       if(pet.dogs)facts.push([`다른 개와 ${pet.dogs.replace('요','').replace('잘 어울려','잘 어울림').replace('천천히 적응해','천천히 적응').replace('혼자가 편해','혼자가 편함')}`]);
       $('#pet-strip').innerHTML=facts.map(([t,c])=>`<span class="fact ${c||''}">${esc(t)}</span>`).join('')+`<a class="fact edit" href="profile.html">${icon('edit')}프로필 수정</a>`;
@@ -72,15 +73,28 @@
   }
 
   /* ---------- 필터링 시트 ---------- */
-  function needsFromPet(cat){
-    const n=new Set();
-    if(!hasPet)return n;
-    if((cat==='hotel'||cat==='kinder')&&pet.hasMedication==='있음')n.add('투약 지원');
-    if((cat==='hotel'||cat==='kinder')&&(pet.dogs==='혼자가 편해요'||pet.separation==='많이 불안해해요'))n.add('단독 돌봄');
-    if(cat==='hotel'&&pet.separation==='많이 불안해해요')n.add('야간 관리');
-    if(cat==='hospital'&&(Number(pet.years)>=Concerns.SENIOR_AGE||(pet.concerns||[]).includes('aging')))n.add('노령견 진료');
-    return n;
+  /* 프로필 → 시설 조건. 어떤 조건이 왜 올라왔는지 이유를 함께 만든다.
+     성격 검사 기반 규칙은 가설이라, 확인할 조건을 올려 줄 뿐 적합 여부를 단정하지 않는다. */
+  function needReasons(cat){
+    const r=new Map();
+    if(!hasPet)return r;
+    const add=(need,why)=>{if(!r.has(need))r.set(need,[]);r.get(need).push(why);};
+    const care=cat==='hotel'||cat==='kinder', S=pet.senior||{}, meds=pet.medications||[];
+    if(care&&pet.hasMedication==='있음')add('투약 지원','먹는 약이 있어요.');
+    if(care&&meds.some(m=>['주사','수액'].includes(m.method)))add('주사·수액 투약','주사나 수액 투약이 있어요.');
+    if(care&&Concerns.isSenior(pet))add('노령견 돌봄',`${Concerns.SENIOR_AGE}살 이상이거나 나이 듦 고민을 골랐어요.`);
+    if(care&&(pet.dogs==='혼자가 편해요'||pet.separation==='많이 불안해해요'))add('단독 돌봄',pet.dogs==='혼자가 편해요'?'다른 개와 있는 것보다 혼자가 편해요.':'보호자와 떨어지면 많이 불안해해요.');
+    if(care&&pet.mcpq&&pet.mcpq.scores)MCPQ.needs(pet.mcpq.scores).forEach(n=>add(n.need,n.why));
+    if(cat==='hotel'){
+      if(pet.separation==='많이 불안해해요')add('야간 관리','보호자와 떨어지면 많이 불안해해요.');
+      if((S.night||[]).some(x=>x!==Concerns.SENIOR.NONE))add('야간 관리',(S.night||[]).filter(x=>x!==Concerns.SENIOR.NONE).join(' · ')+'.');
+      if(Concerns.isSenior(pet)&&((S.watch||'').trim()||(pet.concerns||[]).length))add('병원 연계','지켜볼 증상이나 건강 고민이 있어서 응급 때 병원과 이어지는지 확인해요.');
+    }
+    if(care&&(S.mobility||[]).some(x=>x!==Concerns.SENIOR.NONE))add('미끄럼 방지 매트',(S.mobility||[]).filter(x=>x!==Concerns.SENIOR.NONE).join(' · ')+'.');
+    if(cat==='hospital'&&Concerns.isSenior(pet))add('노령견 진료',`${Concerns.SENIOR_AGE}살 이상이거나 나이 듦 고민을 골랐어요.`);
+    return r;
   }
+  function needsFromPet(cat){return new Set(needReasons(cat).keys());}
   function defaults(cat){
     const sel=new Set(needsFromPet(cat));
     if(pet.size&&cat!=='hospital')sel.add('size:'+pet.size);
@@ -92,6 +106,8 @@
     $('#filter-title').textContent=`${cfg.title} 필터링`;
     const chip=(value,label,auto)=>`<label class="chip"><input type="checkbox" value="${esc(value)}" ${f.sel.has(value)?'checked':''}>${esc(label)}${auto?'<span class="auto">우리 아이</span>':''}</label>`;
     const needs=cfg.needs.length?`<section class="group needs"><h3>${esc(josa.of(petName))} 돌봄 조건 <small>${hasPet?'프로필에서 가져왔어요':'필요한 조건을 골라 주세요'}</small></h3><div class="chips">${cfg.needs.map(n=>chip(n,n,f.auto.has(n))).join('')}</div></section>`:'';
+    const reasons=hasPet?[...needReasons(current)]:[];
+    const whyBlock=reasons.length?`<details class="need-why"><summary>${esc(josa.of(petName))} 프로필에서 올린 조건 ${reasons.length}가지, 왜 올렸나요?</summary><ul>${reasons.map(([n,w])=>`<li><b>${esc(n)}</b> ${w.map(esc).join(' ')}</li>`).join('')}</ul><p>이 조건은 확인할 항목을 먼저 올려 둔 것이에요. 성격 검사 결과로 올린 조건은 보호자 관찰을 바탕으로 한 참고 정보이고, 시설 적합 여부를 단정하지 않아요. 필요 없으면 체크를 해제하세요.</p></details>`:'';
     $('#filter-form').innerHTML=`
       <section class="group"><h3>지역 <small id="dist-label">${DIST[f.dist-1]}까지</small></h3>
         <div class="range"><input type="range" min="1" max="5" step="1" value="${f.dist}" id="dist" aria-label="찾을 거리" aria-valuetext="${DIST[f.dist-1]}"></div>
@@ -99,7 +115,7 @@
         <label class="region"><span>${icon('pin')}특정 지역으로 검색하기</span><select id="region">${['나주시','광주광역시','전남 다른 지역'].map(r=>`<option ${r===f.region?'selected':''}>${r}</option>`).join('')}</select></label>
         <p class="note">위치 연결 전이라 거리는 빛가람동 기준 예시예요.</p>
       </section>
-      ${needs}
+      ${needs}${whyBlock}
       ${cfg.groups.map(g=>`<section class="group"><h3>${esc(g.title)}</h3><div class="chips ${g.grid?'grid'+g.grid:''}">${g.opts.map(o=>chip(g.key==='size'?'size:'+o:o,o,f.auto.has(g.key==='size'?'size:'+o:o))).join('')}</div></section>`).join('')}`;
     const range=$('#dist');
     const paint=()=>{range.style.setProperty('--p',((range.value-1)/4*100)+'%');$('#dist-label').textContent=DIST[range.value-1]+'까지';range.setAttribute('aria-valuetext',DIST[range.value-1]);};
@@ -264,29 +280,57 @@
     $('#modal-form').onsubmit=e=>{e.preventDefault();onSubmit&&onSubmit(new FormData($('#modal-form')));};
     if(!$('#modal').open)$('#modal').showModal();
   }
-  function inquiryText(p,date){
+  /* 문의에 넣을 개인 정보 묶음. 보호자가 체크한 것만 업체에 보낸다. */
+  function shareOptions(){
+    const S=pet.senior||{},none=Concerns.SENIOR.NONE;
+    const hasSenior=Concerns.isSenior(pet)&&!!(S.mobility&&S.mobility.some(x=>x!==none)||S.night&&S.night.some(x=>x!==none)||S.watch||S.diet||S.vet);
+    return [
+      pet.concerns&&pet.concerns.length?{key:'health',label:'건강 고민'}:null,
+      pet.hasMedication==='있음'&&pet.medications&&pet.medications.length?{key:'meds',label:'먹는 약'}:null,
+      hasSenior?{key:'senior',label:'노령견 돌봄 정보'}:null,
+      pet.dogs||(pet.separation&&pet.separation!=='잘 기다려요')?{key:'temper',label:'성격'}:null
+    ].filter(Boolean);
+  }
+  function inquiryText(p,date,share){
+    const on=k=>!share||share[k]!==false;
     const lines=[`안녕하세요. ${josa.name(petName)} 보호자예요.`];
     const facts=[pet.breed,pet.years!==''&&pet.years!=null?`${pet.years}살`:'',pet.weight?`${pet.weight}kg`:'',pet.sex].filter(Boolean).join(', ');
     if(facts)lines.push(`${josa.topic(petName)} ${facts}이에요.`);
-    lines.push(`${date?date+'에 ':''}${p.cat==='hospital'?'진료':'이용'}가 가능할지 문의드려요.`);
-    const asks=[];
-    if(pet.concerns&&pet.concerns.length)asks.push(`건강 고민: ${Concerns.labels(pet.concerns).join(', ')}`);
-    if(pet.hasMedication==='있음'&&pet.medications&&pet.medications.length)asks.push(`투약 도움: ${pet.medications.map(m=>[m.name,m.frequency,m.schedule].filter(Boolean).join(' ')).join(' / ')}`);
-    if(pet.dogs)asks.push(`다른 개와는 ${pet.dogs.replace(/요$/,'')}요. 합사 방식이 궁금해요.`);
-    if(pet.separation&&pet.separation!=='잘 기다려요')asks.push(`보호자와 떨어지면 ${pet.separation.replace(/요$/,'')}요.`);
+    lines.push(`${date?date+'에 ':''}${p.cat==='hospital'?'진료가':'이용이'} 가능할지 문의드려요.`);
+    const asks=[],S=pet.senior||{},none=Concerns.SENIOR.NONE,real=a=>(a||[]).filter(x=>x!==none);
+    if(on('health')&&pet.concerns&&pet.concerns.length)asks.push(`건강 고민: ${Concerns.labels(pet.concerns).join(', ')}`);
+    if(on('meds')&&pet.hasMedication==='있음'&&pet.medications&&pet.medications.length)asks.push(`투약 도움: ${pet.medications.map(m=>[m.name,m.method,m.frequency,m.schedule].filter(Boolean).join(' ')).join(' / ')}`);
+    if(on('senior')&&Concerns.isSenior(pet)){
+      if(real(S.mobility).length)asks.push(`움직일 때: ${real(S.mobility).join(', ')}`);
+      if(real(S.night).length)asks.push(`밤에는: ${real(S.night).join(', ')}`);
+      if(S.watch)asks.push(`지켜보는 증상: ${S.watch}`);
+      if(S.diet)asks.push(`식이 제한: ${S.diet}`);
+      if(S.vet)asks.push(`평소 다니는 병원: ${S.vet} (응급 때 연락할 곳)`);
+    }
+    if(on('temper')){
+      if(pet.dogs)asks.push(`다른 개와는 ${pet.dogs.replace(/요$/,'')}요. 합사 방식이 궁금해요.`);
+      if(pet.separation&&pet.separation!=='잘 기다려요')asks.push(`보호자와 떨어지면 ${pet.separation.replace(/요$/,'')}요.`);
+    }
+    /* 아직 확인되지 않은 필수 조건은 질문으로 바꿔 넣는다 */
     const f=current&&filterState[current];
-    if(f){const v=verdict(p,[...f.sel]);v.rows.filter(r=>r.v===undefined).forEach(r=>asks.push(r.label.replace(' 확인 필요','')+' 가능 여부'));}
-    if(asks.length)lines.push('','확인하고 싶은 점',...asks.map(a=>'- '+a));
+    const unknown=f?verdict(p,[...f.sel]).rows.filter(r=>r.v===undefined).map(r=>r.label.replace(' 확인 필요','').replace(/ 이용$/,'')+' 가능 여부'):[];
+    if(asks.length)lines.push('','알려 드리는 정보',...asks.map(a=>'- '+a));
+    if(unknown.length)lines.push('','확인하고 싶은 점',...unknown.map(a=>'- '+a));
     lines.push('','감사합니다.');
     return lines.join('\n');
   }
   async function inquiry(p){
     const chat=window.FPChat, open=chat?await chat.isAccepting(p.id):false;
-    const fields=`<label class="field-l">희망 날짜<input type="date" name="date" id="ask-date"></label><label class="field-l">문의 내용<textarea name="memo" id="ask-memo" rows="9" maxlength="2000" required></textarea></label>`;
-    if(open)modal('간편 돌봄문의',`<p class="muted">${esc(p.name)}에 보낼 문의를 ${esc(josa.of(petName))} 프로필로 미리 채웠어요. 보내면 아래 내용이 그대로 업체에 전달돼요. 건강이나 약 정보는 원하는 만큼만 남겨 주세요.</p>${fields}`,`<button type="submit" form="modal-form" class="btn btn-primary" id="ask-send">${icon('chat')}문의 보내기</button>`,fd=>sendAsk(p,fd.get('memo')));
+    const opts=shareOptions();
+    const shareHtml=opts.length?`<div class="field-l"><span>업체에 알려 줄 정보 <small>체크한 것만 문의에 넣어요</small></span><div class="chips" id="ask-share">${opts.map(o=>`<label class="chip"><input type="checkbox" name="share" value="${o.key}" checked>${esc(o.label)}</label>`).join('')}</div></div>`:'';
+    const fields=`${shareHtml}<label class="field-l">희망 날짜<input type="date" name="date" id="ask-date"></label><label class="field-l">문의 내용<textarea name="memo" id="ask-memo" rows="9" maxlength="2000" required></textarea></label>`;
+    if(open)modal('간편 돌봄문의',`<p class="muted">${esc(p.name)}에 보낼 문의를 ${esc(josa.of(petName))} 프로필로 미리 채웠어요. 보내면 아래 내용이 그대로 업체에 전달돼요. 건강이나 약 정보는 원하는 만큼만 남겨 주세요. 아직 확인되지 않은 조건은 질문으로 넣었어요.</p>${fields}`,`<button type="submit" form="modal-form" class="btn btn-primary" id="ask-send">${icon('chat')}문의 보내기</button>`,fd=>sendAsk(p,fd.get('memo')));
     else modal('간편 돌봄문의',`<p class="muted">${esc(p.name)}에 보낼 문의를 ${esc(josa.of(petName))} 프로필로 미리 채웠어요. 이곳은 아직 앱으로 문의를 받지 않아요. 복사해서 문자나 메시지로 보내 주세요.</p>${fields}`,`<button type="submit" form="modal-form" class="btn btn-primary">${icon('copy')}문의 내용 복사하기</button>`,fd=>copy(fd.get('memo'),'문의 내용을 복사했어요.',true));
-    const fill=()=>{$('#ask-memo').value=inquiryText(p,$('#ask-date').value?$('#ask-date').value.replace(/-/g,'.'):'');};
-    $('#ask-date').addEventListener('change',fill);fill();
+    const share=()=>Object.fromEntries(opts.map(o=>[o.key,!!document.querySelector(`#ask-share input[value=${o.key}]:checked`)]));
+    const fill=()=>{$('#ask-memo').value=inquiryText(p,$('#ask-date').value?$('#ask-date').value.replace(/-/g,'.'):'',share());};
+    $('#ask-date').addEventListener('change',fill);
+    const box=$('#ask-share');if(box)box.addEventListener('change',fill);
+    fill();
   }
   async function sendAsk(p,memo){
     const chat=window.FPChat, body=String(memo||'').trim();

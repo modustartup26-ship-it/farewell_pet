@@ -89,7 +89,17 @@
     </svg>`;
   }
 
-  window.MCPQ={FACTORS,ITEMS,SCALE,ORDER,score,level,nickname,radar,
+  /* 성향 점수 → 시설 조건 (가설 규칙)
+     성격 질문지는 보호자가 본 성향을 정리하는 도구이고, 시설 적합성을 예측한다고 검증된 것이 아니다.
+     그래서 아래 규칙은 '확인할 조건을 올려 주는' 용도로만 쓰고, 수의사·훈련사 검토와 업체 인터뷰로 고쳐 나간다. */
+  function needs(s){
+    const out=[];
+    if(!s)return out;
+    if(s.A!=null&&s.A<35)out.push({need:'단독 돌봄',why:`성격 검사에서 ${FACTORS.A.name}이 ${level(s.A)}이라, 다른 개와 공간을 나누지 않는지 확인해요.`});
+    else if(s.N!=null&&s.N>=65)out.push({need:'단독 돌봄',why:`성격 검사에서 ${FACTORS.N.name}이 ${level(s.N)}이라, 조용한 단독 공간이 있는지 확인해요.`});
+    return out;
+  }
+  window.MCPQ={FACTORS,ITEMS,SCALE,ORDER,score,level,nickname,radar,needs,
     refs:[
       'Ley, J. M., Bennett, P. C., & Coleman, G. J. (2009). A refinement and validation of the Monash Canine Personality Questionnaire (MCPQ). Applied Animal Behaviour Science, 116(2–4), 220–227.',
       'Ley, J. M., McGreevy, P., & Bennett, P. C. (2009). Inter-rater and test–retest reliability of the Monash Canine Personality Questionnaire-Revised (MCPQ-R). Applied Animal Behaviour Science, 119(1–2), 85–90.'
