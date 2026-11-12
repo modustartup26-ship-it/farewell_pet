@@ -150,5 +150,13 @@
     return [age(pet)===null?'나이':'',pet.size?'':'몸무게',pet.sex?'':'성별',pet.breed?'':'견종'].filter(Boolean);
   }
   function usedSources(list){return [...new Set(list.flatMap(h=>h.reasons.map(r=>r.src)))].map(k=>SOURCES[k]);}
-  window.Concerns={ITEMS,MAX,SENIOR_AGE,SOURCES,explain,recommended,ordered,labels,missing,usedSources,icon:it=>`<svg viewBox="0 0 48 48" aria-hidden="true">${it.art}</svg>`};
+  /* 노령견 맞춤 질문에 쓰는 선택지와 판별. profile.js(입력)와 app.js(조건 대조)가 함께 쓴다. */
+  const SENIOR={
+    NONE:'해당 없어요',
+    MOBILITY:['계단을 힘들어해요','미끄러운 바닥에서 자주 미끄러져요','보행 보조가 필요해요'],
+    NIGHT:['밤에 배뇨·배변 도움이 필요해요','밤에 불안해하거나 낑낑대요'],
+    METHODS:['알약','가루·액상','주사','수액']
+  };
+  const isSenior=p=>Number(p&&p.years)>=SENIOR_AGE||((p&&p.concerns)||[]).includes('aging');
+  window.Concerns={ITEMS,MAX,SENIOR_AGE,SENIOR,isSenior,SOURCES,explain,recommended,ordered,labels,missing,usedSources,icon:it=>`<svg viewBox="0 0 48 48" aria-hidden="true">${it.art}</svg>`};
 })();

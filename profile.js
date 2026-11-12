@@ -75,12 +75,30 @@
      render:p=>`<div class="chips grid3">${radio('hasMedication',['없어요','있어요'],p.hasMedication==='있음'?'있어요':p.hasMedication==='없음'?'없어요':'')}</div><div id="meds" ${p.hasMedication==='있음'?'':'hidden'}><div class="med-list" id="med-list"></div><button type="button" class="btn btn-soft add-med" id="add-med">${icon('plus')} 약 추가</button></div>`,
      bind:()=>{
        const list=$('#med-list');
-       const add=(m={})=>{const row=document.createElement('div');row.className='med';row.innerHTML=`<label>약 이름<input data-med="name" maxlength="60" placeholder="예: 심장약" value="${esc(m.name)}"></label><label class="freq">주기<select data-med="frequency">${['매일','매주','매월','필요할 때'].map(v=>`<option ${m.frequency===v?'selected':''}>${v}</option>`).join('')}</select></label><button type="button" class="icon-btn" aria-label="이 약 삭제">${icon('trash')}</button><label class="wide">먹는 시간·양<input data-med="schedule" maxlength="80" placeholder="예: 아침·저녁 반 알" value="${esc(m.schedule)}"></label>`;row.querySelector('button').onclick=()=>{row.remove();if(!list.children.length)add();};list.append(row);};
+       const add=(m={})=>{const row=document.createElement('div');row.className='med';row.innerHTML=`<label>약 이름<input data-med="name" maxlength="60" placeholder="예: 심장약" value="${esc(m.name)}"></label><label class="freq">주기<select data-med="frequency">${['매일','매주','매월','필요할 때'].map(v=>`<option ${m.frequency===v?'selected':''}>${v}</option>`).join('')}</select></label><button type="button" class="icon-btn" aria-label="이 약 삭제">${icon('trash')}</button><label class="wide">먹는 시간·양<input data-med="schedule" maxlength="80" placeholder="예: 아침·저녁 반 알" value="${esc(m.schedule)}"></label><label class="method">투약 방법<select data-med="method"><option value="">선택 안 함</option>${Concerns.SENIOR.METHODS.map(v=>`<option ${m.method===v?'selected':''}>${v}</option>`).join('')}</select></label>`;row.querySelector('button').onclick=()=>{row.remove();if(!list.children.length)add();};list.append(row);};
        (pet.medications&&pet.medications.length?pet.medications:[{}]).forEach(add);
        $('#add-med').onclick=()=>{add();list.lastElementChild.querySelector('input').focus();};
        $('#answer').querySelectorAll('input[name=hasMedication]').forEach(r=>r.addEventListener('change',()=>{$('#meds').hidden=r.value!=='있어요';}));
      },
      read:f=>{const v=f.hasMedication.value;if(!v)return;if(v==='없어요'){pet.hasMedication='없음';pet.medications=[];return;}const meds=[...document.querySelectorAll('.med')].map(r=>Object.fromEntries([...r.querySelectorAll('[data-med]')].map(i=>[i.dataset.med,i.value.trim()]))).filter(m=>m.name||m.schedule);if(!meds.length||meds.some(m=>!m.name))return '약 이름을 입력해 주세요.';pet.hasMedication='있음';pet.medications=meds;}},
+    {key:'senior',optional:true,
+     skip:p=>!Concerns.isSenior(p),
+     q:p=>`${josa.of(p.name)} 나이에 맞춰 조금 더 여쭤볼게요`,
+     hint:()=>'노령견을 받을 수 있는 시설인지 확인할 때 써요. 진단이 아니고, 아는 만큼만 적어 주세요.',
+     render:p=>{const S=p.senior||{},N=Concerns.SENIOR.NONE;
+       const boxes=(name,list,sel)=>`<div class="chips">${[...list,N].map(v=>`<label class="chip"><input type="checkbox" name="${name}" value="${esc(v)}" ${(sel||[]).includes(v)?'checked':''}>${esc(v)}</label>`).join('')}</div>`;
+       return `<p class="sub">움직일 때</p>${boxes('mobility',Concerns.SENIOR.MOBILITY,S.mobility)}<p class="sub">밤에는</p>${boxes('night',Concerns.SENIOR.NIGHT,S.night)}<label class="field-l">지켜보고 있는 증상 <small>(예: 밤 기침, 발작, 물을 많이 마심)</small><input name="watch" maxlength="80" placeholder="예: 밤에 기침을 자주 해요" value="${esc(S.watch||'')}"></label><label class="field-l">식이 제한 <small>(예: 처방 사료만)</small><input name="diet" maxlength="80" placeholder="예: 신장 처방 사료만 먹어요" value="${esc(S.diet||'')}"></label><label class="field-l">평소 다니는 병원 <small>(응급 때 연락할 곳)</small><input name="vet" maxlength="60" placeholder="예: 채움동물병원" value="${esc(S.vet||'')}"></label>`;},
+     bind:()=>{
+       const N=Concerns.SENIOR.NONE;
+       ['mobility','night'].forEach(name=>{const boxes=[...$('#answer').querySelectorAll(`input[name=${name}]`)];
+         boxes.forEach(b=>b.addEventListener('change',()=>{if(!b.checked)return;boxes.forEach(x=>{if(x!==b&&(b.value===N||x.value===N))x.checked=false;});}));});
+     },
+     read:f=>{
+       const pick=n=>[...document.querySelectorAll(`#answer input[name=${n}]:checked`)].map(b=>b.value);
+       const S={mobility:pick('mobility'),night:pick('night'),watch:f.watch.value.trim(),diet:f.diet.value.trim(),vet:f.vet.value.trim()};
+       pet.senior=(S.mobility.length||S.night.length||S.watch||S.diet||S.vet)?S:undefined;
+       if(!pet.senior)delete pet.senior;
+     }},
     {key:'photo',optional:true,
      q:p=>`${josa.of(p.name)} 사진을 올려 주세요`,
      hint:()=>'프로필과 병원 문의에 쓰여요. 사진도 계정에 함께 저장돼요.',
@@ -165,6 +183,7 @@
   function progress(i){const p=Math.min(1,i/total);$('#progress-fill').style.width=(p*100)+'%';$('#progress-paw').style.left=(p*100)+'%';$('#count').textContent=i<total?`${i+1} / ${total}`:'';}
 
   function show(i,dir){
+    if(steps[i]&&steps[i].skip&&steps[i].skip(pet))return show(Math.max(0,i+(dir<0?-1:1)),dir<0?-1:1);
     index=i;const s=steps[i];showError('');
     form.classList.remove('enter','enter-back');void form.offsetWidth;if(dir)form.classList.add(dir>0?'enter':'enter-back');
     if(!s)return done();
@@ -185,7 +204,7 @@
   function done(){
     progress(total);
     $('#count').textContent='';$('#skip').hidden=true;
-    const summary=[pet.breed,pet.years!==''&&pet.years!=null?`${pet.years}살${pet.months?` ${pet.months}개월`:''}`:'',pet.weight?`${pet.weight}kg · ${pet.size}`:'',pet.concerns&&pet.concerns.length?`건강 고민: ${Concerns.labels(pet.concerns).join(', ')}`:'',pet.hasMedication==='있음'?`약 ${pet.medications.length}가지`:pet.hasMedication==='없음'?'먹는 약 없음':'',pet.mcpq&&pet.mcpq.type?pet.mcpq.type:''].filter(Boolean);
+    const summary=[pet.breed,pet.years!==''&&pet.years!=null?`${pet.years}살${pet.months?` ${pet.months}개월`:''}`:'',pet.weight?`${pet.weight}kg · ${pet.size}`:'',pet.concerns&&pet.concerns.length?`건강 고민: ${Concerns.labels(pet.concerns).join(', ')}`:'',pet.hasMedication==='있음'?`약 ${pet.medications.length}가지`:pet.hasMedication==='없음'?'먹는 약 없음':'',pet.mcpq&&pet.mcpq.type?pet.mcpq.type:'',Concerns.isSenior(pet)&&pet.senior?'노령견 돌봄 정보 입력':''].filter(Boolean);
     document.querySelector('.ask').hidden=true;showError('');
     $('#answer').innerHTML=`<div class="done">${Minimi.svg(Minimi.config(pet),{title:`${josa.of(pet.name)} 미니미`})}<div><h1>${esc(josa.name(pet.name))} 등록 완료!</h1><p>이제 산책로를 따라 ${esc(josa.name(pet.name))}에게 맞는 곳을 찾아볼까요?</p><div class="summary">${summary.map(t=>`<span>${esc(t)}</span>`).join('')||'<span>입력하지 않은 항목은 나중에 채울 수 있어요</span>'}</div></div></div>`;
     $('#next').textContent='산책 지도로 가기';

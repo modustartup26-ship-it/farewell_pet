@@ -314,3 +314,10 @@ main{max-width:1280px;margin:0 auto}
 #feed-out .btn{text-decoration:none}
 .auto-toggle{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--ink-2)}
 .auto-toggle input{width:18px;height:18px;accent-color:var(--primary)}
+
+/* 프로필에서 올린 조건과 이유 */
+.need-why{margin-top:10px;font-size:13.5px;color:var(--ink-3)}
+.need-why summary{cursor:pointer;font-weight:700;color:var(--ink-2);padding:6px 0}
+.need-why ul{margin:8px 0 0;padding-left:18px;display:grid;gap:6px}
+.need-why li b{color:var(--ink-2)}
+.need-why p{margin:8px 0 0;line-height:1.5}
