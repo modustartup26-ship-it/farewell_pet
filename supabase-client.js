@@ -65,7 +65,7 @@
       else if(res.error)throw res.error;
       else conv=res.data;
     }
-    const sent=await client.from('messages').insert({conversation_id:conv.id,sender_role:'guardian',body});
+    const sent=await client.from('inquiry_messages').insert({conversation_id:conv.id,sender_role:'guardian',kind:'text',body});
     if(sent.error)throw sent.error;
     return conv.id;
   }

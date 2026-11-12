@@ -362,7 +362,7 @@
         user=null;hasPet=false;petName='우리 아이';lastPetSnapshot='{}';
         menu.hidden=true;
         menuButton.setAttribute('aria-expanded','false');
-        Diary.updatePetProfile(pet,petName);
+        Diary.updatePetProfile(pet,petName);Diary.setUser(null);
         renderHeader();map.redraw();
         toast(cacheCleared?'로그아웃했어요. 아이 정보는 계정에 저장돼 있어요.':'로그아웃했지만 이 기기의 아이 정보 캐시를 지우지 못했어요.');
       }).catch(error=>{
@@ -412,7 +412,7 @@
     hasPet=!!pet.name;
     petName=hasPet?pet.name:'우리 아이';
     lastPetSnapshot=JSON.stringify(pet);
-    Diary.init({state,save,PLACES,pet,petName,modal,toast,setView,close:()=>$('#modal').close()});
+    Diary.init({state,save,PLACES,pet,petName,modal,toast,setView,user,close:()=>$('#modal').close()});
     renderHeader();map.redraw();
     const go=new URLSearchParams(location.search).get('go');
     if(go&&FILTERS[go])setTimeout(()=>map.walkTo(go,()=>openNode(go)),500);

@@ -65,3 +65,53 @@
   .compose{padding-left:12px;padding-right:12px}
   .msg{max-width:86%}
 }
+
+/* 대화 도구 · 사진 · 입실/퇴실 · 체크리스트 */
+.chat-list-head p a{color:var(--primary);font-weight:700;text-decoration:none}
+.thread-tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 18px;border-bottom:1.5px solid var(--line);flex:none}
+.thread-tools:empty{display:none}
+.tool{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:999px;border:1.5px solid var(--line-2);background:#fff;font-size:14px;font-weight:700;color:var(--ink-2)}
+.tool:hover:not(:disabled){border-color:var(--primary);color:var(--primary)}
+.tool:disabled{opacity:.45}
+.tool .i{width:18px;height:18px}
+.due{font-size:13.5px;color:var(--ink-3)}
+.due.late{color:#9A5B00;background:#FFF1BF;padding:6px 10px;border-radius:999px;font-weight:700}
+.compose .attach{flex:none;width:48px;height:48px;border:1.5px solid var(--line-2);border-radius:12px;cursor:pointer}
+.compose .attach.busy{opacity:.5;pointer-events:none}
+.media-msg .media-slot{width:min(260px,62vw);aspect-ratio:4/3;border-radius:16px;overflow:hidden;background:var(--line);display:grid;place-items:center}
+.media-msg .media-slot.ready{aspect-ratio:auto;background:none}
+.media-slot img,.media-slot video{display:block;width:100%;height:auto;max-height:340px;object-fit:cover;border-radius:16px}
+.media-wait{font-size:13px;color:var(--ink-3)}
+.media-msg>p{margin:0;padding:6px 2px 0;font-size:14px}
+.msg-event{align-self:center;display:grid;justify-items:center;gap:4px;max-width:86%;text-align:center}
+.msg-event span{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;background:#E9F3E3;color:#2D6A3E;font-size:13.5px;font-weight:700}
+.msg-event.checkout span{background:#EEF1F6;color:var(--ink-2)}
+.msg-event .i{width:16px;height:16px}
+.msg-event p{margin:0;font-size:14px;color:var(--ink-2);white-space:pre-wrap}
+.card-msg{max-width:min(86%,420px)}
+.cl-card{background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:14px 16px}
+.cl-card>b{display:flex;align-items:center;gap:6px;font-size:15px;margin-bottom:8px;color:var(--forest)}
+.cl-card dl{margin:0;display:grid;gap:6px}
+.cl-card dt{font-size:13px;color:var(--ink-3)}
+.cl-card dd{margin:0 0 4px;font-size:15px;font-weight:600;white-space:pre-wrap}
+.cl-foot{margin:8px 0 0;font-size:12.5px;color:#2D6A3E}
+.msg.mine .cl-card{border-color:#C9D7F2}
+.plan-by{font-size:13.5px;color:var(--primary);font-weight:700;margin:8px 0}
+.plan-qs{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:8px}
+.plan-qs label{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;font-size:15px}
+.plan-qs input{width:20px;height:20px;margin-top:1px;accent-color:var(--primary);flex:none}
+#cmodal .field-l select,#cmodal .field-l textarea,#cmodal .field-l input{border:1.5px solid var(--line-2);border-radius:12px;padding:12px 14px;font-size:16px;background:#fff;width:100%;font-family:inherit}
+#cmodal .muted{color:var(--ink-3);font-size:14.5px}
+#cmodal .small{font-size:13px}
+#cmodal .btn-ghost{margin-top:4px}
+#cmodal .danger{color:var(--danger)}
+.cl-q{border:0;margin:0 0 16px;padding:0}
+.cl-q legend{font-size:15px;font-weight:700;margin-bottom:8px;padding:0}
+.cl-q .chips{gap:8px}
+.cl-q .chip{min-height:42px;padding:0 14px;font-size:14.5px}
+.unit{display:flex;align-items:center;gap:8px;font-weight:600}
+.unit input{max-width:140px}
+.cl-card p.cl-foot{padding:0;border:0;background:none;border-radius:0}
+/* 대화 화면에서는 AI 상담 버튼이 보내기 버튼을 가리지 않게 위로 올린다 */
+.chat-page:has(.compose) .ai-chat{bottom:calc(92px + env(safe-area-inset-bottom))}
+@media (max-width:760px){.chat-page:has(.compose) .ai-chat-toggle{min-height:46px;padding:0 14px;font-size:14px}}

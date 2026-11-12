@@ -284,3 +284,33 @@ main{max-width:1280px;margin:0 auto}
 .kmap-card{display:grid;gap:2px;max-width:200px;padding:9px 13px;border:1.5px solid var(--line-2);border-radius:12px;background:#fff;text-align:left;box-shadow:var(--shadow);cursor:pointer}
 .kmap-card b{font-size:14px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .kmap-card span{font-size:12.5px;font-weight:700;color:var(--primary)}
+/* 일기: 활동 기록 · 추이 · 업체 기록 · 캘린더 구독 */
+.head-actions{display:flex;gap:10px;flex:none;flex-wrap:wrap}
+.head-actions .btn{flex:none;text-decoration:none}
+.trend{display:grid;gap:4px;margin:16px 0 0;padding:16px 18px;border-radius:18px;background:#F1F7EC;border:1.5px solid #D8E8CE}
+.trend b{display:flex;align-items:center;gap:8px;font-size:16px;color:#2D6A3E}
+.trend .i{width:18px;height:18px}
+.trend span{font-size:15px;color:var(--ink)}
+.trend small{font-size:12.5px;color:var(--ink-3);line-height:1.5}
+.tag.auto{background:#E9F3E3;color:#2D6A3E}
+.act{list-style:none;display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0;padding:0}
+.act li{font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--surface-2);color:var(--ink-2)}
+.answers{margin-top:8px;font-size:14px}
+.answers summary{cursor:pointer;color:var(--primary);font-weight:700;font-size:13.5px}
+.answers dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:8px 0 0}
+.answers dt{color:var(--ink-3);font-size:13px}
+.answers dd{margin:0;font-weight:600}
+.act-form{border:1.5px solid var(--line);border-radius:14px;padding:12px 14px}
+.act-form summary{cursor:pointer;font-weight:700}
+.act-form .row2f{margin-top:10px}
+.unit{display:flex;align-items:center;gap:8px;font-weight:600}
+.unit input{min-width:0}
+.cal-sync .sync-col{display:grid;gap:10px;width:100%}
+.sync-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.sync-actions .btn{min-height:46px}
+.feed-note{margin:0;font-size:13px;color:#9A5B00}
+.feed-url{display:flex;gap:8px;align-items:center;margin:6px 0 10px}
+.feed-url input{flex:1;min-width:0;border:1.5px solid var(--line-2);border-radius:10px;padding:10px 12px;font-size:13px;background:#fff}
+#feed-out .btn{text-decoration:none}
+.auto-toggle{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--ink-2)}
+.auto-toggle input{width:18px;height:18px;accent-color:var(--primary)}

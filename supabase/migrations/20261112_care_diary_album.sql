@@ -41,18 +41,31 @@ create index media_owner_idx on public.media(owner_id, taken_on desc);
 create index media_conversation_idx on public.media(conversation_id, created_at);
 create index media_uploader_idx on public.media(uploader_id);
 
--- 메시지 종류
-alter table public.messages add column kind text not null default 'text'
-  check (kind in ('text','media','checkin','checkout','checklist'));
-alter table public.messages add column payload jsonb not null default '{}'::jsonb
-  check (jsonb_typeof(payload) = 'object' and pg_column_size(payload) < 16000);
-grant insert (kind, payload) on public.messages to authenticated;
-
-drop policy "participants send messages" on public.messages;
-create policy "participants send messages" on public.messages for insert to authenticated
+-- 문의 메시지: messages라는 이름을 다른 테이블이 쓰고 있어 inquiry_messages로 새로 만든다
+create table public.inquiry_messages (
+  id uuid primary key default gen_random_uuid(),
+  conversation_id uuid not null references public.conversations(id) on delete cascade,
+  sender_id uuid default auth.uid() references auth.users(id) on delete set null,
+  sender_role text not null check (sender_role in ('guardian','facility')),
+  kind text not null default 'text' check (kind in ('text','media','checkin','checkout','checklist')),
+  body text not null check (char_length(btrim(body)) between 1 and 2000),
+  payload jsonb not null default '{}'::jsonb check (jsonb_typeof(payload) = 'object' and pg_column_size(payload) < 16000),
+  created_at timestamptz not null default now()
+);
+create index inquiry_messages_conversation_idx on public.inquiry_messages(conversation_id, created_at);
+create index inquiry_messages_sender_idx on public.inquiry_messages(sender_id);
+alter table public.inquiry_messages enable row level security;
+revoke all on public.inquiry_messages from anon, authenticated;
+grant select on public.inquiry_messages to authenticated;
+grant insert (conversation_id, sender_role, kind, body, payload) on public.inquiry_messages to authenticated;
+create policy "participants read inquiry messages" on public.inquiry_messages for select to authenticated
+  using (private.can_read_conversation(conversation_id));
+create policy "participants send inquiry messages" on public.inquiry_messages for insert to authenticated
   with check (sender_id = (select auth.uid())
     and private.can_send_message(conversation_id, sender_role)
     and (kind in ('text','media') or sender_role = 'facility'));
+create trigger inquiry_messages_touch_conversation after insert on public.inquiry_messages
+  for each row execute function private.touch_conversation();
 
 -- 서버 일기
 create table public.diary_entries (
@@ -72,7 +85,7 @@ create table public.diary_entries (
   media_ids uuid[] not null default '{}' check (cardinality(media_ids) <= 10),
   source text not null default 'manual' check (source in ('manual','checkin','checkout','checklist')),
   conversation_id uuid references public.conversations(id) on delete set null,
-  message_id uuid unique references public.messages(id) on delete cascade,
+  message_id uuid unique references public.inquiry_messages(id) on delete cascade,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (guardian_id, client_id)
@@ -121,7 +134,7 @@ begin
   return new;
 end;
 $$;
-create trigger messages_check_media before insert on public.messages
+create trigger inquiry_messages_check_media before insert on public.inquiry_messages
   for each row execute function private.check_message_media();
 
 -- 업체 기록을 보호자 일기에 자동으로 옮긴다 (보호자가 끄면 건너뜀)
@@ -151,7 +164,7 @@ begin
   return new;
 end;
 $$;
-create trigger messages_to_diary after insert on public.messages
+create trigger inquiry_messages_to_diary after insert on public.inquiry_messages
   for each row execute function private.diary_from_message();
 
 -- 앨범 용량
@@ -295,7 +308,7 @@ grant execute on function public.storage_usage(), public.create_media(uuid,text,
   public.revoke_calendar_token(), public.has_calendar_token() to authenticated;
 revoke all on function private.check_diary_media(), private.check_message_media(), private.diary_from_message(), private.used_bytes(uuid) from public, anon, authenticated;
 
-alter publication supabase_realtime add table public.diary_entries;
+alter publication supabase_realtime add table public.inquiry_messages, public.diary_entries;
 
 -- 파일 저장소: 비공개, 50MB 이하 사진·영상만
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)

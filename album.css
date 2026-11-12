@@ -1,0 +1,85 @@
+/* 앨범 */
+.album-nav{display:flex;gap:16px}
+.album-page main{max-width:1040px;margin:0 auto;padding:0 clamp(16px,4vw,40px) 48px}
+.album-page .chat-gate h1{display:flex;align-items:center;gap:8px}
+.album-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin:24px 0 16px}
+.album-head h1{margin:0;font-size:28px;letter-spacing:-.02em;color:var(--forest)}
+.album-head p{margin:4px 0 0;color:var(--ink-3);font-size:15px}
+.album-head .upload{flex:none;cursor:pointer}
+.usage{padding:14px 18px;border-radius:16px;background:var(--surface-2);margin-bottom:16px}
+.usage-top{display:flex;justify-content:space-between;font-size:14.5px}
+.usage-top span{font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.usage .bar{height:8px;border-radius:99px;background:#fff;margin:8px 0;overflow:hidden}
+.usage .bar i{display:block;height:100%;background:var(--primary);border-radius:99px}
+.usage.full .bar i{background:#D9822B}
+.usage p{margin:0;font-size:13px;color:var(--ink-3)}
+.link{background:none;border:0;padding:0;color:var(--primary);font-weight:700;text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:inherit}
+.filters{margin-bottom:8px}
+.filters .chip{min-height:40px;padding:0 14px;font-size:14px}
+.month h2{font-size:17px;margin:22px 0 10px}
+.month h2 small{color:var(--ink-3);font-weight:600;font-size:13px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px}
+.tile{position:relative;aspect-ratio:1/1;border:0;padding:0;border-radius:12px;overflow:hidden;background:var(--line);cursor:pointer}
+.tile .thumb,.tile .thumb img,.tile .thumb video{display:block;width:100%;height:100%;object-fit:cover}
+.tile:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.tile.off{opacity:.35;cursor:not-allowed}
+.badge-v{position:absolute;right:6px;bottom:6px;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff}
+.badge-v .i{width:14px;height:14px;fill:#fff}
+.badge-f{position:absolute;left:6px;top:6px;font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;background:rgba(255,255,255,.92);color:#2D6A3E}
+.tile .check{position:absolute;right:6px;top:6px;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;border:2px solid #fff;background:rgba(0,0,0,.25);color:#fff}
+.tile.sel .check{background:var(--primary);border-color:var(--primary)}
+.tile.sel{box-shadow:inset 0 0 0 3px var(--primary)}
+.tile .check .i{width:16px;height:16px}
+.make{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:28px}
+.make-card{display:grid;gap:6px;align-content:start;padding:18px;border:1.5px solid var(--line);border-radius:18px;background:#fff}
+.make-card b{display:flex;align-items:center;gap:8px;font-size:16px}
+.make-card p{margin:0 0 6px;font-size:14px;color:var(--ink-2)}
+.make-card .btn{justify-self:start;min-height:44px}
+.orders{margin-top:24px}
+.orders h2{font-size:16px;margin:0 0 8px}
+.orders ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.orders li{display:flex;gap:12px;align-items:center;font-size:14px;padding:10px 14px;border-radius:12px;background:var(--surface-2)}
+.orders li span{color:var(--ink-3)}
+.orders li em{margin-left:auto;font-style:normal;font-weight:700;color:var(--primary)}
+.memorial-link{margin:36px 0 0;text-align:center;font-size:14px}
+.memorial-link .link{color:var(--ink-3);font-weight:600}
+.select-bar{position:sticky;bottom:0;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:20px calc(-1 * clamp(16px,4vw,40px)) 0;padding:12px clamp(16px,4vw,40px) calc(12px + env(safe-area-inset-bottom));background:#fff;border-top:1.5px solid var(--line)}
+.select-bar b{font-size:18px;color:var(--primary)}
+.viewer img,.viewer video{display:block;width:100%;max-height:62dvh;object-fit:contain;border-radius:12px;background:#111}
+#amodal .muted{color:var(--ink-3);font-size:14.5px}
+#amodal .small{font-size:13px}
+#amodal .sp{flex:1}
+#amodal .danger{color:var(--danger)}
+#amodal .sheet-foot a{text-decoration:none}
+#amodal .field-l input,#amodal .field-l textarea{border:1.5px solid var(--line-2);border-radius:12px;padding:12px 14px;font-size:16px;width:100%;font-family:inherit}
+#amodal .check{display:flex;gap:8px;align-items:center;margin:12px 0;font-size:14.5px}
+.opts{border:0;margin:12px 0;padding:0;display:grid;gap:8px}
+.opts legend{font-weight:700;margin-bottom:6px;padding:0}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;cursor:pointer}
+.opt:has(input:checked){border-color:var(--primary);background:var(--primary-tint)}
+.opt span{display:grid}
+.opt small{color:var(--ink-3)}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.plan{position:relative;display:grid;justify-items:center;gap:4px;padding:16px 8px;border:1.5px solid var(--line);border-radius:14px;cursor:pointer;text-align:center}
+.plan input{position:absolute;opacity:0}
+.plan:has(input:checked){border-color:var(--primary);background:var(--primary-tint)}
+.plan:has(input:disabled){cursor:default;opacity:.7}
+.plan .gb{font-size:20px;font-weight:800;color:var(--forest)}
+.plan .price{font-size:13px;color:var(--ink-2)}
+.plan em{font-style:normal;font-size:11px;font-weight:700;color:#2D6A3E}
+.life{display:grid;gap:14px;padding:22px;border-radius:20px;background:#FBF8F2;border:1.5px solid #EFE6D6}
+.life p{margin:0;font-size:15px;color:var(--ink-2);line-height:1.7}
+.life-range{font-weight:700;color:var(--ink)!important}
+.life-stats{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.life-stats li{display:grid;justify-items:center;padding:14px 6px;border-radius:14px;background:#fff}
+.life-stats b{font-size:24px;color:var(--forest)}
+.life-stats span{font-size:12.5px;color:var(--ink-3)}
+.life .btn{justify-self:start}
+@media (max-width:760px){
+  .album-head{flex-direction:column}
+  .album-head h1{font-size:24px}
+  .tiles{grid-template-columns:repeat(3,1fr);gap:4px}
+  .make{grid-template-columns:1fr}
+  .life-stats{grid-template-columns:repeat(2,1fr)}
+  .album-nav{gap:10px}
+}

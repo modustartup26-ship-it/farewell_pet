@@ -7,6 +7,17 @@
 - 산책 지도 · 필터링 · 상세: `services.html`
 - 보호자 문의함: `inbox.html` / 업체 문의함: `partner.html` (Supabase, 스키마는 `supabase/migrations/`)
 - 수의사 1:1 상담: `consult.html` (Supabase 이메일 인증·실시간 채팅)
+- 강아지 앨범·용량·포토북·생애 기록 신청: `album.html`
+
+### 돌봄 기록 (2026-11-12)
+- 문의 대화는 `inquiry_messages` 테이블을 씁니다. (같은 프로젝트의 `messages`는 다른 용도로 쓰이고 있어 건드리지 않았습니다.)
+- 보호자는 대화에서 돌봄 체크리스트(5~10개, 1~12시간 간격)를 정하고, 업체는 입실·퇴실·체크리스트·사진/영상을 보냅니다.
+- 체크리스트 질문은 `checklist.js`의 검수용 목록에서만 고릅니다. Edge Function `checklist-ai`에 `GEMINI_API_KEY` 비밀값을 넣으면 AI가 고르고, 없으면 프로필 규칙으로 고릅니다.
+- 업체의 입실·퇴실·체크리스트는 보호자 일기(`diary_entries`)에 자동으로 기록됩니다. 보호자가 일기 화면에서 끌 수 있습니다.
+- 로그인한 보호자의 일기는 계정에 저장되고, Edge Function `calendar-feed`로 구글 캘린더 구독 링크를 만들 수 있습니다.
+- 사진·영상은 비공개 버킷 `pet-media`(50MB 이하)에 저장되고 1인 기본 500MB입니다. 업체가 보낸 파일은 용량에서 뺍니다.
+- 용량 추가·포토북·생애 기록은 결제 연동 전이라 `orders`에 신청만 저장됩니다. 운영자가 확인 후 `status`와 `guardian_settings.quota_bytes`를 바꿉니다.
+- 스키마: `supabase/migrations/20261112_care_diary_album.sql`
 
 로그인 세션은 현재 브라우저 탭에만 저장됩니다. 사이트 내부 페이지 이동과 새로고침 중에는 유지되고, 탭을 닫으면 자동으로 종료됩니다. 브라우저 임시 프로필, 찜한 곳, 일기와 AI 대화도 현재 탭에서만 유지되며 탭을 닫으면 초기화됩니다.
 
