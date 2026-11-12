@@ -37,7 +37,7 @@ node server.cjs
 
 Gemini API에는 무료 사용 등급이 있지만 모델과 계정별 사용량 제한이 적용됩니다. 무료 등급에 입력한 콘텐츠는 Google 제품 개선에 사용될 수 있으므로 민감한 개인정보나 건강 정보를 입력하지 않도록 안내하세요. 최신 한도와 조건은 [Gemini API 요금 안내](https://ai.google.dev/gemini-api/docs/pricing)에서 확인하세요.
 
-GitHub Pages 같은 정적 호스팅은 API 서버를 실행하지 않으므로 AI 상담을 제공할 수 없습니다. 배포 시 Node 서버를 함께 호스팅하고 `/api/chat` 요청을 서버에 연결해야 합니다. 공개 운영 전에는 사용자별 인증, 요청 제한 및 비용 한도를 추가하세요.
+Vercel은 `vercel.json` 설정으로 HTML/CSS/JS 페이지를 정적으로 배포합니다. GitHub Pages 같은 정적 호스팅은 API 서버를 실행하지 않으므로 AI 상담은 제공할 수 없습니다. AI 상담까지 배포하려면 Node 서버를 별도 호스팅하고 `/api/chat` 요청을 연결해야 합니다. 공개 운영 전에는 사용자별 인증, 요청 제한 및 비용 한도를 추가하세요.
 
 성격 검사 참고 문헌
 - Ley, Bennett & Coleman (2009). Applied Animal Behaviour Science, 116(2–4), 220–227. doi:10.1016/j.applanim.2008.09.009
