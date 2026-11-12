@@ -1,8 +1,7 @@
-/* 마루 부리 (네이버 한글한글 아름답게 웹폰트) */
-@font-face{font-family:'MaruBuri FP';font-weight:300;font-style:normal;font-display:swap;src:local('MaruBuri Light'),local('MaruBuri-Light'),url(https://hangeul.pstatic.net/hangeul_static/webfont/MaruBuri/MaruBuri-Light.woff2) format('woff2'),url(https://hangeul.pstatic.net/hangeul_static/webfont/MaruBuri/MaruBuri-Light.woff) format('woff')}
-@font-face{font-family:'MaruBuri FP';font-weight:400;font-style:normal;font-display:swap;src:local('MaruBuri'),local('MaruBuri-Regular'),url(https://hangeul.pstatic.net/hangeul_static/webfont/MaruBuri/MaruBuri-Regular.woff2) format('woff2'),url(https://hangeul.pstatic.net/hangeul_static/webfont/MaruBuri/MaruBuri-Regular.woff) format('woff')}
-@font-face{font-family:'MaruBuri FP';font-weight:600;font-style:normal;font-display:swap;src:local('MaruBuri SemiBold'),local('MaruBuri-SemiBold'),url(https://hangeul.pstatic.net/hangeul_static/webfont/MaruBuri/MaruBuri-SemiBold.woff2) format('woff2'),url(https://hangeul.pstatic.net/hangeul_static/webfont/MaruBuri/MaruBuri-SemiBold.woff) format('woff')}
-@font-face{font-family:'MaruBuri FP';font-weight:700;font-style:normal;font-display:swap;src:local('MaruBuri Bold'),local('MaruBuri-Bold'),url(https://hangeul.pstatic.net/hangeul_static/webfont/MaruBuri/MaruBuri-Bold.woff2) format('woff2'),url(https://hangeul.pstatic.net/hangeul_static/webfont/MaruBuri/MaruBuri-Bold.woff) format('woff')}
+/* G마켓 산스 (지마켓 무료 글꼴, 웹 임베딩 허용) */
+@font-face{font-family:'GmarketSans FP';font-weight:300;font-style:normal;font-display:swap;src:local('Gmarket Sans Light'),local('GmarketSansLight'),local('GmarketSansTTFLight'),url(https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansLight.woff) format('woff')}
+@font-face{font-family:'GmarketSans FP';font-weight:500;font-style:normal;font-display:swap;src:local('Gmarket Sans Medium'),local('GmarketSansMedium'),local('GmarketSansTTFMedium'),url(https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff) format('woff')}
+@font-face{font-family:'GmarketSans FP';font-weight:700;font-style:normal;font-display:swap;src:local('Gmarket Sans Bold'),local('GmarketSansBold'),local('GmarketSansTTFBold'),url(https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff) format('woff')}
 
 :root{
   --meadow:#FFFFFF;
@@ -32,7 +31,7 @@
   --radius:18px;
   --shadow:0 10px 30px -12px rgba(19,48,95,.22);
   --shadow-sheet:0 -12px 40px -10px rgba(19,48,95,.22);
-  --font:'MaruBuri FP','MaruBuri','Noto Serif KR','Noto Serif CJK KR','Nanum Myeongjo','AppleMyungjo',serif;
+  --font:'GmarketSans FP','Gmarket Sans','Apple SD Gothic Neo','Pretendard','Noto Sans KR','Malgun Gothic',sans-serif;
   color-scheme:light;
 }
 *{box-sizing:border-box}

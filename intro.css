@@ -40,14 +40,14 @@ html{scroll-behavior:smooth}
 .story{max-width:1040px;margin:0 auto;padding:40px 24px 90px;display:grid;gap:110px}
 .story h2{font-size:clamp(24px,3vw,34px);color:var(--forest);letter-spacing:-.02em;margin:0 0 26px;text-align:center}
 .story-name{text-align:center}
-.wordplay{display:flex;align-items:center;justify-content:center;gap:clamp(12px,3vw,32px);flex-wrap:wrap;margin:10px 0 4px;font-family:'Arial Rounded MT Bold','Trebuchet MS',var(--font);font-size:clamp(30px,5vw,60px);letter-spacing:.01em;line-height:1.15}
+.wordplay{display:flex;align-items:center;justify-content:center;gap:clamp(12px,3vw,32px);flex-wrap:wrap;margin:10px 0 4px;font-family:var(--font);font-size:clamp(30px,5vw,60px);letter-spacing:.01em;line-height:1.15}
 .wordplay span{white-space:nowrap}
 @media (min-width:761px){.wordplay{flex-wrap:nowrap}}
 .wordplay b{font-weight:800}
 .wordplay .y{color:var(--sun)}
 .wordplay .b{color:var(--primary)}
 .wordplay .arrow{width:clamp(28px,4vw,48px);height:clamp(28px,4vw,48px);color:var(--ink);stroke-width:2.4}
-.welfare{margin:0 0 30px;font-family:'Arial Rounded MT Bold','Trebuchet MS',var(--font);font-weight:800;font-size:clamp(22px,3.4vw,38px);letter-spacing:.14em;color:var(--ink)}
+.welfare{margin:0 0 30px;font-family:var(--font);font-weight:800;font-size:clamp(22px,3.4vw,38px);letter-spacing:.14em;color:var(--ink)}
 .story .lead{max-width:40em;margin:0 auto;font-size:clamp(16px,1.6vw,19px);line-height:1.85;color:var(--ink-2)}
 .palette-note{display:inline-flex;align-items:center;gap:8px;margin:26px auto 0;padding:9px 16px;border-radius:999px;background:var(--surface-2);font-size:14px;color:var(--ink-2)}
 .palette-note .dot{width:14px;height:14px;border-radius:50%}
