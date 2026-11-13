@@ -24,7 +24,13 @@
 
   /* ---------- 상단 · 프로필 ---------- */
   function avatar(){return pet.photo?`<img src="${pet.photo}" alt="">`:Minimi.svg(Minimi.config(pet));}
+  function renderSeniorGuide(){
+    let slot=$('#senior-guide-slot');
+    if(!slot){slot=document.createElement('div');slot.id='senior-guide-slot';$('#pet-strip').after(slot);}
+    slot.innerHTML=hasPet&&Concerns.showGuide(pet)?Concerns.guideHTML(esc,josa.name(pet.name)):'';
+  }
   function renderHeader(){
+    renderSeniorGuide();
     map.svg.setAttribute('aria-label',`${josa.of(petName)} 산책 지도`);
     $('#me').innerHTML=`<span class="me-avatar">${avatar()}</span><span class="me-name">${hasPet?esc(josa.name(pet.name)):'아이 등록'}</span>`;
     $('#me').setAttribute('aria-label',`${hasPet?pet.name+' 메뉴':'아이 메뉴'} 열기`);
@@ -92,6 +98,11 @@
     }
     if(care&&(S.mobility||[]).some(x=>x!==Concerns.SENIOR.NONE))add('미끄럼 방지 매트',(S.mobility||[]).filter(x=>x!==Concerns.SENIOR.NONE).join(' · ')+'.');
     if(cat==='hospital'&&Concerns.isSenior(pet))add('노령견 진료',`${Concerns.SENIOR_AGE}살 이상이거나 나이 듦 고민을 골랐어요.`);
+    const seen=Concerns.signLabels(S.signs);
+    if(seen.length){
+      if(cat==='hospital')add('노령견 진료','요즘 보이는 모습: '+seen.join(' · ')+'.');
+      if(cat==='hotel')add('병원 연계','요즘 보이는 모습('+seen.join(' · ')+')이 있어서 응급 때 병원과 이어지는지 확인해요.');
+    }
     return r;
   }
   function needsFromPet(cat){return new Set(needReasons(cat).keys());}
@@ -283,7 +294,7 @@
   /* 문의에 넣을 개인 정보 묶음. 보호자가 체크한 것만 업체에 보낸다. */
   function shareOptions(){
     const S=pet.senior||{},none=Concerns.SENIOR.NONE;
-    const hasSenior=Concerns.isSenior(pet)&&!!(S.mobility&&S.mobility.some(x=>x!==none)||S.night&&S.night.some(x=>x!==none)||S.watch||S.diet||S.vet);
+    const hasSenior=(Concerns.isSenior(pet)&&!!(S.mobility&&S.mobility.some(x=>x!==none)||S.night&&S.night.some(x=>x!==none)||S.watch||S.diet||S.vet))||!!(S.signs&&S.signs.length);
     return [
       pet.concerns&&pet.concerns.length?{key:'health',label:'건강 고민'}:null,
       pet.hasMedication==='있음'&&pet.medications&&pet.medications.length?{key:'meds',label:'먹는 약'}:null,
@@ -300,6 +311,7 @@
     const asks=[],S=pet.senior||{},none=Concerns.SENIOR.NONE,real=a=>(a||[]).filter(x=>x!==none);
     if(on('health')&&pet.concerns&&pet.concerns.length)asks.push(`건강 고민: ${Concerns.labels(pet.concerns).join(', ')}`);
     if(on('meds')&&pet.hasMedication==='있음'&&pet.medications&&pet.medications.length)asks.push(`투약 도움: ${pet.medications.map(m=>[m.name,m.method,m.frequency,m.schedule].filter(Boolean).join(' ')).join(' / ')}`);
+    if(on('senior')&&Concerns.signLabels(S.signs).length)asks.push(`요즘 보이는 모습: ${Concerns.signLabels(S.signs).join(', ')}`);
     if(on('senior')&&Concerns.isSenior(pet)){
       if(real(S.mobility).length)asks.push(`움직일 때: ${real(S.mobility).join(', ')}`);
       if(real(S.night).length)asks.push(`밤에는: ${real(S.night).join(', ')}`);

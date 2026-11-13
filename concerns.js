@@ -24,6 +24,7 @@
 
   /* 참고한 연구. 규칙의 src가 이 키를 가리킨다. 해외 연구는 국내 분포와 다를 수 있다. */
   const SOURCES={
+    rda:{cite:'농촌진흥청(2019). 동물병원 11개 전자차트 분석에 따른 노령견 주요 질병 안내(보도자료, 데일리벳 보도).',url:'https://www.dailyvet.co.kr/?p=109225'},
     park:{cite:'Park JY 외(2026). 국내 27개 동물병원 진료 기록 222,706건의 생애주기별 진단 분석. J Vet Sci 27(1):e5.',url:'https://doi.org/10.4142/jvs.25144'},
     yi:{cite:'Yi SW 외(2023). 국내 16개 병원 말티즈·미니어처 푸들·시추 진료 기록 40,785건의 연령별 질병 분석. Korean J Vet Res.',url:'https://www.kjvr.org/m/journal/view.php?number=3940'},
     oneillPerio:{cite:"O'Neill DG 외(2021). 영국 1차 진료 개 22,333마리의 치주 질환 역학. J Small Anim Pract.",url:'https://doi.org/10.1111/jsap.13405'},
@@ -40,6 +41,34 @@
     kent:{cite:'미국 대학 동물병원 골든 리트리버 부검 655건의 암 관련 사망 분석(2018). PLOS ONE.',url:'https://doaj.org/article/b9937efac1d2485d96bf889fae38a43c'}
   };
 
+
+  /* 7살 이상 노령견 안내. 질병 특징은 농촌진흥청 안내(rda)에 나온 내용만 옮겼다.
+     ask는 우리 서비스가 시설에 확인해 보자고 제안하는 점이라 의학적 지침이 아니며 수의사 검토가 필요하다. */
+  const GUIDE_AGE=7;
+  const SIGNS=[
+    {id:'exercise',item:'heart',label:'가벼운 운동에도 힘들어하고 숨이 빨라요'},
+    {id:'cough',item:'heart',label:'밤에 기침이 잦거나 갑자기 쓰러진 적이 있어요'},
+    {id:'water',item:'kidney',label:'물 마시는 횟수와 소변 횟수가 늘었어요'},
+    {id:'blood',item:'kidney',label:'소변에 피가 섞인 적이 있어요'},
+    {id:'coat',item:'skin',label:'배가 처지거나 털이 양쪽 대칭으로 빠져요'},
+    {id:'lump',item:'lump',label:'몸에 만져지는 혹이 있어요'},
+    {id:'appetite',item:'digest',label:'갑자기 밥을 안 먹고 토하거나 배가 부풀었어요',urgent:true},
+    {id:'sight',item:'eye',label:'자주 부딪히거나 움직임이 조심스러워요'}
+  ];
+  const GUIDE=[
+    {id:'heart',name:'심장질환',item:'heart',signs:'가벼운 운동도 힘들어하고 호흡이 빨라져요. 밤에 기침이 잦고 갑자기 기절하기도 해요.',note:'대형견보다 소형견에서 많고 품종의 유전 영향도 커요. 조기 진단과 치료가 가장 중요해요.',ask:'무리한 활동을 조절해 주는지, 밤에 기침이나 호흡을 살펴 주는지'},
+    {id:'kidney',name:'신장질환',item:'kidney',signs:'물 마시는 횟수나 배뇨가 늘어요. 간혹 요결석으로 혈뇨를 보기도 해요.',note:'신장은 기능이 많이 망가질 때까지 증상을 알기 어려워서 7살 이상은 검진으로 빨리 찾는 것이 중요해요.',ask:'물을 언제든 마실 수 있는지, 배뇨 기회를 자주 주는지'},
+    {id:'cushing',name:'부신피질기능항진증(쿠싱증후군)',item:'skin',signs:'물을 자주 마시고 소변을 자주 봐요. 배가 처지고 털이 대칭으로 빠지며, 근력이 약해지고 피부가 얇아져요.',note:'면역 기능이 떨어져 피부염과 세균 감염도 생겨요. 반복되는 피부염이나 비뇨기계 질환 경험이 있다면 의심해 볼 수 있어요.',ask:'피부 상태가 바뀌면 보호자에게 알려 주는지'},
+    {id:'mammary',name:'유선종양',item:'lump',signs:'만져지는 혹이나 종기처럼 나타나서 잘 살피면 일찍 발견할 수 있어요.',note:'중성화하지 않은 암컷의 대표 질환이에요. 약 50%가 악성으로 보고되고 방치하면 전이될 수 있어 조기 치료가 중요해요. 첫 발정 전에 중성화하면 발생률이 크게 줄어요.',ask:'목욕·미용이나 돌봄 중에 몸을 만져 보고 이상을 알려 주는지'},
+    {id:'pyometra',name:'자궁축농증',item:'digest',signs:'갑자기 식욕이 떨어지고 구토, 복부 팽만이 나타나요.',note:'중성화하지 않은 암컷에서 나타나고 진행이 매우 빨라 쇼크나 패혈증으로 위독해질 수 있어요. 중성화 수술로 예방할 수 있어요.',ask:'이상이 보이면 바로 연락하고 응급 때 갈 병원이 정해져 있는지'},
+    {id:'cataract',name:'백내장',item:'eye',signs:'수정체가 탁해지며 시력이 떨어져요. 움직임이 조심스럽고 자주 부딪히며 보호자에게 더 가까이 다가가요.',note:'후각과 청각이 예민해서 시력 문제가 늦게 발견되곤 해요. 당뇨병 합병증으로 올 수 있어 검진이 필요해요.',ask:'부딪히기 쉬운 물건이 적고 환경이 자주 바뀌지 않는 공간인지'}
+  ];
+  const signLabels=ids=>(ids||[]).map(id=>(SIGNS.find(x=>x.id===id)||{}).label).filter(Boolean);
+  const showGuide=p=>{const y=Number(p&&p.years);return p&&p.years!==''&&p.years!=null&&!Number.isNaN(y)&&y>=GUIDE_AGE;};
+  /* 안내 카드. esc는 호출하는 쪽의 이스케이프 함수. */
+  function guideHTML(esc,name){
+    return `<details class="senior-guide"><summary>${esc(name)}처럼 7살 이상 반려견에게 늘어나는 질병과 주의할 점</summary><p class="sg-lead">농촌진흥청은 7세 이상 노령견에서 아래 질환이 급격히 늘 수 있어 정기 검진이 필요하다고 안내해요. 노령견의 질병은 증상 없이 진행되는 경우가 많아서 행동 변화를 잘 살피는 것이 중요해요.</p><ul>${GUIDE.map(g=>`<li><b>${esc(g.name)}</b><span>${esc(g.signs)}</span><span>${esc(g.note)}</span><em>시설에 확인해 볼 점: ${esc(g.ask)}</em></li>`).join('')}</ul><p class="sg-foot">질병 설명은 농촌진흥청 안내를 옮긴 것이고, ‘시설에 확인해 볼 점’은 farewell pet의 제안이에요. 진단이 아니고 수의사 검토 전이에요. 중성화 여부는 아직 묻지 않아서 유선종양·자궁축농증은 참고만 해 주세요. <a href="${SOURCES.rda.url}" target="_blank" rel="noopener noreferrer">원문 보도</a></p></details>`;
+  }
   /* 규칙: [항목, 점수, 조건, 이유, 출처]. 점수는 위험도가 아니라 우선순위를 정하는 가중치다(국내 진료 순위와 효과 크기를 참고해 수동 설정, 수의사 검토 필요). 합이 2 이상인 항목 중 상위 3개를 추천한다. */
   const age=p=>(p&&p.years!==''&&p.years!=null&&!Number.isNaN(Number(p.years)))?Number(p.years):null;
   const between=(a,b)=>p=>{const y=age(p);return y!==null&&y>=a&&y<=b;};
@@ -74,8 +103,14 @@
     ['skin',1,and(large,notPuppy),'큰 개일수록 피부 질환 이력이 조금 더 많아요(미국)','dapSize'],
     ['lump',3,and(female,from(8)),'암컷은 8살까지 약 6%, 10살까지 약 13%에서 유선 종양 청구가 있었어요(스웨덴 보험)','egenvall'],
     ['heart',1,and(male,from(6)),'수컷은 암컷보다 승모판 질환 진단 가능성이 약 1.4배예요(영국)','mattin'],
-    ['kidney',1,and(male,from(6)),'칼슘옥살레이트 결석 사례의 약 73%가 수컷이에요(미국)','hunprasit']
+    ['kidney',1,and(male,from(6)),'칼슘옥살레이트 결석 사례의 약 73%가 수컷이에요(미국)','hunprasit'],
+    ['kidney',1,from(GUIDE_AGE),'농촌진흥청: 7살 이상은 신장질환이 늘 수 있어 검진이 필요해요','rda'],
+    ['eye',1,from(GUIDE_AGE),'농촌진흥청: 백내장은 노령견의 대표적인 눈 질환이에요','rda'],
+    ['heart',1,and(small,from(GUIDE_AGE)),'농촌진흥청: 심장질환은 대형견보다 소형견에서 많이 나타나요','rda'],
+    ['lump',1,and(female,from(GUIDE_AGE)),'농촌진흥청: 유선종양은 중성화하지 않은 암컷에게 대표적이에요(중성화 여부는 몰라요)','rda']
   ];
+  /* 보호자가 관찰한 모습은 나이·품종 통계보다 먼저 반영한다 */
+  SIGNS.forEach(sg=>AGE_SIZE_SEX.push([sg.item,3,p=>((p.senior&&p.senior.signs)||[]).includes(sg.id),'보호자가 본 모습: '+sg.label,'rda']));
   const BREEDS=[
     [/말티즈/,[
       ['ear',2,always,'국내 말티즈 내원 사유 1위가 외이염이에요(9.9%)','yi'],
@@ -158,5 +193,5 @@
     METHODS:['알약','가루·액상','주사','수액']
   };
   const isSenior=p=>Number(p&&p.years)>=SENIOR_AGE||((p&&p.concerns)||[]).includes('aging');
-  window.Concerns={ITEMS,MAX,SENIOR_AGE,SENIOR,isSenior,SOURCES,explain,recommended,ordered,labels,missing,usedSources,icon:it=>`<svg viewBox="0 0 48 48" aria-hidden="true">${it.art}</svg>`};
+  window.Concerns={ITEMS,MAX,SENIOR_AGE,GUIDE_AGE,SIGNS,GUIDE,signLabels,showGuide,guideHTML,SENIOR,isSenior,SOURCES,explain,recommended,ordered,labels,missing,usedSources,icon:it=>`<svg viewBox="0 0 48 48" aria-hidden="true">${it.art}</svg>`};
 })();

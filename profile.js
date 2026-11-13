@@ -61,14 +61,25 @@
      hint:()=>`최대 ${Concerns.MAX}개까지 고를 수 있어요.`,
      render:p=>{const why=Concerns.explain(p),rec=why.map(h=>h.id),sel=p.concerns||[],lack=Concerns.missing(p);
        const panel=why.length?`<section class="rec-why"><h3>${esc(josa.name(p.name))}에게 추천하는 이유</h3><ul>${why.map(h=>`<li><b>${esc(Concerns.labels([h.id])[0])}</b> ${h.reasons.slice(0,2).map(r=>esc(r.why)).join('<br>')}</li>`).join('')}</ul><p>연구 통계에서 많이 나타난 항목이고, ${esc(josa.name(p.name))}의 진단이 아니에요. 아직 수의사 검토 전인 프로토타입이에요.${lack.length?` ${esc(lack.join('·'))} 정보를 입력하면 더 맞춰 드려요.`:''}</p><details class="refs"><summary>참고한 연구</summary><ul>${Concerns.usedSources(why).map(s=>`<li>${esc(s.cite)} <a href="${s.url}" target="_blank" rel="noopener noreferrer">원문</a></li>`).join('')}</ul><p>해외 연구는 국내 반려견과 다를 수 있어요.</p></details></section>`:`<p class="rec-none">나이·몸무게·성별·견종을 입력하면 맞는 항목을 추천해 드려요.</p>`;
-       return `${panel}<div class="concerns">${Concerns.ordered(p).map(it=>`<label class="concern">${rec.includes(it.id)?'<span class="rec">추천</span>':''}<input type="checkbox" name="concern" value="${it.id}" ${sel.includes(it.id)?'checked':''}>${Concerns.icon(it)}<span>${esc(it.label)}</span></label>`).join('')}</div><p class="concern-count tnum" id="concern-count" aria-live="polite"></p>`;},
+       const guide=Concerns.showGuide(p)?`${Concerns.guideHTML(esc,josa.name(p.name))}<section class="sign-pick"><h3>요즘 이런 모습이 보이나요?</h3><p>보이는 것만 골라 주세요. 고르면 관련된 건강 고민이 함께 체크되고 추천에도 반영돼요.</p><div class="chips">${Concerns.SIGNS.map(sg=>`<label class="chip"><input type="checkbox" name="sign" value="${sg.id}" data-item="${sg.item}" ${((p.senior&&p.senior.signs)||[]).includes(sg.id)?'checked':''}>${esc(sg.label)}</label>`).join('')}</div><p class="sign-warn" id="sign-warn" hidden>갑자기 밥을 안 먹고 토하거나 배가 부푸는 것은 진행이 빠를 수 있어요. 이 화면보다 동물병원 진료를 먼저 받아 주세요.</p></section>`:'';
+       return `${guide}${panel}<div class="concerns">${Concerns.ordered(p).map(it=>`<label class="concern">${rec.includes(it.id)?'<span class="rec">추천</span>':''}<input type="checkbox" name="concern" value="${it.id}" ${sel.includes(it.id)?'checked':''}>${Concerns.icon(it)}<span>${esc(it.label)}</span></label>`).join('')}</div><p class="concern-count tnum" id="concern-count" aria-live="polite"></p>`;},
      bind:()=>{
        const boxes=[...$('#answer').querySelectorAll('input[name=concern]')];
        const count=()=>{$('#concern-count').textContent=`${boxes.filter(b=>b.checked).length} / ${Concerns.MAX}개 선택`;};
        boxes.forEach(b=>b.addEventListener('change',()=>{if(boxes.filter(x=>x.checked).length>Concerns.MAX){b.checked=false;showError(`최대 ${Concerns.MAX}개까지 고를 수 있어요.`);}count();}));
        count();
+       const signs=[...$('#answer').querySelectorAll('input[name=sign]')],warn=$('#sign-warn');
+       const urgent=()=>{if(warn)warn.hidden=!signs.some(x=>x.checked&&x.value==='appetite');};
+       signs.forEach(sg=>sg.addEventListener('change',()=>{
+         const box=boxes.find(b=>b.value===sg.dataset.item);
+         if(sg.checked&&box&&!box.checked){if(boxes.filter(x=>x.checked).length>=Concerns.MAX)showError(`건강 고민은 최대 ${Concerns.MAX}개라 이 항목은 직접 골라 주세요.`);else{box.checked=true;count();}}
+         urgent();}));
+       urgent();
      },
-     read:()=>{pet.concerns=[...$('#answer').querySelectorAll('input[name=concern]:checked')].map(b=>b.value);}},
+     read:()=>{pet.concerns=[...$('#answer').querySelectorAll('input[name=concern]:checked')].map(b=>b.value);
+       const picked=[...$('#answer').querySelectorAll('input[name=sign]:checked')].map(b=>b.value);
+       if(picked.length)pet.senior={...(pet.senior||{}),signs:picked};
+       else if(pet.senior){delete pet.senior.signs;if(!Object.keys(pet.senior).length)delete pet.senior;}}},
     {key:'meds',optional:true,
      q:p=>`${josa.subj(p.name)} 먹는 약이 있나요?`,
      hint:()=>'투약을 도와줄 수 있는 곳인지 확인할 때 써요. 병원에 문의할 때도 함께 전달할 수 있어요.',
@@ -95,8 +106,10 @@
      },
      read:f=>{
        const pick=n=>[...document.querySelectorAll(`#answer input[name=${n}]:checked`)].map(b=>b.value);
+       const keep=(pet.senior&&pet.senior.signs)||[];
        const S={mobility:pick('mobility'),night:pick('night'),watch:f.watch.value.trim(),diet:f.diet.value.trim(),vet:f.vet.value.trim()};
-       pet.senior=(S.mobility.length||S.night.length||S.watch||S.diet||S.vet)?S:undefined;
+       if(keep.length)S.signs=keep;
+       pet.senior=(S.mobility.length||S.night.length||S.watch||S.diet||S.vet||keep.length)?S:undefined;
        if(!pet.senior)delete pet.senior;
      }},
     {key:'photo',optional:true,
