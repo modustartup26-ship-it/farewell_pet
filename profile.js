@@ -188,7 +188,7 @@
     const summary=[pet.breed,pet.years!==''&&pet.years!=null?`${pet.years}살${pet.months?` ${pet.months}개월`:''}`:'',pet.weight?`${pet.weight}kg · ${pet.size}`:'',pet.concerns&&pet.concerns.length?`건강 고민: ${Concerns.labels(pet.concerns).join(', ')}`:'',pet.hasMedication==='있음'?`약 ${pet.medications.length}가지`:pet.hasMedication==='없음'?'먹는 약 없음':'',pet.mcpq&&pet.mcpq.type?pet.mcpq.type:''].filter(Boolean);
     document.querySelector('.ask').hidden=true;showError('');
     $('#answer').innerHTML=`<div class="done">${Minimi.svg(Minimi.config(pet),{title:`${josa.of(pet.name)} 미니미`})}<div><h1>${esc(josa.name(pet.name))} 등록 완료!</h1><p>이제 산책로를 따라 ${esc(josa.name(pet.name))}에게 맞는 곳을 찾아볼까요?</p><div class="summary">${summary.map(t=>`<span>${esc(t)}</span>`).join('')||'<span>입력하지 않은 항목은 나중에 채울 수 있어요</span>'}</div></div></div>`;
-    $('#next').textContent='산책 지도로 가기';
+    $('#next').textContent='산책 지도로 가기';$('#next').disabled=false;
   }
 
   form.addEventListener('submit',async e=>{
