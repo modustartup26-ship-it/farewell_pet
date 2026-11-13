@@ -5,7 +5,7 @@
   const params=new URLSearchParams(location.search);
   const requestedVet=params.get('vet');
   let user=null,vetProfile=null,application=null,petProfile={},clientTab='vets';
-  let selectedConversation=null,conversationChannel=null,inboxChannel=null;
+  let selectedConversation=null,conversationChannel=null,inboxChannel=null,currentConversation=null;
   const renderedMessages=new Set();
 
   const resultError=(error,fallback)=>{
@@ -16,6 +16,42 @@
     app.innerHTML=`<div class="consult-error" role="alert">${esc(message)}</div>`;
   };
   const minutes=value=>Number(value)===0?'대기 없음':`예상 대기 ${Number(value)}분`;
+  /* 상담 활동 등급: 답변 수·답변 속도·응답률·보호자 평가로 자동 계산 (돈으로 바꿀 수 없음, 진료 실력 평가 아님) */
+  const TIERS={
+    new:{label:'새로 합류',rank:0},bronze:{label:'브론즈',rank:1},silver:{label:'실버',rank:2},gold:{label:'골드',rank:3},diamond:{label:'다이아',rank:4}
+  };
+  const TIER_RULES=[
+    ['bronze','답변한 상담 3건 이상'],
+    ['silver','답변 10건 이상 · 24시간 안 응답률 70% 이상 · 보통 6시간 안에 답변'],
+    ['gold','답변 30건 이상 · 응답률 85% 이상 · 보통 2시간 안에 답변 · “도움이 됐어요” 80% 이상'],
+    ['diamond','답변 100건 이상 · 응답률 95% 이상 · 보통 1시간 안에 답변 · 평가 20개 이상 중 “도움이 됐어요” 90% 이상 · 최근 30일 답변 5건 이상']
+  ];
+  const span=m=>m<60?`${Math.max(1,Math.round(m))}분`:m<1440?`${Math.round(m/60)}시간`:`${Math.round(m/1440)}일`;
+  const pct=v=>`${Math.round(Number(v)*100)}%`;
+  function tierBadge(stat){
+    const t=TIERS[stat&&stat.tier]||TIERS.new;
+    return `<span class="tier tier-${esc(stat&&stat.tier||'new')}" title="상담 활동 등급">${stat&&stat.tier!=='new'?'<i aria-hidden="true"></i>':''}${esc(t.label)}</span>`;
+  }
+  function statFacts(stat){
+    if(!stat||stat.tier==='new')return '';
+    const facts=[];
+    if(stat.median_reply_minutes!=null)facts.push(`보통 ${span(Number(stat.median_reply_minutes))} 안에 답해요`);
+    if(stat.reply_rate!=null)facts.push(`24시간 안 응답률 ${pct(stat.reply_rate)}`);
+    if(stat.feedback_count>=5&&stat.helpful_rate!=null)facts.push(`도움이 됐어요 ${pct(stat.helpful_rate)}`);
+    facts.push(`답변한 상담 ${stat.answered}건`);
+    return `<ul class="vet-facts">${facts.map(f=>`<li>${esc(f)}</li>`).join('')}</ul>`;
+  }
+  function tierGuide(){
+    return `<details class="tier-guide"><summary>등급은 어떻게 정해지나요?</summary>
+      <p>수의사 목록은 <b>답변이 활발한 순</b>으로 보여 드려요. 등급은 상담 기록(답변 수, 첫 답변까지 걸린 시간, 24시간 안 응답률, 보호자 평가)으로 자동으로 정해져요. 진료 실력이나 치료 결과를 평가하는 등급이 아니며, 돈을 내고 올리거나 바꿀 수 없어요.</p>
+      <ul>${TIER_RULES.map(([k,t])=>`<li>${tierBadge({tier:k})}<span>${esc(t)}</span></li>`).join('')}</ul>
+      <p class="muted">답변한 상담이 3건 미만인 수의사는 ‘새로 합류한 수의사’에 따로 보여 드려요.</p></details>`;
+  }
+  async function loadActivity(vetId){
+    const {data,error}=await chat.client.rpc('vet_activity',vetId?{p_vet:vetId}:{});
+    if(error){console.error('Unable to load vet activity.',error);return new Map();}
+    return new Map((data||[]).map(s=>[s.user_id,s]));
+  }
   const timeLabel=value=>{
     const time=new Date(value);
     return Number.isNaN(time.getTime())?'':time.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
@@ -66,11 +102,12 @@
         </form>
       </section>`;
   }
-  function vetCard(vet){
+  function vetCard(vet,stat){
     const available=vet.accepting_consultations;
     const specialties=(vet.specialties||[]).map(item=>`<span class="vet-tag">${esc(item)}</span>`).join('');
     return `<article class="vet-card">
-      <div class="vet-card-top"><div><h3>${esc(vet.display_name)}</h3><p class="clinic">${esc(vet.clinic_name)}</p></div><span class="vet-state ${available?'':'off'}">${available?'상담 가능':'상담 준비 중'}</span></div>
+      <div class="vet-card-top"><div><h3>${esc(vet.display_name)} ${tierBadge(stat)}</h3><p class="clinic">${esc(vet.clinic_name)}</p></div><span class="vet-state ${available?'':'off'}">${available?'상담 가능':'상담 준비 중'}</span></div>
+      ${statFacts(stat)}
       <div class="vet-tags">${specialties}</div>
       <p class="vet-strength"><b>강점</b> · ${esc(vet.strengths)}</p>
       <p class="vet-strength">${esc(vet.bio)}</p>
@@ -101,7 +138,12 @@
         .eq('is_listed',true).order('display_name').limit(100);
       if(error)throw error;
       const vets=data||[];
-      listMarkup=vets.length?vets.map(vetCard).join():'<p class="consult-empty">아직 등록된 수의사가 없어요. 나중에 다시 확인해 주세요.</p>';
+      const stats=await loadActivity();
+      const statOf=v=>stats.get(v.user_id)||{tier:'new',score:0};
+      const order=(a,b)=>(b.accepting_consultations-a.accepting_consultations)||(TIERS[statOf(b).tier].rank-TIERS[statOf(a).tier].rank)||(Number(statOf(b).score)-Number(statOf(a).score));
+      const active=vets.filter(v=>statOf(v).tier!=='new').sort(order);
+      const fresh=vets.filter(v=>statOf(v).tier==='new').sort(order);
+      listMarkup=vets.length?`${tierGuide()}${active.map(v=>vetCard(v,statOf(v))).join('')}${fresh.length?`<h3 class="vet-section">새로 합류한 수의사</h3>${fresh.map(v=>vetCard(v,statOf(v))).join('')}`:''}`:'<p class="consult-empty">아직 등록된 수의사가 없어요. 나중에 다시 확인해 주세요.</p>';
     }else{
       if(!user){
         listMarkup='<p class="consult-empty">상담 내역을 보려면 로그인해 주세요.</p>';
@@ -156,15 +198,32 @@
     const conversations=await getVetConversations();
     const items=conversations.length?conversations.map(item=>`<button type="button" class="consult-row" data-action="open-vet-chat" data-id="${esc(item.id)}" aria-current="${item.id===selectedConversation?'true':'false'}">
       <b>${esc(call(item.pet_name))} 보호자</b><time>${esc(timeLabel(item.last_message_at))}</time><span>${esc(item.last_message||'새 상담 요청')}</span>
-    </button>`).join():'<p class="consult-empty">아직 상담 요청이 없어요.</p>';
+    </button>`).join(''):'<p class="consult-empty">아직 상담 요청이 없어요.</p>';
+    const mine=(await loadActivity(user.id)).get(user.id)||{tier:'new',answered:0};
     app.innerHTML=`${header('내 상담 공간','수의사 계정 · 승인 완료')}
       <div class="consult-tabs"><button type="button" data-action="vet-tab" data-tab="chats" aria-pressed="true">상담 목록</button><button type="button" data-action="vet-tab" data-tab="profile" aria-pressed="false">내 프로필</button></div>
       <section class="consult-layout ${selectedConversation?'thread-open':''}">
-        <aside class="consult-list"><div class="consult-list-head"><h2>고객 상담</h2><small>${conversations.length}개</small></div>${items}</aside>
+        <aside class="consult-list">${myActivity(mine)}<div class="consult-list-head"><h2>고객 상담</h2><small>${conversations.length}개</small></div>${items}</aside>
         <section class="consult-thread" id="consult-thread"><div class="consult-thread-empty"><b>대화를 선택해 주세요</b><p>새 상담 요청이 오면 이 목록에 표시돼요.</p></div></section>
       </section>`;
     subscribeInbox();
     if(selectedConversation)await openThread(selectedConversation,'vet');
+  }
+  function myActivity(stat){
+    const idx=TIER_RULES.findIndex(([k])=>k===stat.tier);
+    const next=TIER_RULES[idx+1];
+    const facts=[`답변한 상담 ${stat.answered||0}건`];
+    if(stat.median_reply_minutes!=null)facts.push(`보통 ${span(Number(stat.median_reply_minutes))} 안에 답변`);
+    if(stat.reply_rate!=null)facts.push(`24시간 안 응답률 ${pct(stat.reply_rate)}`);
+    if(stat.feedback_count)facts.push(`평가 ${stat.feedback_count}개 · 도움이 됐어요 ${pct(stat.helpful_rate)}`);
+    return `<section class="my-tier"><div class="my-tier-top"><b>내 상담 활동 등급</b>${tierBadge(stat)}</div><ul class="vet-facts">${facts.map(f=>`<li>${esc(f)}</li>`).join('')}</ul>${next?`<p class="next">다음 등급 ${tierBadge({tier:next[0]})} ${esc(next[1])}</p>`:'<p class="next">가장 높은 등급이에요.</p>'}</section>`;
+  }
+  async function feedbackBar(conversation){
+    const box=app.querySelector('#consult-rate');if(!box||!user||conversation.guardian_id!==user.id)return;
+    const {data}=await chat.client.from('vet_consult_feedback').select('helpful').eq('consultation_id',conversation.id).maybeSingle();
+    if(data){box.innerHTML=`<p class="rate-done">평가해 주셔서 고마워요. (${data.helpful?'도움이 됐어요':'아쉬워요'})</p>`;box.hidden=false;return;}
+    box.innerHTML=`<span>상담이 도움이 됐나요?</span><button type="button" class="consult-btn ghost" data-action="rate" data-helpful="1">도움이 됐어요</button><button type="button" class="consult-btn ghost" data-action="rate" data-helpful="0">아쉬워요</button>`;
+    box.hidden=false;
   }
   async function renderApplicationAfterLogin(){
     const {data:profile,error:profileError}=await chat.client.from('veterinarian_profiles')
@@ -237,6 +296,7 @@
     }
     panel.innerHTML=`<header class="consult-thread-head"><button type="button" class="consult-back" data-action="back-to-list" aria-label="목록으로">‹</button><div><h2>${esc(partnerName)}</h2><p>${esc(subtitle)}</p></div></header>
       <div class="consult-messages" id="consult-messages" role="log" aria-live="polite" aria-relevant="additions text"></div>
+      <div class="consult-rate" id="consult-rate" hidden></div>
       <p class="consult-status" id="consult-feedback" role="status"></p>
       <form class="consult-compose" id="message-form"><label class="sr-only" for="consult-message">메시지</label><textarea id="consult-message" name="body" rows="1" maxlength="2000" placeholder="메시지를 입력해 주세요" required></textarea><button class="consult-btn" type="submit">전송</button></form>`;
     renderedMessages.clear();
@@ -244,6 +304,8 @@
       .select('id,sender_id,body,created_at').eq('consultation_id',id).order('created_at',{ascending:true}).limit(500);
     if(messageError)throw messageError;
     (messages||[]).forEach(addMessage);
+    currentConversation=conversation;
+    if(role!=='vet'&&(messages||[]).some(m=>m.sender_id===conversation.veterinarian_id))await feedbackBar(conversation);
     if(conversationChannel)await chat.client.removeChannel(conversationChannel);
     conversationChannel=chat.client.channel('vet-consult-'+id)
       .on('postgres_changes',{event:'INSERT',schema:'public',table:'vet_consult_messages',filter:'consultation_id=eq.'+id},payload=>addMessage(payload.new))
@@ -267,6 +329,8 @@
     time.textContent=timeLabel(message.created_at);
     item.append(body,time);
     list.append(item);
+    const rate=app.querySelector('#consult-rate');
+    if(rate&&rate.hidden&&currentConversation&&message.sender_id===currentConversation.veterinarian_id&&currentConversation.guardian_id===user.id)feedbackBar(currentConversation);
     list.scrollTop=list.scrollHeight;
   }
   function subscribeInbox(){
@@ -393,6 +457,13 @@
         history.replaceState(null,'','consult.html');
         await renderClient();
       }else if(action==='start')await startConsultation(button.dataset.vet);
+      else if(action==='rate'){
+        const helpful=button.dataset.helpful==='1';
+        app.querySelectorAll('[data-action=rate]').forEach(b=>{b.disabled=true;});
+        const {error}=await chat.client.from('vet_consult_feedback').insert({consultation_id:selectedConversation,helpful});
+        if(error&&error.code!=='23505'){app.querySelectorAll('[data-action=rate]').forEach(b=>{b.disabled=false;});feedback('평가를 저장하지 못했어요.',true);}
+        else if(currentConversation)await feedbackBar(currentConversation);
+      }
       else if(action==='open-client-chat'||action==='open-vet-chat'){
         selectedConversation=button.dataset.id;
         const role=action==='open-vet-chat'?'vet':'client';

@@ -105,3 +105,28 @@
   .consult-field.wide,.consult-form-actions{grid-column:1}
   .consult-account .consult-btn{min-height:38px;padding:0 10px;font-size:12px}
 }
+
+/* 상담 활동 등급 */
+.tier{display:inline-flex;align-items:center;gap:4px;vertical-align:middle;margin-left:4px;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:0;line-height:1.6;white-space:nowrap}
+.tier i{width:8px;height:8px;border-radius:50%;background:currentColor}
+.tier-new{background:#EEF1F6;color:#4A5568}
+.tier-bronze{background:#F6E7DA;color:#8A4B1F}
+.tier-silver{background:#ECEFF3;color:#4B5563}
+.tier-gold{background:#FFF1BF;color:#8A6200}
+.tier-diamond{background:#E3F1FF;color:#1C5DA8}
+.vet-facts{list-style:none;display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 4px;padding:0}
+.vet-facts li{font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--surface-2,#F5F7FA);color:var(--ink-2,#3a4a3c)}
+.tier-guide{margin:4px 0 12px;padding:12px 14px;border-radius:14px;background:var(--surface-2,#F5F7FA);font-size:14px}
+.tier-guide summary{cursor:pointer;font-weight:700;color:var(--primary,#1E56C2)}
+.tier-guide p{margin:8px 0 0;line-height:1.6}
+.tier-guide ul{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+.tier-guide li{display:grid;grid-template-columns:76px 1fr;gap:8px;align-items:start;font-size:13.5px}
+.tier-guide li .tier{margin:0;justify-self:start}
+.tier-guide .muted{color:var(--ink-3,#6b7280);font-size:13px}
+.vet-section{font-size:15px;margin:18px 0 8px}
+.my-tier{display:grid;gap:4px;margin:0 0 12px;padding:14px;border-radius:14px;background:#FBF8F2;border:1.5px solid #EFE6D6}
+.my-tier-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.my-tier .next{margin:4px 0 0;font-size:13px;color:var(--ink-2,#3a4a3c);line-height:1.6}
+.consult-rate{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 16px;border-top:1px solid var(--line,#e5e7eb);font-size:14px}
+.consult-rate .consult-btn{min-height:38px;padding:0 14px;font-size:14px}
+.rate-done{margin:0;color:#2D6A3E;font-size:14px}
