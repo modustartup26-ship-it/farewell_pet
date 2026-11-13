@@ -124,4 +124,4 @@ http.createServer((req,res)=>{
     res.setHeader('Content-Type',types[path.extname(file)]||'text/plain');
     res.end(data);
   });
-}).listen(port,'127.0.0.1',()=>console.log('http://localhost:'+port));
+}).listen(port, '0.0.0.0', () => console.log('Server listening on ' + port));
