@@ -18,7 +18,7 @@
   const minutes=value=>Number(value)===0?'대기 없음':`예상 대기 ${Number(value)}분`;
   /* 상담 활동 등급: 답변 수·답변 속도·응답률·보호자 평가로 자동 계산 (돈으로 바꿀 수 없음, 진료 실력 평가 아님) */
   const TIERS={
-    new:{label:'새로 합류',rank:0},bronze:{label:'브론즈',rank:1},silver:{label:'실버',rank:2},gold:{label:'골드',rank:3},diamond:{label:'다이아',rank:4}
+    new:{label:'새로 합류',rank:0,icon:'🌱'},bronze:{label:'브론즈',rank:1,icon:'🥉'},silver:{label:'실버',rank:2,icon:'🥈'},gold:{label:'골드',rank:3,icon:'🥇'},diamond:{label:'다이아',rank:4,icon:'💎'}
   };
   const TIER_RULES=[
     ['bronze','답변한 상담 3건 이상'],
@@ -30,7 +30,7 @@
   const pct=v=>`${Math.round(Number(v)*100)}%`;
   function tierBadge(stat){
     const t=TIERS[stat&&stat.tier]||TIERS.new;
-    return `<span class="tier tier-${esc(stat&&stat.tier||'new')}" title="상담 활동 등급">${stat&&stat.tier!=='new'?'<i aria-hidden="true"></i>':''}${esc(t.label)}</span>`;
+    return `<span class="tier tier-${esc(stat&&stat.tier||'new')}" title="상담 활동 등급"><span aria-hidden="true">${t.icon}</span>${esc(t.label)}</span>`;
   }
   function statFacts(stat){
     if(!stat||stat.tier==='new')return '';
