@@ -1,0 +1,35 @@
+/* 돌봄 체크리스트 */
+.album-nav{display:flex;gap:16px}
+.care-page main{max-width:720px;margin:0 auto;padding:0 clamp(16px,4vw,40px) 48px}
+.care-head{margin:24px 0 16px}
+.care-head h1{margin:0;font-size:28px;letter-spacing:-.02em;color:var(--forest)}
+.care-head p{margin:6px 0 0;color:var(--ink-3);font-size:15px}
+.care-list{margin:0 0 18px;padding:0;list-style:none;counter-reset:q;display:grid;gap:8px}
+.care-list li{counter-increment:q;display:grid;gap:3px;padding:14px 16px 14px 52px;position:relative;border:1.5px solid var(--line);border-radius:14px;background:#fff}
+.care-list li::before{content:counter(q);position:absolute;left:16px;top:14px;width:24px;height:24px;border-radius:50%;background:var(--sun);display:grid;place-items:center;font-size:13px;font-weight:700;color:var(--forest)}
+.care-list b{font-size:16px}
+.care-list span{font-size:13.5px;color:var(--ink-3)}
+.care-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:16px 0}
+.care-actions .btn{min-height:48px}
+.care-note{display:grid;gap:6px;padding:16px 18px;border-radius:16px;background:var(--surface-2);margin-top:8px}
+.care-note b{display:flex;align-items:center;gap:8px}
+.care-note p{margin:0;font-size:14.5px;color:var(--ink-2)}
+.care-note .muted{color:var(--ink-3);font-size:13px}
+.care-guest{margin:16px 0 0;font-size:14px;color:#9A5B00}
+.care-del{margin:28px 0 0;text-align:center;font-size:14px}
+.care-del .link,.care-guest .link{color:inherit}
+.link{background:none;border:0;padding:0;color:var(--primary);font-weight:700;text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:inherit;font-family:inherit}
+.care-edit{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:8px}
+.care-edit li{display:flex;align-items:center;gap:6px}
+.care-q{flex:1;display:flex;gap:12px;align-items:flex-start;padding:13px 15px;border:1.5px solid var(--line);border-radius:14px;background:#fff;cursor:pointer}
+.care-q:has(input:checked){border-color:#C9D7F2}
+.care-q:has(input:not(:checked)){opacity:.55}
+.care-q input{width:20px;height:20px;margin-top:2px;accent-color:var(--primary);flex:none}
+.care-q span{display:grid;gap:2px}
+.care-q b{font-size:15.5px}
+.care-q small{font-size:13px;color:var(--ink-3)}
+.care-add{display:flex;gap:8px;margin:4px 0 16px}
+.care-add input{flex:1;min-width:0;border:1.5px solid var(--line-2);border-radius:12px;padding:12px 14px;font-size:16px;font-family:inherit}
+.care-add .btn{flex:none;min-height:48px}
+.care-form .field-l select{border:1.5px solid var(--line-2);border-radius:12px;padding:12px 14px;font-size:16px;background:#fff;font-family:inherit}
+@media (max-width:760px){.care-head h1{font-size:24px}.album-nav{gap:10px}}

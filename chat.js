@@ -224,7 +224,7 @@
     try{const r=await chat.loadPetProfile(FP.load().pet);pet=r.pet||FP.load().pet||{};}catch{pet=FP.load().pet||{};}
     const render=(qs,by,hours)=>openSheet('돌봄 체크리스트',`
       <p class="muted">맡기는 동안 업체가 정해진 시간마다 답해 줄 질문이에요. 답은 대화와 산책 일기에 함께 남아요.</p>
-      <p class="plan-by">${by==='ai'?'AI가 아이 프로필을 보고 골랐어요':by==='rule'?'아이 프로필을 기준으로 골랐어요':'지금 쓰고 있는 체크리스트예요'} · 필요 없는 질문은 빼 주세요.</p>
+      <p class="plan-by">${by==='ai'?'AI가 아이 프로필을 보고 골랐어요':by==='rule'?'아이 프로필을 기준으로 골랐어요':by==='template'?'미리 만들어 둔 체크리스트예요':'지금 쓰고 있는 체크리스트예요'} · 필요 없는 질문은 빼 주세요.</p>
       <ul class="plan-qs">${qs.map((q,i)=>`<li><label><input type="checkbox" name="q" value="${i}" checked><span>${esc(q.q)}</span></label></li>`).join('')}</ul>
       <label class="field-l">몇 시간마다 받을까요?<select name="hours">${Checklist.INTERVALS.map(h=>`<option value="${h}" ${h===hours?'selected':''}>${h}시간마다</option>`).join('')}</select></label>
       <p class="muted small">체크리스트는 건강 상태를 판단하지 않아요. 걱정되는 답이 있으면 업체나 병원에 바로 물어봐 주세요.</p>
@@ -233,7 +233,7 @@
       async fd=>{
         const keep=fd.getAll('q').map(Number).map(i=>qs[i]);
         if(!keep.length){toast('질문을 하나 이상 골라 주세요.');return;}
-        const plan={interval_hours:Number(fd.get('hours')),questions:keep,by,updated_at:new Date().toISOString()};
+        const plan={interval_hours:Number(fd.get('hours')),questions:keep,by:by==='template'?'saved':by,updated_at:new Date().toISOString()};
         const {error}=await chat.client.rpc('set_care_plan',{p_conversation:c.id,p_plan:plan});
         if(error){toast('저장하지 못했어요. 잠시 뒤에 다시 시도해 주세요.');return;}
         c.care_plan=plan;sheet.close();renderTools();toast('체크리스트를 저장했어요. 업체에도 바로 보여요.');
@@ -245,6 +245,10 @@
       if(off)off.onclick=async()=>{const {error}=await chat.client.rpc('set_care_plan',{p_conversation:c.id,p_plan:null});if(error){toast('끄지 못했어요.');return;}c.care_plan=null;sheet.close();renderTools();toast('체크리스트를 껐어요.');};
     };
     if(current){render(current.questions,'saved',current.interval_hours);wire();return;}
+    let template=null;
+    try{const {data}=await chat.client.from('care_checklists').select('plan').eq('user_id',user.id).maybeSingle();template=data&&data.plan;}catch{}
+    if(!template){const st=FP.load();template=st.careChecklist||null;}
+    if(template&&Array.isArray(template.questions)&&template.questions.length){render(template.questions,'template',template.interval_hours||3);wire();return;}
     openSheet('돌봄 체크리스트','<p class="muted">아이 프로필을 보고 질문을 고르는 중이에요.</p>','',null);
     const r=await Checklist.suggestAI(pet,chat.client);
     render(r.questions,r.by,3);wire();

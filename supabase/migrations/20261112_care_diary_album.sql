@@ -325,3 +325,20 @@ create policy "read permitted media" on storage.objects for select to authentica
 create policy "delete own media files" on storage.objects for delete to authenticated
   using (bucket_id = 'pet-media' and exists (
     select 1 from public.media m where m.path = name and (m.owner_id = (select auth.uid()) or m.uploader_id = (select auth.uid()))));
+
+-- 업체 연결 전에 앱에서 만들어 두는 돌봄 체크리스트 (care.html)
+create table public.care_checklists (
+  user_id uuid primary key default auth.uid() references auth.users(id) on delete cascade,
+  plan jsonb not null check (jsonb_typeof(plan) = 'object' and pg_column_size(plan) < 8000
+    and jsonb_typeof(plan->'questions') = 'array' and jsonb_array_length(plan->'questions') between 1 and 12
+    and (plan->>'interval_hours')::int between 1 and 12),
+  updated_at timestamptz not null default now()
+);
+alter table public.care_checklists enable row level security;
+revoke all on public.care_checklists from anon, authenticated;
+grant select, delete on public.care_checklists to authenticated;
+grant insert (plan, updated_at), update (plan, updated_at) on public.care_checklists to authenticated;
+create policy "users read own checklist" on public.care_checklists for select to authenticated using (user_id = (select auth.uid()));
+create policy "users add own checklist" on public.care_checklists for insert to authenticated with check (user_id = (select auth.uid()));
+create policy "users edit own checklist" on public.care_checklists for update to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+create policy "users delete own checklist" on public.care_checklists for delete to authenticated using (user_id = (select auth.uid()));
