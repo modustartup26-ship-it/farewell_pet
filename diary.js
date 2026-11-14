@@ -38,6 +38,7 @@
     const {data,error}=await cloud.client.from('diary_entries').select('*').order('entry_date',{ascending:false}).limit(1000);
     if(error)throw error;
     const known=new Set(data.map(r=>r.client_id).filter(Boolean));
+    const localReports=new Map((ctx.state.diary||[]).filter(e=>e.report).map(e=>[e.id,e.report]));
     /* 로그인 전에 이 탭에 쓴 일기를 계정으로 옮긴다 */
     const local=(ctx.state.diary||[]).filter(e=>!e.serverId&&(!e.source||e.source==='manual')&&!known.has(e.id));
     for(const e of local){
@@ -47,7 +48,14 @@
         if(!err)data.push(row);
       }catch{}
     }
-    ctx.state.diary=data.map(toRec);ctx.save();
+    ctx.state.diary=data.map(toRec);
+    /* 보호자 이용기록을 일기에 다시 붙이고, 로그인 전에 쓴 기록은 계정으로 올린다 */
+    const mine=new Map((await Reports.loadMine(cloud.client)).map(r=>[r.diary_client_id,{kind:r.kind,size:r.size,answers:r.answers||{}}]));
+    for(const e of ctx.state.diary){
+      if(mine.has(e.id))e.report=mine.get(e.id);
+      else if(localReports.has(e.id)&&e.placeId){e.report=localReports.get(e.id);await Reports.push(cloud.client,e);}
+    }
+    ctx.save();
     await loadMediaRows();
   }
   async function loadMediaRows(){
@@ -69,6 +77,7 @@
   }
   async function removeEntry(e){
     if(!cloud.user||!e.serverId)return true;
+    if(e.report)Reports.push(cloud.client,{...e,report:null});
     const {error}=await cloud.client.from('diary_entries').delete().eq('id',e.serverId);
     if(error){toast('지우지 못했어요. 잠시 뒤에 다시 시도해 주세요.');return false;}
     return true;
@@ -188,7 +197,7 @@
     document.querySelector('#cal').innerHTML=`<div class="cal-head"><button type="button" class="icon-btn" data-cal="-1" aria-label="이전 달">${icon('arrow-left')}</button><b>${y}년 ${m+1}월</b><button type="button" class="icon-btn" data-cal="1" aria-label="다음 달">${icon('chev-right')}</button></div><div class="cal-week">${WEEK.map(w=>`<span>${w}</span>`).join('')}</div><div class="cal-grid">${cells}</div>`;
     const done=inMonth.filter(e=>!isPlan(e)), plans=inMonth.filter(isPlan);
     const counts={};done.forEach(e=>{const l=(CAT[e.cat]||CAT.etc)[0];counts[l]=(counts[l]||0)+1;});
-    document.querySelector('#diary-trend').innerHTML=trend();
+    document.querySelector('#diary-trend').innerHTML=Reports.statsHtml(ctx.state.diary)+trend();
     document.querySelector('#diary-sum').innerHTML=inMonth.length?`<b>이번 달 ${done.length}번 다녀왔어요</b>${Object.entries(counts).map(([k,v])=>`<span>${k} ${v}</span>`).join('')}${plans.length?`<span class="plan">예정 ${plans.length}</span>`:''}`:`<b>이번 달은 아직 기록이 없어요</b>`;
     const list=(selected?sorted().filter(e=>e.date===selected):sorted().filter(e=>e.date.startsWith(key)));
     document.querySelector('#diary-list').innerHTML=(selected?`<div class="day-filter">${nice(selected)} 기록 <button type="button" class="btn-ghost" data-clear-day>이번 달 전체 보기</button></div>`:'')+(list.length?list.map(entry).join(''):`<div class="empty">${Minimi.svg(Minimi.config(ctx.pet))}<b>${selected?'이 날은 아직 기록이 없어요':'아직 쓴 일기가 없어요'}</b><p>다녀온 곳의 기억이나 다녀올 예정을 남겨 보세요. 다음에 고를 때 참고할 수 있어요.</p><button type="button" class="btn btn-primary" data-diary-new="${selected||''}">${icon('edit')}일기 쓰기</button></div>`);
@@ -207,6 +216,7 @@
           <p class="where"><span class="cat" style="--c:${c[1]}">${c[0]}</span>${e.placeId?`<button type="button" class="link" data-open="${e.placeId}">${esc(e.place)}</button>`:`<b>${esc(e.place)}</b>`}</p>
           ${e.text?`<p class="txt">${esc(e.text)}</p>`:''}
           ${activityChips(e.activity)}
+          ${e.report?`<p class="rep-done">${icon('heart')}다음 보호자에게 알려 줬어요</p>`:''}
           ${answers.length?`<details class="answers"><summary>체크리스트 답변 ${answers.length}개</summary><dl>${answers.map(a=>`<dt>${esc(a.q)}</dt><dd>${esc(a.id==='walk'&&/^\d+$/.test(a.a)?a.a+'분':a.a)}</dd>`).join('')}</dl></details>`:''}
           ${todos.length?`<ul class="todos">${todos.map((t,i)=>`<li><label><input type="checkbox" data-todo="${e.id}:${i}" ${t.done?'checked':''}><span>${esc(t.t)}</span></label></li>`).join('')}</ul>`:''}
         </div>
@@ -240,6 +250,7 @@
       <label class="field-l">어디에 갔나요<select name="placeId" id="d-place">${placeOptions(v.placeId)}</select></label>
       <label class="field-l" id="d-custom" ${v.placeId==='__custom'?'':'hidden'}>장소 이름<input name="place" maxlength="60" value="${esc(v.placeId==='__custom'?v.place:'')}" placeholder="예: 빛가람 호수공원"></label>
       <div class="field-l" id="d-mood"><span>${esc(josa.topic(ctx.petName))} 어땠나요?</span><div class="moods">${Object.entries(MOODS).map(([k,l])=>`<label class="mood-opt"><input type="radio" name="mood" value="${k}" ${v.mood===k?'checked':''}>${Minimi.svg({...mm,mood:k},{shadow:false})}<span>${l}</span></label>`).join('')}</div></div>
+      <div id="d-rep-wrap"></div>
       <label class="field-l">한 줄 일기<textarea name="text" rows="3" maxlength="600" placeholder="예: 처음엔 낑낑댔는데 오후엔 친구랑 잘 놀았대요.">${esc(v.text)}</textarea></label>
       <details class="field-l act-form" id="d-act" ${a.walk_min!=null||a.meal||a.poop?'open':''}><summary>오늘 활동 기록 <small>(선택)</small></summary>
         <div class="row2f"><label class="field-l">산책·놀이 시간<span class="unit"><input type="number" name="walk_min" min="0" max="600" inputmode="numeric" value="${esc(a.walk_min??'')}">분</span></label><label class="field-l">산책 횟수<span class="unit"><input type="number" name="walk_count" min="0" max="20" inputmode="numeric" value="${esc(a.walk_count??'')}">번</span></label></div>
@@ -264,15 +275,19 @@
         if(wc!==''&&Number(wc)>=0&&Number(wc)<=20)activity.walk_count=Math.round(Number(wc));
         ['meal','poop'].forEach(k=>{if(fd.get(k))activity[k]=fd.get(k);});
         if(fd.get('med_taken'))activity.med=fd.get('med_taken');
-        const rec={id:e?e.id:'d'+Date.now(),date,time:fd.get('time')||'',placeId:p?p.id:null,place,cat:p?p.cat:'etc',mood:date>today()?'':(fd.get('mood')||'ok'),text:String(fd.get('text')||'').trim(),todos,photo:cloud.user?'':photo,activity:date>today()?{}:activity,mediaIds:cloud.user?mediaIds:[],source:'manual'};
+        const report=p&&date<=today()?Reports.read(fd):null;
+        const rec={report,id:e?e.id:'d'+Date.now(),date,time:fd.get('time')||'',placeId:p?p.id:null,place,cat:p?p.cat:'etc',mood:date>today()?'':(fd.get('mood')||'ok'),text:String(fd.get('text')||'').trim(),todos,photo:cloud.user?'':photo,activity:date>today()?{}:activity,mediaIds:cloud.user?mediaIds:[],source:'manual'};
         const med=String(fd.get('med')||'').trim();
         if(med){rec.text=(rec.text?rec.text+'\n':'')+'처방: '+med;if(fd.get('medToProfile')){ctx.pet.medications=[...(ctx.pet.medications||[]),{name:med,frequency:'',schedule:''}];ctx.pet.hasMedication='있음';ctx.state.pet=ctx.pet;}}
         const target=e?Object.assign(e,rec):rec;
         if(!e)ctx.state.diary.push(rec);
-        ctx.save();ctx.close();pushEntry(target).then(()=>render());month=new Date(parse(date).getFullYear(),parse(date).getMonth(),1);selected=null;
-        ctx.setView('diary');toast(rec.date>today()?'다녀올 예정을 적어 뒀어요.':'일기를 저장했어요.');
+        ctx.save();ctx.close();pushEntry(target).then(ok=>{if(ok&&cloud.user)Reports.push(cloud.client,target);render();});month=new Date(parse(date).getFullYear(),parse(date).getMonth(),1);selected=null;
+        ctx.setView('diary');toast(rec.date>today()?'다녀올 예정을 적어 뒀어요.':report?(cloud.user?'일기를 저장했어요. 알려 주셔서 고마워요! 다음 보호자에게 큰 도움이 돼요.':'일기를 저장했어요. 로그인하면 알려 주신 내용이 다른 보호자에게도 보여요.'):'일기를 저장했어요.');
       });
     const f=document.querySelector('#modal-form');
+    let repFor=null;
+    const repSync=()=>{const p=ctx.PLACES.find(x=>x.id===f.placeId.value);const plan=f.date.value>today();const key=plan||!p?'':p.id;if(key===repFor)return;repFor=key;const w=document.querySelector('#d-rep-wrap');w.innerHTML=key?Reports.formHtml(p,p.id===v.placeId?v.report:null,ctx.pet):'';Reports.bindForm(w);};
+    f.date.addEventListener('change',repSync);f.placeId.addEventListener('change',repSync);repSync();
     const sync=()=>{const plan=f.date.value>today();document.querySelector('#d-mood').hidden=plan;document.querySelector('#d-photo-wrap').hidden=plan;document.querySelector('#d-act').hidden=plan;document.querySelector('#plan-hint').hidden=!plan;const p=ctx.PLACES.find(x=>x.id===f.placeId.value);document.querySelector('#d-custom').hidden=f.placeId.value!=='__custom';document.querySelector('#d-med').hidden=!(p&&p.cat==='hospital')||plan;};
     f.date.addEventListener('change',sync);f.placeId.addEventListener('change',sync);sync();
     document.querySelector('#d-photo').addEventListener('change',async ev=>{const file=ev.target.files[0];if(!file)return;

@@ -125,9 +125,9 @@
 
   /* ---------- 조건 대조 ---------- */
   function check(place,req){
-    if(req.startsWith('size:')){const s=req.slice(5);const v=place.sizes[s];return {label:v===false?`${s} 이용 불가`:v?`${s} 이용 가능`:`${s} 확인 필요`,v};}
+    if(req.startsWith('size:')){const s=req.slice(5);const v=place.sizes[s];return {req,label:v===false?`${s} 이용 불가`:v?`${s} 이용 가능`:`${s} 확인 필요`,v};}
     const v=place.attrs[req];
-    return {label:v===false?`${req} 없음`:v?req:`${req} 확인 필요`,v};
+    return {req,label:v===false?`${req} 없음`:v?req:`${req} 확인 필요`,v};
   }
   function verdict(place,reqs){
     const sizeReqs=reqs.filter(r=>r.startsWith('size:')), rest=reqs.filter(r=>!r.startsWith('size:'));
@@ -148,7 +148,8 @@
   function thumb(p){return p.image?`<img src="${p.image}" alt="" loading="lazy">`:`<svg viewBox="-60 -70 120 130" aria-hidden="true">${TrailMap.art(kindArt(p))}</svg>`;}
   function kindArt(p){return {hotel:'hotel',care:'together',kindergarten:'kinder',grooming:'grooming',hospital:'hospital'}[p.cat];}
   const MARK={true:['ok','check'],false:['no','no'],undefined:['unknown','question']};
-  function markRow(r){const [c,i]=MARK[r.v];return `<li><span class="mark ${c}">${icon(i)}</span>${esc(r.label)}</li>`;}
+  /* ev: 보호자 이용기록 근거. 판정(ok/unknown/no)은 바꾸지 않고 옆에 덧붙인다 */
+  function markRow(r,ev){const [c,i]=MARK[r.v];return `<li><span class="mark ${c}">${icon(i)}</span><span>${esc(r.label)}${ev?`<small class="ev ${ev.good?'good':'bad'}">${icon('heart')}${esc(ev.text)}</small>`:''}</span></li>`;}
   function card(x){
     const p=x.p, saved=state.saved.includes(p.id);
     const rows=(x.rows||[]).slice().sort((a,b)=>(a.v===false?0:a.v===undefined?1:2)-(b.v===false?0:b.v===undefined?1:2)).slice(0,3);
@@ -158,7 +159,7 @@
         <span class="place-text">
           <span class="place-name">${esc(p.name)}${p.example?'<span class="ex">예시</span>':p.public?'<span class="ex pub">공공데이터</span>':''}</span>
           <span class="place-meta">${esc(p.address)}</span>${visitBadge(p)}
-          ${rows.length?`<ul class="checks">${rows.map(markRow).join('')}</ul>`:`<span class="place-meta">${p.cat==='hospital'?'진료 조건은 병원에 확인해 주세요':'조건을 고르면 하나씩 대조해 드려요'}</span>`}
+          ${rows.length?`<ul class="checks">${rows.map(r=>markRow(r)).join('')}</ul>`:`<span class="place-meta">${p.cat==='hospital'?'진료 조건은 병원에 확인해 주세요':'조건을 고르면 하나씩 대조해 드려요'}</span>`}
         </span>
       </button>
       <button type="button" class="icon-btn heart-btn" data-save="${p.id}" aria-pressed="${saved}" aria-label="${esc(p.name)} 찜하기">${icon('heart')}</button>
@@ -197,6 +198,11 @@
       }
     };
     const w=$('#widen');if(w)w.onclick=back2filter;
+    /* 보호자가 알려 준 곳은 카드에 표시 */
+    Reports.summaries(real.map(p=>p.id)).then(m=>Object.entries(m).forEach(([id,sum])=>{
+      const t=document.querySelector(`#results-list .place[data-id="${CSS.escape(id)}"] .place-name`);
+      if(t&&!t.querySelector('.rep-badge'))t.insertAdjacentHTML('beforeend',`<span class="ex rep-badge">보호자 ${sum.n}명이 알려 줬어요</span>`);
+    }));
     if(!$('#results').open)$('#results').showModal();
     $('#results-body').scrollTop=0;
   }
@@ -224,7 +230,7 @@
     const unknown=Object.entries(p.attrs).filter(([,val])=>val===undefined).map(([a])=>a);
     const sizes=Object.entries(p.sizes).filter(([,val])=>val).map(([s])=>s);
     const info=`
-      <section class="d-sec match"><h3>${esc(josa.of(petName))} 조건 대조</h3>${v.rows.length?`<ul class="checks big">${v.rows.map(markRow).join('')}</ul>`:`<p class="muted">필터에서 조건을 고르면 여기서 하나씩 대조해 드려요.</p>`}</section>${diarySec(p)}
+      <section class="d-sec match"><h3>${esc(josa.of(petName))} 조건 대조</h3>${v.rows.length?`<ul class="checks big" id="match-list">${v.rows.map(r=>markRow(r)).join('')}</ul>`:`<p class="muted">필터에서 조건을 고르면 여기서 하나씩 대조해 드려요.</p>`}</section><div id="rep-wrap"></div>${diarySec(p)}
       <section class="d-sec"><h3>정보</h3><p class="line">${icon('clock')}${esc(p.hours||'영업시간은 아직 확인하지 못했어요. 방문 전에 전화로 확인해 주세요.')}</p>${sizes.length?`<p class="line">${icon('paw')}${sizes.map(esc).join(' · ')} 이용 가능</p>`:''}${p.description?`<p class="muted">${esc(p.description)}</p>`:''}</section>
       ${services.length?`<section class="d-sec"><h3>주요 서비스</h3><div class="tags">${services.map(s=>`<span>${esc(s)}</span>`).join('')}</div></section>`:''}
       ${facilities.length?`<section class="d-sec"><h3>돌봄 시설</h3><div class="facil">${facilities.map(a=>`<span>${icon(FACILITY_ICONS[a])}${esc(a)}</span>`).join('')}</div></section>`:''}
@@ -253,6 +259,13 @@
     $('#detail-body').scrollTop=0;
     const dm=$('#detail-map');
     if(dm)KMap.showOne(dm,p,pos=>{const r=$('#route');if(r)r.href=KMap.routeUrl(p,pos);});
+    /* 보호자 이용기록 집계를 불러와 조건 대조 옆에 근거로 붙인다 */
+    const rw=$('#rep-wrap');
+    if(rw&&!p.example)Reports.summaries([p.id]).then(m=>{
+      if(detailPlace!==p||!rw.isConnected)return;
+      const sum=m[p.id];rw.innerHTML=Reports.sectionHtml(p,sum,pet);
+      const ml=$('#match-list');if(ml&&sum)ml.innerHTML=v.rows.map(r=>markRow(r,Reports.evidence(sum,r.req))).join('');
+    });
   }
   function heartState(){const on=detailPlace&&state.saved.includes(detailPlace.id);$('#detail-heart').setAttribute('aria-pressed',on);$('#detail-heart').setAttribute('aria-label',on?'찜 해제':'찜하기');}
   $('#detail-heart').addEventListener('click',()=>toggleSave(detailPlace.id));

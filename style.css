@@ -315,3 +315,32 @@ main{max-width:1280px;margin:0 auto}
 #feed-out .btn{text-decoration:none}
 .auto-toggle{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--ink-2)}
 .auto-toggle input{width:18px;height:18px;accent-color:var(--primary)}
+
+/* 보호자 이용기록 */
+.rep-form{border:1.5px solid #D9E3F2;border-radius:16px;padding:12px 14px;background:#F6F9FE}
+.rep-form summary{display:flex;align-items:center;gap:8px;font-weight:700;color:#28466B;cursor:pointer}
+.rep-form summary .i{width:18px;height:18px}
+.rep-why{font-size:13px;color:var(--ink-3);margin:8px 0 4px}
+.rep-q{display:grid;gap:8px;margin-top:12px}
+.rep-q>span{font-size:14.5px;font-weight:600;color:var(--ink-2)}
+.rep-q small{font-weight:500;color:var(--ink-3)}
+.rep-sum{display:grid;gap:12px;margin:6px 0 0}
+.rep-sum div{display:grid;gap:6px}
+.rep-sum dt{font-size:14px;color:var(--ink-3)}
+.rep-sum dd{margin:0;display:flex;flex-wrap:wrap;gap:6px}
+.rep-sum dd span{font-size:14px;padding:5px 10px;border-radius:999px;background:#EEF2F8;color:var(--ink-2)}
+.rep-sum dd span.mine{background:#FFF1BF;color:#5C4300}
+.rep-sum dd b{margin-left:2px;color:#28466B}
+.rep-sec h3 small{font-size:13px;font-weight:600;color:#28466B;background:#E3ECF7;border-radius:999px;padding:2px 8px;margin-left:4px}
+.checks li .ev{display:flex;align-items:center;gap:4px;font-size:12.5px;margin-top:2px;color:#2D6A3E}
+.checks li .ev.bad{color:#A23B2A}
+.checks li .ev .i{width:13px;height:13px}
+.checks li>span:last-child{display:grid}
+.rep-stats{display:flex;gap:12px;align-items:flex-start;margin:16px 0 0;padding:14px 16px;border-radius:18px;background:#F6F9FE;border:1.5px solid #D9E3F2}
+.rep-stats>.i{width:22px;height:22px;flex:none;color:#E0738A;margin-top:2px}
+.rep-stats div{display:grid;gap:3px}
+.rep-stats b{font-size:15.5px;color:#28466B}
+.rep-stats span{font-size:13.5px;color:var(--ink-2)}
+.rep-done{display:flex;align-items:center;gap:6px;font-size:13px;color:#28466B;margin:6px 0 0}
+.rep-done .i{width:14px;height:14px;color:#E0738A}
+.ex.rep-badge{color:#2D6A3E;background:#E4F2DD}
