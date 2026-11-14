@@ -55,3 +55,11 @@ Vercel은 `vercel.json` 설정으로 HTML/CSS/JS 페이지를 정적으로 배�
 성격 검사 참고 문헌
 - Ley, Bennett & Coleman (2009). Applied Animal Behaviour Science, 116(2–4), 220–227. doi:10.1016/j.applanim.2008.09.009
 - Ley, McGreevy & Bennett (2009). Applied Animal Behaviour Science, 119(1–2), 85–90. doi:10.1016/j.applanim.2009.02.027
+
+## 전남광주통합특별시 공공데이터
+
+`public-places.js`는 지방행정 인허가 공공데이터(동물병원·동물미용업 CSV)에서 영업 중인 곳만 뽑아 만든 파일입니다. 새 CSV를 받으면 아래처럼 다시 만들면 됩니다.
+
+```
+python3 tools/build_public_places.py 동물병원.csv 동물미용업.csv public-places.js
+```

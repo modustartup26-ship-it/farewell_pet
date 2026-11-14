@@ -96,8 +96,8 @@
       <section class="group"><h3>지역 <small id="dist-label">${DIST[f.dist-1]}까지</small></h3>
         <div class="range"><input type="range" min="1" max="5" step="1" value="${f.dist}" id="dist" aria-label="찾을 거리" aria-valuetext="${DIST[f.dist-1]}"></div>
         <div class="range-ends"><span>우리 동네</span><b>먼 동네</b></div>
-        <label class="region"><span>${icon('pin')}특정 지역으로 검색하기</span><select id="region">${['나주시','광주광역시','전남 다른 지역'].map(r=>`<option ${r===f.region?'selected':''}>${r}</option>`).join('')}</select></label>
-        <p class="note">위치 연결 전이라 거리는 빛가람동 기준 예시예요.</p>
+        <label class="region"><span>${icon('pin')}특정 지역으로 검색하기</span><select id="region">${REGIONS.map(([g,rs])=>`<optgroup label="${g}">${rs.map(r=>`<option ${r===f.region?'selected':''}>${r}</option>`).join('')}</optgroup>`).join('')}</select></label>
+        <p class="note">위치 연결 전이라 거리는 나주시는 빛가람동, 다른 지역은 시·군·구 중심가를 기준으로 어림한 값이에요.</p>
       </section>
       ${needs}
       ${cfg.groups.map(g=>`<section class="group"><h3>${esc(g.title)}</h3><div class="chips ${g.grid?'grid'+g.grid:''}">${g.opts.map(o=>chip(g.key==='size'?'size:'+o:o,o,f.auto.has(g.key==='size'?'size:'+o:o))).join('')}</div></section>`).join('')}`;
@@ -156,7 +156,7 @@
       <button type="button" class="place-main" data-open="${p.id}" aria-label="${esc(p.name)} 자세히 보기">
         <span class="thumb ${p.image?'photo':'art'}">${thumb(p)}</span>
         <span class="place-text">
-          <span class="place-name">${esc(p.name)}${p.example?'<span class="ex">예시</span>':''}</span>
+          <span class="place-name">${esc(p.name)}${p.example?'<span class="ex">예시</span>':p.public?'<span class="ex pub">공공데이터</span>':''}</span>
           <span class="place-meta">${esc(p.address)}</span>${visitBadge(p)}
           ${rows.length?`<ul class="checks">${rows.map(markRow).join('')}</ul>`:`<span class="place-meta">${p.cat==='hospital'?'진료 조건은 병원에 확인해 주세요':'조건을 고르면 하나씩 대조해 드려요'}</span>`}
         </span>
@@ -173,11 +173,12 @@
     const groups=[['ok','조건에 맞아요'],['unknown','확인이 필요해요'],['none','둘러보기'],['no','조건이 맞지 않아요']];
     let html='';
     if(!r.shown.length){
-      html=`<div class="empty">${Minimi.svg(Minimi.config(pet))}<b>${f.region==='나주시'?'이 거리 안에는 아직 등록된 곳이 없어요':`${esc(f.region)}은 아직 준비 중이에요`}</b><p>${f.region==='나주시'?'거리를 조금 넓혀 보시겠어요?':'지금은 나주시 정보부터 모으고 있어요.'}</p><button type="button" class="btn btn-soft" id="widen">필터 다시 고르기</button></div>`;
+      html=`<div class="empty">${Minimi.svg(Minimi.config(pet))}<b>${r.hiddenByDist?'이 거리 안에는 아직 등록된 곳이 없어요':`${esc(f.region)}의 ${esc(cfg.title)} 정보는 아직 모으고 있어요`}</b><p>${r.hiddenByDist?`거리를 넓히면 ${r.hiddenByDist}곳이 보여요.`:'지금은 동물병원·미용실은 전남광주통합특별시 전체, 호텔·유치원은 나주시 정보부터 모으고 있어요.'}</p><button type="button" class="btn btn-soft" id="widen">필터 다시 고르기</button></div>`;
     }else{
       groups.forEach(([k,t])=>{const list=r.shown.filter(x=>x.status===k);if(!list.length)return;html+=`<section class="result-group ${k}"><h3>${t} <span class="tnum">${list.length}</span></h3>${k==='unknown'?`<p class="note">물음표 항목은 업체에서 아직 확인되지 않은 정보예요. 문의할 때 꼭 물어보세요.</p>`:''}${list.map(card).join('')}</section>`;});
       if(r.hiddenByDist)html+=`<p class="note center">${r.hiddenByDist}곳은 더 먼 동네에 있어요. 거리를 넓히면 함께 보여요.</p>`;
       if(r.shown.some(x=>x.p.example))html+=`<p class="note center">‘예시’ 표시가 있는 곳은 화면 설명을 위한 가상의 업체예요.</p>`;
+      if(r.shown.some(x=>x.p.public))html+=`<p class="note center">‘공공데이터’ 표시가 있는 곳은 지자체 인허가 자료에서 가져온 영업 중인 업체예요. 세부 조건은 아직 확인 전이에요.</p>`;
     }
     $('#results-body').innerHTML=`<div id="results-list">${html}</div><div id="results-map-wrap" hidden><div class="kmap kmap-tall" id="results-map">지도를 불러오는 중이에요.</div><p class="note center" id="results-map-note"></p></div>`;
     const real=r.shown.map(x=>x.p).filter(x=>!x.example);
@@ -229,7 +230,7 @@
       ${facilities.length?`<section class="d-sec"><h3>돌봄 시설</h3><div class="facil">${facilities.map(a=>`<span>${icon(FACILITY_ICONS[a])}${esc(a)}</span>`).join('')}</div></section>`:''}
       ${amen.length?`<section class="d-sec"><h3>편의 시설</h3><div class="facil row">${amen.map(a=>`<span>${icon(FACILITY_ICONS[a])}${esc(a)}</span>`).join('')}</div></section>`:''}
       ${unknown.length||p.cat==='hospital'?`<section class="d-sec"><h3>아직 확인되지 않은 정보</h3><p class="muted">${p.cat==='hospital'?'진료 항목, 야간·응급 진료, 노령견 진료 여부는 아직 확인되지 않았어요. 방문 전에 전화로 확인해 주세요.':esc(unknown.join(', '))+'은(는) 업체에 문의해 확인해 주세요.'}</p></section>`:''}
-      <section class="d-sec"><h3>위치</h3><p class="line">${icon('pin')}<span>${esc(p.address)}</span>${p.example?'':`<button type="button" class="icon-btn small" id="copy-addr" aria-label="주소 복사">${icon('copy')}</button>`}</p>${p.example?'':`<div class="kmap" id="detail-map" role="img" aria-label="${esc(p.name)} 위치 지도">지도를 불러오는 중이에요.</div><a class="btn btn-soft route-btn" id="route" href="${KMap.routeUrl(p)}" target="_blank" rel="noopener noreferrer">${icon('map')}카카오맵으로 길찾기</a><p class="note">주소를 기준으로 표시한 위치예요. 방문 전에 입구를 한 번 더 확인해 주세요.</p>`}</section>
+      <section class="d-sec"><h3>위치</h3><p class="line">${icon('pin')}<span>${esc(p.address)}</span>${p.example?'':`<button type="button" class="icon-btn small" id="copy-addr" aria-label="주소 복사">${icon('copy')}</button>`}</p>${p.example?'':`<div class="kmap" id="detail-map" role="img" aria-label="${esc(p.name)} 위치 지도">지도를 불러오는 중이에요.</div><a class="btn btn-soft route-btn" id="route" href="${KMap.routeUrl(p)}" target="_blank" rel="noopener noreferrer">${icon('map')}카카오맵으로 길찾기</a><p class="note">${p.addrNote?esc(p.addrNote):p.lat?'인허가 자료의 등록 좌표로 표시한 위치예요. 방문 전에 입구를 한 번 더 확인해 주세요.':'주소를 기준으로 표시한 위치예요. 방문 전에 입구를 한 번 더 확인해 주세요.'}</p>`}</section>
       ${p.source?`<p class="source">정보 확인일 ${esc(p.checked)} · <a href="${p.source}" target="_blank" rel="noopener noreferrer">${esc(p.sourceLabel)} ${icon('external')}</a></p>`:p.checked?`<p class="source">정보 확인일 ${esc(p.checked)} · 출처: ${esc(p.sourceLabel||'')}</p>`:''}`;
     const price=p.prices?`${p.example?'<p class="note">예시 요금이에요. 실제 업체 요금이 아니에요.</p>':p.priceNote?`<p class="note">${esc(p.priceNote)}</p>`:''}${p.prices.map(([g,rows])=>`<section class="price"><h3>${esc(g)}</h3><dl>${rows.map(([k,val])=>`<div><dt>${esc(k)}</dt><dd class="tnum">${esc(val)}</dd></div>`).join('')}</dl></section>`).join('')}`:(p.cat==='hospital'?`<div class="empty small"><b>진료비는 병원마다 달라요</b><p>같은 진료라도 병원별 차이가 커요. 방문 전에 예상 비용을 꼭 물어보세요.</p></div>`:`<div class="empty small"><b>요금은 아직 확인 전이에요</b><p>미용 종류와 아이의 체중·털 상태에 따라 달라져요. 예약할 때 예상 요금을 물어보세요.</p></div>`);
     const reviews=`<div class="empty small">${icon('chat')}<b>아직 연결된 후기가 없어요</b><p>블로그 후기 연결은 준비 중이에요. 다녀온 뒤 산책 일기에 남겨 두면 다음 선택에 도움이 돼요.</p><button type="button" class="btn btn-soft" id="review-record">산책 일기 쓰기</button></div>`;

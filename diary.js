@@ -220,7 +220,8 @@
   function placeOptions(sel){
     const groups=[['hospital','병원'],['hotel','호텔·돌봄'],['kinder','유치원'],['grooming','미용']];
     const seen=new Set();
-    return groups.map(([k,l])=>`<optgroup label="${l}">${ctx.PLACES.filter(p=>p.kinds.includes(k)&&!seen.has(p.id)&&seen.add(p.id)).map(p=>`<option value="${p.id}" ${p.id===sel?'selected':''}>${esc(p.name)}</option>`).join('')}</optgroup>`).join('')+`<option value="__custom" ${sel==='__custom'?'selected':''}>직접 입력</option>`;
+    /* 공공데이터 업체는 1,000곳 가까이 되므로 찜한 곳만 고를 수 있게 한다. 그 밖의 곳은 '직접 입력' */
+    return groups.map(([k,l])=>`<optgroup label="${l}">${ctx.PLACES.filter(p=>p.kinds.includes(k)&&(!p.public||p.id===sel||(ctx.state.saved||[]).includes(p.id))&&!seen.has(p.id)&&seen.add(p.id)).map(p=>`<option value="${p.id}" ${p.id===sel?'selected':''}>${esc(p.name)}</option>`).join('')}</optgroup>`).join('')+`<option value="__custom" ${sel==='__custom'?'selected':''}>직접 입력</option>`;
   }
   function openForm(pre={}){
     const e=pre.id?ctx.state.diary.find(x=>x.id===pre.id):null;

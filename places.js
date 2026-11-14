@@ -152,7 +152,25 @@
     together:{title:'커뮤니티',kind:'together',body:'보호자끼리 산책 친구를 찾고, 다녀온 곳의 경험과 정보를 나누는 공간을 준비하고 있어요.',note:'광고나 제휴와 상관없이 보호자의 실제 경험이 먼저 보이도록 만들 거예요.'},
     star:{title:'별들의 공간',kind:'star',body:'무지개다리를 건넌 아이를 기억하는 공간이에요. 장례와 추모에 필요한 정보를 조심스럽게 준비하고 있어요.',note:'준비가 끝나면 이 산책로 끝에서 만날 수 있어요.'}
   };
-  window.PLACES=[...hospitalPlaces,...moreHospitals,...kindergartens,...moreKinder,...grooming,...moreGrooming,...examples];
+  /* 전남광주통합특별시 공공데이터(public-places.js): 영업 중인 동물병원·미용업체 전체.
+     직접 확인한 나주 업체와 이름이 겹치면 직접 확인한 쪽만 남긴다. */
+  const curated=[...hospitalPlaces,...moreHospitals,...kindergartens,...moreKinder,...grooming,...moreGrooming];
+  const norm=n=>String(n).toLowerCase().replace(/동물병원|동물의료센터|동물메디컬센터|애견미용|펫살롱|[\s·&()\-_.,'"]/g,'');
+  const same=(a,b)=>{const x=norm(a),y=norm(b);return x.length>1&&y.length>1&&(x===y||x.includes(y)||y.includes(x));};
+  const publicPlaces=(window.PUBLIC_PLACES||[]).map(([id,name,k,region,dist,address,phone,lat,lng,masked,upd])=>{
+    const hosp=k==='h',cat=hosp?'hospital':'grooming',where=masked?address.replace(/ 일대$/,''):region;
+    return {id:'pub-'+id,name,cat,kinds:[cat],region,dist,address,phone,lat,lng,public:true,
+      hours:hosp?'진료 시간은 병원에 확인해 주세요':'영업 시간은 업체에 확인해 주세요',
+      description:hosp?`${where}에 등록된 동물병원이에요. 진료 과목·시간과 노령견 진료 여부는 방문 전에 전화로 확인해 주세요.`:`${where}에 등록된 반려동물 미용업체예요. 미용 가능한 체급과 요금은 예약할 때 확인해 주세요.`,
+      addrNote:masked?'공공데이터에서 상세 주소가 가려져 있어요. 지도 위치는 등록 좌표 기준이니 방문 전 업체에 정확한 주소를 물어보세요.':null,
+      sourceLabel:`지방행정 인허가 공공데이터(${hosp?'동물병원':'동물미용업'})`,checked:`${upd.slice(0,4)}.${upd.slice(4,6)}.${upd.slice(6)}`,
+      sizes:{},attrs:{},prices:null};
+  }).filter(p=>!curated.some(c=>c.region===p.region&&c.kinds.includes(p.cat)&&same(c.name,p.name)));
+  /* 지역 선택지: 광주 5개 구 + 전남 22개 시·군 */
+  const REGIONS=[['광주',['광주 동구','광주 서구','광주 남구','광주 북구','광주 광산구']],
+    ['전남',['나주시','목포시','여수시','순천시','광양시','담양군','곡성군','구례군','고흥군','보성군','화순군','장흥군','강진군','해남군','영암군','무안군','함평군','영광군','장성군','완도군','진도군','신안군']]];
+  window.PLACES=[...curated,...publicPlaces,...examples];
+  window.REGIONS=REGIONS;
   window.FILTERS=FILTERS;
   window.SOON=SOON;
   window.FACILITY_ICONS={'미끄럼 방지 매트':'grid','실내 놀이터':'slide','실외 놀이터':'slide','마당':'tree','테라스':'umbrella','루프탑':'building','수영장':'waves','주차장':'parking','반려동물 용품 판매':'bag','애견카페':'cup'};

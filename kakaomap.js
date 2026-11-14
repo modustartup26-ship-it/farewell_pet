@@ -27,6 +27,7 @@
     return new Promise(res=>new maps.services.Places().keywordSearch(q,(r,st)=>res(st===maps.services.Status.OK&&r[0]?{lat:+r[0].y,lng:+r[0].x}:null)));
   }
   async function locate(place){
+    if(place.lat&&place.lng)return {lat:place.lat,lng:place.lng};
     const key=place.id+'|'+place.address;
     if(cache[key])return cache[key];
     const maps=await ready();
@@ -35,7 +36,7 @@
     return pos;
   }
 
-  const routeUrl=(place,pos)=>pos?`https://map.kakao.com/link/to/${encodeURIComponent(place.name.replace(/,/g,' '))},${pos.lat},${pos.lng}`:`https://map.kakao.com/?q=${encodeURIComponent(roadAddress(place.address)||place.name)}`;
+  const routeUrl=(place,pos=place.lat&&place.lng?{lat:place.lat,lng:place.lng}:null)=>pos?`https://map.kakao.com/link/to/${encodeURIComponent(place.name.replace(/,/g,' '))},${pos.lat},${pos.lng}`:`https://map.kakao.com/?q=${encodeURIComponent(roadAddress(place.address)||place.name)}`;
 
   /* 상세 화면용: 한 곳 */
   async function showOne(el,place,onPos){
