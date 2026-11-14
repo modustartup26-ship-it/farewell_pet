@@ -173,7 +173,7 @@
     const groups=[['ok','조건에 맞아요'],['unknown','확인이 필요해요'],['none','둘러보기'],['no','조건이 맞지 않아요']];
     let html='';
     if(!r.shown.length){
-      html=`<div class="empty">${Minimi.svg(Minimi.config(pet))}<b>${r.hiddenByDist?'이 거리 안에는 아직 등록된 곳이 없어요':`${esc(f.region)}의 ${esc(cfg.title)} 정보는 아직 모으고 있어요`}</b><p>${r.hiddenByDist?`거리를 넓히면 ${r.hiddenByDist}곳이 보여요.`:'지금은 동물병원·미용실은 전남광주통합특별시 전체, 호텔·유치원은 나주시 정보부터 모으고 있어요.'}</p><button type="button" class="btn btn-soft" id="widen">필터 다시 고르기</button></div>`;
+      html=`<div class="empty">${Minimi.svg(Minimi.config(pet))}<b>${r.hiddenByDist?'이 거리 안에는 아직 등록된 곳이 없어요':`${esc(f.region)}의 ${esc(cfg.title)} 정보는 아직 모으고 있어요`}</b><p>${r.hiddenByDist?`거리를 넓히면 ${r.hiddenByDist}곳이 보여요.`:'공공데이터에 등록된 곳이 아직 없는 지역이에요. 가까운 다른 지역도 골라 보세요.'}</p><button type="button" class="btn btn-soft" id="widen">필터 다시 고르기</button></div>`;
     }else{
       groups.forEach(([k,t])=>{const list=r.shown.filter(x=>x.status===k);if(!list.length)return;html+=`<section class="result-group ${k}"><h3>${t} <span class="tnum">${list.length}</span></h3>${k==='unknown'?`<p class="note">물음표 항목은 업체에서 아직 확인되지 않은 정보예요. 문의할 때 꼭 물어보세요.</p>`:''}${list.map(card).join('')}</section>`;});
       if(r.hiddenByDist)html+=`<p class="note center">${r.hiddenByDist}곳은 더 먼 동네에 있어요. 거리를 넓히면 함께 보여요.</p>`;

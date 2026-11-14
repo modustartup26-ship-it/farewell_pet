@@ -58,8 +58,8 @@ Vercel은 `vercel.json` 설정으로 HTML/CSS/JS 페이지를 정적으로 배�
 
 ## 전남광주통합특별시 공공데이터
 
-`public-places.js`는 지방행정 인허가 공공데이터(동물병원·동물미용업 CSV)에서 영업 중인 곳만 뽑아 만든 파일입니다. 새 CSV를 받으면 아래처럼 다시 만들면 됩니다.
+`public-places.js`는 지방행정 인허가 공공데이터(동물병원·동물미용업·동물위탁관리업 CSV)에서 영업 중인 곳만 뽑아 만든 파일입니다. 새 CSV를 받으면 아래처럼 다시 만들면 됩니다.
 
 ```
-python3 tools/build_public_places.py 동물병원.csv 동물미용업.csv public-places.js
+python3 tools/build_public_places.py 동물병원.csv 동물미용업.csv 동물위탁관리업.csv public-places.js
 ```

@@ -1,6 +1,7 @@
 """지방행정 인허가 CSV(동물병원·동물미용업)를 public-places.js로 바꾼다.
-사용: python3 -I tools/build_public_places.py 동물병원.csv 동물미용업.csv
+사용: python3 -I tools/build_public_places.py 동물병원.csv 동물미용업.csv 동물위탁관리업.csv public-places.js
 - 영업/정상인 곳만 넣는다(폐업·휴업·취소 제외).
+- 미용업과 위탁관리업을 함께 등록한 업체(같은 지역·같은 이름)는 한 곳으로 합친다.
 - 좌표는 EPSG:5174(중부원점 Bessel)를 WGS84 위경도로 바꿔 지도에 바로 쓴다.
 - 나주시는 빛가람동, 다른 시·군·구는 등록 업체 좌표의 중앙값을 기준으로 거리 단계(1~5)를 매긴다."""
 import csv, json, math, re, sys, statistics
@@ -91,14 +92,34 @@ def load(path, kind):
         addr, masked = address(r, reg)
         pos = to_wgs(r['좌표정보(X)'].strip(), r['좌표정보(Y)'].strip())
         out.append(dict(r=r, kind=kind, name=name, region=reg, address=addr, masked=masked, pos=pos,
-                        phone=phone(r['전화번호']), id=('pub-h-' if kind == 'hospital' else 'pub-g-') + r['관리번호'].strip(),
+                        phone=phone(r['전화번호']), id=kind[0] + r['관리번호'].strip(),
                         updated=r['데이터갱신시점'][:10]))
     return out, skipped
 
-def main(hosp_csv, groom_csv, out_js):
+KINDER = re.compile(r'유치원|놀이|데이케어|스쿨|school|kinder|키즈', re.I)
+def letters(i):
+    k = i['kind']
+    if k == 'hospital': return 'h'
+    if k == 'grooming': return 'g'
+    return 'wk' if KINDER.search(i['name']) else 'w'   # w=호텔·돌봄, k=유치원
+def nkey(i): return (i['region'], re.sub(r'[\s·&()\-_.,]', '', i['name']).lower())
+
+def main(hosp_csv, groom_csv, care_csv, out_js):
     items, skipped = [], []
-    for p, k in ((hosp_csv, 'hospital'), (groom_csv, 'grooming')):
+    for p, k in ((hosp_csv, 'hospital'), (groom_csv, 'grooming'), (care_csv, 'wtak')):
         a, s = load(p, k); items += a; skipped += s
+    for i in items: i['letters'] = letters(i)
+    # 미용 + 위탁을 같이 하는 곳은 하나로 합친다
+    groom = {nkey(i): i for i in items if i['kind'] == 'grooming'}
+    merged = []
+    for i in items:
+        g = groom.get(nkey(i)) if i['kind'] == 'wtak' else None
+        if g:
+            g['letters'] = ''.join(sorted(set(g['letters'] + i['letters']), key='hgwk'.index))
+            if not g['phone']: g['phone'] = i['phone']
+            if not g['pos']: g['pos'] = i['pos']
+        else: merged.append(i)
+    items = merged
     centers = {}
     for reg in {i['region'] for i in items}:
         pts = [i['pos'] for i in items if i['region'] == reg and i['pos']]
@@ -109,20 +130,20 @@ def main(hosp_csv, groom_csv, out_js):
         if i['pos'] and km(i['pos'], centers[i['region']]) > 60: i['pos'] = None
         dist = step(km(i['pos'], centers[i['region']])) if i['pos'] else 3
         # 한 줄 배열로 줄여 담고, 설명·출처 같은 반복 문장은 places.js에서 붙인다
-        # [id, 이름, 종류(h/g), 지역, 거리단계, 주소, 전화, 위도, 경도, 주소가림(0/1), 갱신일]
+        # [id, 이름, 종류, 지역, 거리단계, 주소, 전화, 위도, 경도, 주소가림(0/1), 갱신일]
         lat, lng = (round(i['pos'][0], 5), round(i['pos'][1], 5)) if i['pos'] else (None, None)
-        places.append([i['id'].replace('pub-h-', 'h').replace('pub-g-', 'g'), i['name'], i['kind'][0], i['region'], dist,
+        places.append([i['id'], i['name'], i['letters'], i['region'], dist,
                        i['address'], i['phone'], lat, lng, 1 if i['masked'] else 0, i['updated'].replace('-', '')])
     places.sort(key=lambda p: (p[3], p[2], p[4], p[1]))
-    js = ('/* 전남광주통합특별시 동물병원·동물미용업 — 지방행정 인허가 공공데이터에서 영업 중인 곳만 자동 생성.\n'
+    js = ('/* 전남광주통합특별시 동물병원·동물미용업·동물위탁관리업 — 지방행정 인허가 공공데이터에서 영업 중인 곳만 자동 생성.\n'
           '   tools/build_public_places.py로 다시 만들 수 있다. 직접 고치지 말 것.\n'
-          '   행: [id, 이름, 종류(h=동물병원 g=미용), 지역, 거리단계, 주소, 전화, 위도, 경도, 주소가림, 갱신일] */\n'
+          '   행: [id, 이름, 종류(h=동물병원 g=미용 w=호텔·돌봄 k=유치원), 지역, 거리단계, 주소, 전화, 위도, 경도, 주소가림, 갱신일] */\n'
           'window.PUBLIC_PLACES=[\n' + ',\n'.join(json.dumps(p, ensure_ascii=False, separators=(',', ':')) for p in places) + '\n];\n')
     open(out_js, 'w', encoding='utf-8').write(js)
     from collections import Counter
-    print('total', len(places), Counter(p[2] for p in places), 'no coords', sum(p[7] is None for p in places))
+    print('total', len(places), Counter(p[2] for p in places), 'merged', sum('g' in p[2] and 'w' in p[2] for p in places), 'no coords', sum(p[7] is None for p in places))
     print('skipped', skipped)
     print(Counter(p[3] for p in places))
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else 'public-places.js')
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4] if len(sys.argv) > 4 else 'public-places.js')
