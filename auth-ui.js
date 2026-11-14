@@ -68,8 +68,8 @@
     password.autocomplete=signup?'new-password':'current-password';
     password.placeholder=signup?'8자 이상':'비밀번호';
     resend.hidden=!verifying;
-    toggle.hidden=verifying;
-    toggle.textContent=signup?'이미 계정이 있으신가요? 로그인':'계정이 없으신가요? 회원가입';
+    toggle.hidden=false;
+    toggle.textContent=verifying?'링크로 인증했어요 · 로그인으로 돌아가기':signup?'이미 계정이 있으신가요? 로그인':'계정이 없으신가요? 회원가입';
     showError('');
     showInfo('');
   }
@@ -91,7 +91,8 @@
       return;
     }
     signupEmail=nextEmail;
-    const {data,error}=await chat.client.auth.signUp({email:signupEmail,password:nextPassword});
+    /* 메일 속 링크를 눌러도 앱으로 돌아와 로그인되게 지금 페이지 주소를 넘긴다 */
+    const {data,error}=await chat.client.auth.signUp({email:signupEmail,password:nextPassword,options:{emailRedirectTo:location.origin+location.pathname}});
     if(error)throw error;
     if(data.session){
       await chat.client.auth.signOut({scope:'local'});
@@ -100,7 +101,7 @@
     stage='verify';
     code.value='';
     renderMode();
-    showInfo('인증 코드를 이메일로 보냈어요. 코드를 입력해 회원가입을 완료해 주세요.');
+    showInfo('인증 메일을 보냈어요. 메일 속 숫자 코드를 입력하거나, 메일의 확인 링크를 눌러도 가입이 끝나요. 링크를 눌렀다면 아래 ‘로그인으로 돌아가기’를 눌러 로그인해 주세요. 메일이 안 보이면 스팸함도 확인해 주세요.');
   }
   async function verifyCode(){
     const {data,error}=await chat.client.auth.verifyOtp({
@@ -132,10 +133,14 @@
       console.error('Unable to authenticate with email and password.',error);
       if(error.message==='email_confirmation_disabled'){
         showError('이메일 인증이 꺼져 있어요. Supabase에서 Email provider의 Confirm email을 켜고 다시 시도해 주세요.');
+      }else if(error.code==='over_email_send_rate_limit'||error.status===429){
+        showError('인증 메일을 너무 자주 보냈어요. 시험용 메일 서버는 한 시간에 몇 통만 보낼 수 있어요. 잠시 뒤에 다시 시도해 주세요.');
+      }else if(error.code==='user_already_exists'){
+        showError('이미 가입된 이메일이에요. 로그인으로 전환해 주세요.');
       }else if(error.code==='email_not_confirmed'){
         showError('이메일 인증이 완료되지 않은 계정이에요. 회원가입 화면에서 인증 코드를 받아 주세요.');
       }else if(mode==='signup'&&stage==='verify'){
-        showError('인증 코드가 올바르지 않거나 만료됐어요. 코드를 확인하거나 다시 보내 주세요.');
+        showError('인증 코드가 올바르지 않거나 만료됐어요. 메일의 확인 링크를 이미 눌렀다면 코드는 더 쓸 수 없으니 ‘로그인으로 돌아가기’를 눌러 주세요.');
       }else{
         showError(mode==='signup'
           ?'인증 코드를 보내지 못했어요. 이메일 주소와 비밀번호를 확인해 주세요.'
@@ -149,11 +154,13 @@
   dialog.querySelector('.auth-close').addEventListener('click',()=>dialog.close());
   dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close();});
   toggle.addEventListener('click',()=>{
+    const back=mode==='signup'&&stage==='verify', keep=signupEmail;
     mode=mode==='login'?'signup':'login';
     stage='details';
     signupEmail='';
     form.reset();
     renderMode();
+    if(back){email.value=keep;password.focus();showInfo('인증한 이메일과 비밀번호로 로그인해 주세요.');}
   });
   resend.addEventListener('click',async()=>{
     resend.disabled=true;
@@ -164,7 +171,7 @@
       showInfo('새 인증 코드를 이메일로 보냈어요.');
     }catch(error){
       console.error('Unable to resend the email verification code.',error);
-      showError('인증 코드를 다시 보내지 못했어요. 잠시 뒤 다시 시도해 주세요.');
+      showError(error&&(error.code==='over_email_send_rate_limit'||error.status===429)?'인증 메일을 너무 자주 보냈어요. 한 시간쯤 뒤에 다시 시도해 주세요.':'인증 코드를 다시 보내지 못했어요. 잠시 뒤 다시 시도해 주세요.');
     }finally{
       resend.disabled=false;
     }
