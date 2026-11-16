@@ -342,7 +342,7 @@
     view=v;
     document.querySelectorAll('.view').forEach(s=>s.hidden=s.id!=='view-'+v);
     document.querySelectorAll('.tabbar button').forEach(b=>{if(b.dataset.view===v)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
-    if(v==='saved')renderSaved();if(v==='diary')Diary.render();
+    if(v==='saved')renderSaved();if(v==='diary')Daily.render();
     if(v==='map')map.redraw();
     window.scrollTo(0,0);
   }
@@ -371,7 +371,7 @@
         user=null;hasPet=false;petName='우리 아이';lastPetSnapshot='{}';
         menu.hidden=true;
         menuButton.setAttribute('aria-expanded','false');
-        Diary.updatePetProfile(pet,petName);Diary.setUser(null);
+        Diary.updatePetProfile(pet,petName);Diary.setUser(null);Daily.updatePetProfile(pet,petName);Daily.setUser(null);
         renderHeader();map.redraw();
         toast(cacheCleared?'로그아웃했어요. 아이 정보는 계정에 저장돼 있어요.':'로그아웃했지만 이 기기의 아이 정보 캐시를 지우지 못했어요.');
       }).catch(error=>{
@@ -422,8 +422,10 @@
     petName=hasPet?pet.name:'우리 아이';
     lastPetSnapshot=JSON.stringify(pet);
     Diary.init({state,save,PLACES,pet,petName,modal,toast,setView,user,close:()=>$('#modal').close()});
+    Daily.init({state,save,pet,petName,modal,toast,user,close:()=>$('#modal').close()});
     renderHeader();map.redraw();
     const go=new URLSearchParams(location.search).get('go');
+    if(go==='diary')setView('diary');
     if(go&&FILTERS[go])setTimeout(()=>map.walkTo(go,()=>openNode(go)),500);
   }
   initializeProfile();

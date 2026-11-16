@@ -182,7 +182,7 @@
   /* ---------- 화면 ---------- */
   function render(){
     if(!month){const t=new Date();month=new Date(t.getFullYear(),t.getMonth(),1);}
-    document.querySelector('#diary-title').textContent=`${josa.of(ctx.petName)} 산책 일기`;
+    document.querySelector('#facility-title').textContent=`${josa.of(ctx.petName)} 시설 기록`;
     const y=month.getFullYear(),m=month.getMonth();
     const first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
     const key=`${y}-${pad(m+1)}`;
@@ -244,7 +244,7 @@
     const checked=new Set((v.todos||[]).map(t=>t.t));
     const extra=(v.todos||[]).filter(t=>!TODOS.includes(t.t));
     const mm=Minimi.config(ctx.pet);
-    ctx.modal(e?'일기 고치기':'산책 일기 쓰기',`
+    ctx.modal(e?'시설 기록 고치기':'시설 기록 쓰기',`
       <div class="row2f"><label class="field-l">날짜<input type="date" name="date" value="${esc(v.date)}" required></label><label class="field-l">시간 <small>(선택)</small><input type="time" name="time" value="${esc(v.time)}"></label></div>
       <p class="plan-hint" id="plan-hint" hidden>앞으로의 날짜예요. ‘다녀올 예정’으로 저장되고, 구글 캘린더에 일정으로 넣을 수 있어요.</p>
       <label class="field-l">어디에 갔나요<select name="placeId" id="d-place">${placeOptions(v.placeId)}</select></label>
@@ -282,7 +282,7 @@
         const target=e?Object.assign(e,rec):rec;
         if(!e)ctx.state.diary.push(rec);
         ctx.save();ctx.close();pushEntry(target).then(ok=>{if(ok&&cloud.user)Reports.push(cloud.client,target);render();});month=new Date(parse(date).getFullYear(),parse(date).getMonth(),1);selected=null;
-        ctx.setView('diary');toast(rec.date>today()?'다녀올 예정을 적어 뒀어요.':report?(cloud.user?'일기를 저장했어요. 알려 주셔서 고마워요! 다음 보호자에게 큰 도움이 돼요.':'일기를 저장했어요. 로그인하면 알려 주신 내용이 다른 보호자에게도 보여요.'):'일기를 저장했어요.');
+        ctx.setView('diary');if(window.Daily)Daily.render();toast(rec.date>today()?'다녀올 예정을 적어 뒀어요.':report?(cloud.user?'일기를 저장했어요. 알려 주셔서 고마워요! 다음 보호자에게 큰 도움이 돼요.':'일기를 저장했어요. 로그인하면 알려 주신 내용이 다른 보호자에게도 보여요.'):'일기를 저장했어요.');
       });
     const f=document.querySelector('#modal-form');
     let repFor=null;
@@ -302,7 +302,7 @@
   }
 
   function bind(){
-    document.querySelector('#view-diary').addEventListener('click',ev=>{
+    document.querySelector('#facility').addEventListener('click',ev=>{
       const b=ev.target.closest('button,input');if(!b)return;
       if(b.dataset.cal){month=new Date(month.getFullYear(),month.getMonth()+Number(b.dataset.cal),1);selected=null;render();}
       if(b.dataset.day){selected=selected===b.dataset.day?null:b.dataset.day;render();}
