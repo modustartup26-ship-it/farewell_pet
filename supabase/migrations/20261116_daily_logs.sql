@@ -13,6 +13,7 @@ create table public.daily_logs (
 );
 create index daily_logs_guardian_idx on public.daily_logs(guardian_id, log_date desc);
 create index daily_logs_walk_idx on public.daily_logs(log_date) where type = 'walk';
+create index daily_logs_media_idx on public.daily_logs(media_id);
 
 alter table public.daily_logs enable row level security;
 revoke all on public.daily_logs from anon, authenticated;
@@ -20,16 +21,16 @@ grant select, delete on public.daily_logs to authenticated;
 grant insert (client_id, type, log_date, log_time, data, media_id) on public.daily_logs to authenticated;
 grant update (client_id, type, log_date, log_time, data, media_id) on public.daily_logs to authenticated;
 
-create policy "guardians read own daily logs" on public.daily_logs for select to authenticated using (guardian_id = auth.uid());
+create policy "guardians read own daily logs" on public.daily_logs for select to authenticated using (guardian_id = (select auth.uid()));
 create policy "guardians write own daily logs" on public.daily_logs for insert to authenticated
-  with check (guardian_id = auth.uid() and (media_id is null or exists (select 1 from public.media m where m.id = media_id and m.owner_id = auth.uid())));
+  with check (guardian_id = auth.uid() and (media_id is null or exists (select 1 from public.media m where m.id = media_id and m.owner_id = (select auth.uid()))));
 create policy "guardians edit own daily logs" on public.daily_logs for update to authenticated
-  using (guardian_id = auth.uid())
-  with check (guardian_id = auth.uid() and (media_id is null or exists (select 1 from public.media m where m.id = media_id and m.owner_id = auth.uid())));
-create policy "guardians delete own daily logs" on public.daily_logs for delete to authenticated using (guardian_id = auth.uid());
+  using (guardian_id = (select auth.uid()))
+  with check (guardian_id = auth.uid() and (media_id is null or exists (select 1 from public.media m where m.id = media_id and m.owner_id = (select auth.uid()))));
+create policy "guardians delete own daily logs" on public.daily_logs for delete to authenticated using (guardian_id = (select auth.uid()));
 
 -- 같은 체급 그룹(data.group) 보호자들의 최근 7일 하루 평균 산책 시간과 비교한 '상위 %'.
--- 개인 기록은 돌려주지 않고, 20명 미만이면 pct를 비워 화면이 추정치를 쓰게 한다.
+-- security definer는 다른 보호자 행을 세기 위해 필요하다. 개인 기록은 돌려주지 않고, 20명 미만이면 pct를 비워 화면이 추정치를 쓰게 한다.
 create or replace function public.daily_walk_rank(p_group text, p_minutes numeric)
 returns table (n integer, pct numeric)
 language sql
