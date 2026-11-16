@@ -27,25 +27,41 @@
   };
   const MEAL_AMT=['다 먹었어요','절반쯤','조금','안 먹었어요'];
   const PLAY_KIND=['터그 놀이','노즈워크·찾기','공 던지기','실내 달리기','친구랑 놀기','훈련·개인기'];
-  /* 대변 모양: 브리스톨 척도를 5단계로 줄인 것 */
+  /* 대변 모양: 퓨리나 대변 점수(Purina Fecal Scoring Chart, 1~7점, 2점이 이상적).
+     수의 임상·연구에서 가장 널리 쓰는 반려견 대변 척도. 보호자 간 판정 일치도가 낮을 수 있어(Cavett 외 2021, JSAP)
+     그림과 '집어 올렸을 때' 기준을 함께 보여 준다. */
+  const SCALE='purina7';
   const SHAPES=[
-    {k:1,l:'딱딱해요',d:'토끼똥처럼 작고 단단'},
-    {k:2,l:'조금 단단',d:'갈라진 덩어리'},
-    {k:3,l:'좋아요',d:'촉촉하고 모양 유지'},
-    {k:4,l:'무른 편',d:'모양이 퍼짐'},
-    {k:5,l:'설사',d:'물처럼 흐름'}
+    {k:1,l:'매우 딱딱',d:'마른 알갱이, 누기 힘들어함'},
+    {k:2,l:'이상적',d:'단단하지만 말랑, 마디가 보이고 거의 안 묻음',ideal:true},
+    {k:3,l:'괜찮아요',d:'마디 없이 촉촉, 묻지만 모양 유지'},
+    {k:4,l:'무른 편',d:'아주 축축, 집으면 모양이 무너짐'},
+    {k:5,l:'매우 무름',d:'통나무 대신 무더기 모양'},
+    {k:6,l:'형태 없음',d:'질감만 있고 흩어진 무더기'},
+    {k:7,l:'물설사',d:'질감 없이 물웅덩이'}
   ];
+  /* 이전 5단계 기록을 7점 척도로 옮긴다 */
+  const LEGACY_SHAPE={1:1,2:2,3:2,4:5,5:7};
+  /* 색: Hill's·MedVet 등 수의 자료의 반려견 대변 색 안내.
+     level: ok 정상 / watch 계속되면 상담 / soon 빨리 상담 / now 오늘 바로 */
   const COLORS=[
-    {k:'brown',l:'갈색',hex:'#8B5A2B',ok:true},
-    {k:'dark',l:'진한 갈색',hex:'#5A3A1E',ok:true},
-    {k:'yellow',l:'노란빛',hex:'#D3A33A'},
-    {k:'green',l:'초록빛',hex:'#6E8B3D'},
-    {k:'black',l:'검은색',hex:'#231C18',alarm:true},
-    {k:'red',l:'붉은빛',hex:'#B0342C',alarm:true},
-    {k:'gray',l:'회백색',hex:'#CFC6B3',alarm:true}
+    {k:'brown',l:'갈색',hex:'#7A4A22',level:'ok',why:''},
+    {k:'green',l:'초록빛',hex:'#6E8B3D',level:'watch',why:'초록 변은 풀을 먹은 뒤 흔해요. 계속되면 담낭 문제일 수 있어요.'},
+    {k:'yellow',l:'노랑·주황',hex:'#D8962F',level:'watch',why:'노랑·주황 변이 계속되면 간·담도 문제나 음식 문제의 신호일 수 있어요.'},
+    {k:'gray',l:'회색·기름진',hex:'#BDB7A8',level:'soon',why:'회색이거나 기름진 변은 담도·췌장 문제나 지방 흡수 문제의 신호일 수 있어요.'},
+    {k:'red',l:'붉은 줄·피',hex:'#B0342C',level:'now',why:'붉은 피나 붉은 줄은 대장·항문 쪽 출혈일 수 있어요. 젤리 같은 핏덩이가 갑자기 여러 번 나오면 응급이에요.'},
+    {k:'black',l:'검고 끈적',hex:'#1E1916',level:'now',why:'검고 타르처럼 끈적한 변(흑색변)은 위·소장 출혈일 수 있어요. 묽기까지 하면 바로 병원에 가 주세요.'}
   ];
-  const FLAGS=['피가 보여요','점액이 있어요','이물질이 보여요','힘들게 눴어요'];
-  const PEE=['맑은 노란색','진한 노란색','붉은빛','양이 아주 많아요','자주 마려워해요'];
+  const FLAGS=['점액(젤리 같은 막)','흰 쌀알 같은 것','이물질','힘을 줘도 잘 안 나와요','자주 쪼그려 앉아요'];
+  /* 소변: 연한 노랑이 정상. 진한 노랑은 물 부족 신호, 주황·갈색·분홍·빨강은 바로 상담 */
+  const UCOLORS=[
+    {k:'pale',l:'연한 노랑',hex:'#F3E27A',level:'ok'},
+    {k:'clear',l:'거의 투명',hex:'#F4F6F2',level:'watch',why:'소변이 계속 투명하면 물을 많이 마시는 질환일 수 있어 상담을 권해요.'},
+    {k:'dark',l:'진한 노랑',hex:'#D9A520',level:'watch',why:'진한 노란 소변은 대개 물이 부족하다는 신호예요. 물을 더 주고 다음 소변을 봐 주세요.'},
+    {k:'orange',l:'주황·갈색',hex:'#9A5A1C',level:'now',why:'주황·갈색 소변은 간 문제나 적혈구·근육 손상의 신호일 수 있어요.'},
+    {k:'red',l:'분홍·빨강',hex:'#C8504A',level:'now',why:'분홍·빨간 소변은 대개 피가 섞인 거예요. 방광염·결석 등을 확인해야 해요.'}
+  ];
+  const PEE=['힘을 주는데 잘 안 나와요','자주 조금씩 봐요','탁하거나 냄새가 심해요','양이 평소보다 많아요'];
 
   /* ---------- 견종·체급·나이·체형으로 산책 권장 범위 ----------
      흔히 쓰이는 일반 권장 범위(하루 총 산책 시간)를 참고값으로 둔다. 진료 기준이 아니다. */
@@ -120,6 +136,11 @@
   }
   function weekAvg(end){let sum=0,days=0;const first=logs().filter(l=>l.type==='walk').map(l=>l.date).sort()[0];if(!first)return null;for(let i=0;i<7;i++){const d=addDays(end,-i);if(d<first)break;sum+=totals(d).walk;days++;}return days?Math.round(sum/days):null;}
 
+  function migratePoop(){
+    let n=0;logs().forEach(l=>{if(l.type==='poop'&&l.shape&&!l.scale){l.shape=LEGACY_SHAPE[l.shape]||2;l.scale=SCALE;n++;}if(l.type==='poop'&&l.color==='dark'){l.color='brown';n++;}});
+    if(n)ctx.save();
+  }
+
   /* ---------- 저장 ---------- */
   const fromRow=r=>({...(r.data||{}),id:r.client_id||r.id,serverId:r.id,type:r.type,date:r.log_date,time:r.log_time||'',mediaId:r.media_id||null});
   function toRow(l){const {id,serverId,type,date,time,mediaId,photo,...data}=l;return {client_id:id,type,log_date:date,log_time:time||'',data,media_id:mediaId||null};}
@@ -151,7 +172,7 @@
       if(error)throw error;
       const known=new Set(data.map(r=>r.client_id));
       const local=logs().filter(l=>!l.serverId&&!known.has(l.id));
-      ctx.state.daily=data.map(fromRow).concat(local);ctx.save();
+      ctx.state.daily=data.map(fromRow).concat(local);migratePoop();ctx.save();
       local.forEach(push);
       const ids=[...new Set(ctx.state.daily.map(l=>l.mediaId).filter(Boolean))];
       if(ids.length){const {data:m}=await cloud.client.from('media').select('id,path').in('id',ids);(m||[]).forEach(r=>cloud.mediaRows.set(r.id,r));}
@@ -260,20 +281,37 @@
   }
 
   /* 배변 이상 신호 */
+  /* 배변 이상 신호. 한 번 다른 변은 응급이 아니고, 24시간 안에 여러 번 바뀌거나 다른 증상이 함께면 상담 (Hill's) */
   function healthNote(d){
+    const win=logs().filter(l=>l.type==='poop'&&(l.date===d||l.date===addDays(d,-1)));
     const ps=onDay(d).filter(l=>l.type==='poop');
-    const msgs=[];
-    if(ps.some(l=>COLORS.find(c=>c.k===l.color&&c.alarm)))msgs.push('검은색·붉은빛·회백색 변은 출혈이나 간·담도 문제의 신호일 수 있어요.');
-    if(ps.some(l=>(l.flags||[]).includes('피가 보여요')))msgs.push('변에 피가 보였어요.');
-    if(ps.filter(l=>Number(l.shape)===5).length>=2)msgs.push('오늘 설사가 두 번 이상이에요. 물을 잘 마시는지 봐 주세요.');
-    if(ps.some(l=>(l.pee||[]).includes('붉은빛')))msgs.push('소변이 붉은빛이었어요.');
-    if(!msgs.length){
-      /* 대변 기록을 꾸준히 해 온 경우에만 '이틀째 없음'을 알린다 */
+    const stools=ps.filter(l=>l.kind!=='소변'), pees=ps.filter(l=>l.kind!=='대변');
+    const now=[],soon=[],watch=[];
+    const col=k=>COLORS.find(c=>c.k===k), ucol=k=>UCOLORS.find(c=>c.k===k);
+    const uniq=new Set();
+    const push=(arr,m)=>{if(m&&!uniq.has(m)){uniq.add(m);arr.push(m);}};
+    stools.forEach(l=>{const c=col(l.color);if(!c)return;if(c.level==='now')push(now,c.why);if(c.level==='soon')push(soon,c.why);});
+    /* 초록·노랑은 이틀에 걸쳐 두 번 이상일 때만 */
+    ['green','yellow'].forEach(k=>{if(win.filter(l=>l.kind!=='소변'&&l.color===k).length>=2)push(watch,col(k).why);});
+    const loose=stools.filter(l=>Number(l.shape)>=6).length;
+    if(loose>=2)push(soon,'오늘 형태 없는 변·물설사가 두 번 이상이에요. 24시간 안에 여러 번 바뀌면 진료를 권해요. 물을 잘 마시는지도 봐 주세요.');
+    else if(loose===1&&stools.some(l=>Number(l.shape)===7))push(watch,'물설사를 한 번 했어요. 한 번은 흔하지만, 기운·식욕이 떨어지거나 또 하면 상담해 주세요.');
+    if(stools.some(l=>Number(l.shape)===1&&(l.flags||[]).includes('힘을 줘도 잘 안 나와요')))push(soon,'아주 딱딱한 변을 힘들게 눴어요. 물이 부족하거나 변비일 수 있어요.');
+    if(stools.some(l=>(l.flags||[]).includes('흰 쌀알 같은 것')))push(soon,'변에 흰 쌀알 같은 것이 보이면 촌충일 수 있어요. 구충을 상담해 주세요.');
+    if(stools.some(l=>(l.flags||[]).includes('점액(젤리 같은 막)'))&&loose)push(watch,'점액이 섞인 무른 변은 대장 쪽 염증에서 흔해요.');
+    if(stools.some(l=>(l.flags||[]).includes('자주 쪼그려 앉아요')))push(watch,'자주 쪼그려 앉는데 잘 안 나오면 변비나 대장 염증일 수 있어요.');
+    pees.forEach(l=>{const c=ucol(l.ucolor);if(!c)return;if(c.level==='now')push(now,c.why);});
+    ['dark','clear'].forEach(k=>{if(win.filter(l=>l.kind!=='대변'&&l.ucolor===k).length>=2)push(watch,ucol(k).why);});
+    if(pees.some(l=>(l.pee||[]).includes('힘을 주는데 잘 안 나와요')))push(now,'소변을 보려고 힘을 주는데 잘 안 나오면 요도가 막힌 응급일 수 있어요. 특히 수컷이면 바로 병원에 가 주세요.');
+    if(pees.some(l=>(l.pee||[]).includes('자주 조금씩 봐요')||(l.pee||[]).includes('탁하거나 냄새가 심해요')))push(soon,'자주 조금씩 보거나 탁하고 냄새가 심하면 방광염일 수 있어요.');
+    if(!now.length&&!soon.length&&!watch.length){
       const poopDays=new Set(logs().filter(l=>l.type==='poop'&&l.kind!=='소변').map(l=>l.date));
-      if(d===today()&&poopDays.size>=3&&!poopDays.has(d)&&!poopDays.has(addDays(d,-1)))msgs.push('이틀째 대변 기록이 없어요. 잊고 안 남긴 거라면 괜찮아요.');
+      if(d===today()&&poopDays.size>=3&&!poopDays.has(d)&&!poopDays.has(addDays(d,-1)))push(watch,'이틀째 대변 기록이 없어요. 잊고 안 남긴 거라면 괜찮아요.');
       else return '';
     }
-    return `<aside class="health-note" role="status">${icon('poop')}<div><b>배변 확인이 필요해요</b>${msgs.map(m=>`<p>${esc(m)}</p>`).join('')}<a href="consult.html">수의사에게 물어보기 ${icon('chev-right')}</a></div></aside>`;
+    const lvl=now.length?'now':soon.length?'soon':'watch';
+    const head={now:'오늘 바로 병원에 연락해 주세요',soon:'빨리 수의사와 상담해 주세요',watch:'지켜봐 주세요'}[lvl];
+    return `<aside class="health-note ${lvl}" role="status">${icon('poop')}<div><b>${head}</b>${[...now,...soon,...watch].map(m=>`<p>${esc(m)}</p>`).join('')}<small>앱의 안내는 진단이 아니에요. 기운이 없거나, 토하거나, 밥을 안 먹으면 한 번이라도 진료를 받아 주세요. 병원에 갈 때는 엄지손톱만큼 신선한 변을 챙기면 좋아요.</small><a href="consult.html">수의사에게 물어보기 ${icon('chev-right')}</a></div></aside>`;
   }
 
   /* 셋로그처럼 그 순간의 사진 */
@@ -294,7 +332,7 @@
     switch(l.type){
       case 'meal':return [l.food||'밥',[l.amount,l.grams?l.grams+'g':''].filter(Boolean).join(' · ')];
       case 'walk':return [`산책 ${l.min}분`,[l.km?Number(l.km).toFixed(2)+'km':'',l.poops?`대변 ${l.poops}`:'',l.pees?`소변 ${l.pees}`:'',l.where].filter(Boolean).join(' · ')];
-      case 'poop':{const s=SHAPES.find(x=>x.k===Number(l.shape)),c=COLORS.find(x=>x.k===l.color);return [l.kind==='소변'?'소변':l.kind==='둘 다'?'대변 · 소변':'대변',[s?s.l:'',c?c.l:'',...(l.flags||[]),...(l.pee||[]),l.where].filter(Boolean).join(' · ')];}
+      case 'poop':{const s=SHAPES.find(x=>x.k===Number(l.shape)),c=COLORS.find(x=>x.k===l.color),u=UCOLORS.find(x=>x.k===l.ucolor);return [l.kind==='소변'?'소변':l.kind==='둘 다'?'대변 · 소변':'대변',[s?`${s.k}점 ${s.l}`:'',c?c.l:'',u?'소변 '+u.l:'',...(l.flags||[]),...(l.pee||[]),l.where].filter(Boolean).join(' · ')];}
       case 'supp':return [l.name||'영양제',l.count>1?`${l.count}개`:''];
       case 'snack':return [l.name||'간식',l.count>1?`${l.count}개`:''];
       case 'play':return [l.kind||'놀이',`${l.min}분`];
@@ -356,32 +394,39 @@
     bindForm(document.querySelector('#modal-form'));
   }
   function poopForm(v){
+    const sw=(name,list,sel)=>list.map(c=>`<label class="swatch" title="${c.l}"><input type="radio" name="${name}" value="${c.k}" ${sel===c.k?'checked':''}><i style="--sw:${c.hex}"></i><span>${c.l}</span></label>`).join('');
     return `${timeField()}
       <div class="field-l"><span>무엇을 했나요</span><div class="chips seg">${chips('kind',['대변','소변','둘 다'],v.kind||'대변')}</div></div>
       <div class="poop-detail" data-for="stool">
-        <div class="field-l"><span>모양</span><div class="shapes">${SHAPES.map(s=>`<label class="shape"><input type="radio" name="shape" value="${s.k}" ${Number(v.shape||3)===s.k?'checked':''}>${shapeSvg(s.k)}<b>${s.l}</b><small>${s.d}</small></label>`).join('')}</div></div>
-        <div class="field-l"><span>색깔</span><div class="swatches">${COLORS.map(c=>`<label class="swatch" title="${c.l}"><input type="radio" name="color" value="${c.k}" ${(v.color||'brown')===c.k?'checked':''}><i style="--sw:${c.hex}"></i><span>${c.l}</span></label>`).join('')}</div></div>
+        <div class="field-l"><span>모양 <small>(집어 올렸을 때 기준 · 1~7점)</small></span><div class="shapes">${SHAPES.map(s=>`<label class="shape ${s.ideal?'ideal':''}"><input type="radio" name="shape" value="${s.k}" ${Number(v.shape||2)===s.k?'checked':''}>${shapeSvg(s.k)}<b><span class="sc">${s.k}</span>${s.l}</b><small>${s.d}</small></label>`).join('')}</div></div>
+        <div class="field-l"><span>색깔</span><div class="swatches">${sw('color',COLORS,v.color||'brown')}</div></div>
         <div class="field-l"><span>눈에 띈 것 <small>(선택)</small></span><div class="chips">${chips('flags',FLAGS,v.flags||[],'checkbox')}</div></div>
       </div>
-      <div class="poop-detail" data-for="pee" hidden><div class="field-l"><span>소변 상태 <small>(선택)</small></span><div class="chips">${chips('pee',PEE,v.pee||[],'checkbox')}</div></div></div>
-      <div class="field-l"><span>어디서</span><div class="chips">${chips('where',['산책 중','집 패드','집 밖 화장실'],v.where||'산책 중')}</div></div>`;
+      <div class="poop-detail" data-for="pee" hidden>
+        <div class="field-l"><span>소변 색</span><div class="swatches">${sw('ucolor',UCOLORS,v.ucolor||'pale')}</div></div>
+        <div class="field-l"><span>눈에 띈 것 <small>(선택)</small></span><div class="chips">${chips('pee',PEE,v.pee||[],'checkbox')}</div></div>
+      </div>
+      <div class="field-l"><span>어디서</span><div class="chips">${chips('where',['산책 중','집 패드','집 밖 화장실'],v.where||'산책 중')}</div></div>
+      <p class="hint src-hint">모양은 동물병원에서 쓰는 퓨리나 대변 점수(2점이 이상적)를, 색·소변 안내는 Hill's 등 수의 자료를 따랐어요. 진단이 아니라 기록용이에요.</p>`;
   }
   function readPoop(fd){
     const kind=fd.get('kind');const r={kind,where:fd.get('where')||''};
-    if(kind!=='소변'){r.shape=Number(fd.get('shape'))||3;r.color=fd.get('color')||'brown';const f=fd.getAll('flags');if(f.length)r.flags=f;}
-    if(kind!=='대변'){const p=fd.getAll('pee');if(p.length)r.pee=p;}
+    if(kind!=='소변'){r.shape=Number(fd.get('shape'))||2;r.scale=SCALE;r.color=fd.get('color')||'brown';const f=fd.getAll('flags');if(f.length)r.flags=f;}
+    if(kind!=='대변'){r.ucolor=fd.get('ucolor')||'pale';const p=fd.getAll('pee');if(p.length)r.pee=p;}
     return r;
   }
   function shapeSvg(k){
-    const f='#8B5A2B';
+    const f='#7A4A22';
     const art={
-      1:`<circle cx="9" cy="17" r="3" fill="${f}"/><circle cx="16" cy="18" r="2.6" fill="${f}"/><circle cx="22" cy="16" r="2.8" fill="${f}"/><circle cx="13" cy="12" r="2.4" fill="${f}"/><circle cx="19" cy="11" r="2.2" fill="${f}"/>`,
-      2:`<path d="M5 16c0-3 2-5 5-5h4l1-1 1 1h4l1-1 1 1c3 0 4 2 4 5s-2 4-5 4H9c-2.5 0-4-1.5-4-4z" fill="${f}"/><path d="M11 11v8M16 11v8M21 11v8" stroke="#fff" stroke-width="1.2" opacity=".6"/>`,
-      3:`<path d="M4 17c0-2.8 2.4-4.5 6-4.5h10c3.6 0 6 1.7 6 4.5s-2.4 4-6 4H10c-3.6 0-6-1.2-6-4z" fill="${f}"/>`,
-      4:`<path d="M5 18c0-2 2-3 3-4.5S10 10 13 10s4 2 5 3.5 4 1.5 5 3-1 4.5-5 4.5H10c-3 0-5-1-5-3z" fill="${f}" opacity=".85"/>`,
-      5:`<path d="M3 19c2-2 5-1.5 7-3s4-2 6-.5 4 .5 6 .5 5 1 5 3-3 2-6 2H8c-3 0-6 0-5-2z" fill="${f}" opacity=".7"/><circle cx="25" cy="13" r="1.2" fill="${f}" opacity=".6"/><circle cx="6" cy="14" r="1" fill="${f}" opacity=".6"/>`
+      1:`<circle cx="8" cy="18" r="3" fill="${f}"/><circle cx="15" cy="19" r="2.7" fill="${f}"/><circle cx="22" cy="17.5" r="2.9" fill="${f}"/><circle cx="11.5" cy="12.5" r="2.5" fill="${f}"/><circle cx="18.5" cy="12" r="2.3" fill="${f}"/>`,
+      2:`<path d="M4 16.5c0-2.8 2-4.5 5-4.5h12c3 0 5 1.7 5 4.5S24 21 21 21H9c-3 0-5-1.7-5-4.5z" fill="${f}"/><path d="M10.5 12.3v8.4M15 12v9M19.5 12.3v8.4" stroke="#F6EBDD" stroke-width="1.3"/>`,
+      3:`<path d="M4 17c0-2.8 2.4-4.5 6-4.5h10c3.6 0 6 1.7 6 4.5s-2.4 4-6 4H10c-3.6 0-6-1.2-6-4z" fill="${f}"/><ellipse cx="12" cy="15" rx="4" ry="1" fill="#fff" opacity=".35"/>`,
+      4:`<path d="M4 18.5c0-2.4 2.4-4 6-4.3l10-.4c3.8 0 6 1.6 6 3.9 0 2.5-2.6 3.8-6.5 3.8H10c-3.6 0-6-1-6-3z" fill="${f}" opacity=".88"/><path d="M6 21.6c3 .9 15 .9 18 0" stroke="${f}" stroke-width="1.2" opacity=".35" fill="none"/>`,
+      5:`<path d="M5 20c0-2 1.6-2.6 2.6-4.2C8.8 13.6 10.5 12 13 12s3.6 1.4 4.4 3c.7 1.4 2.4 1.4 3.6 2.6 1.6 1.6.4 3.9-3.5 3.9H9.5C6.6 21.5 5 21.2 5 20z" fill="${f}" opacity=".82"/>`,
+      6:`<path d="M3.5 20.5c1.2-1.6 3-1.4 4.2-2.6 1.4-1.4 3.4-2 5-1 1.4.9 2.6.2 4 .1 2-.1 3.1 1.2 4.6 1.4 1.6.2 4.2.6 4.2 2 0 1.4-2.8 1.6-6 1.6H8c-2.6 0-5.3-.2-4.5-1.5z" fill="${f}" opacity=".72"/><circle cx="7" cy="15" r="1.3" fill="${f}" opacity=".6"/><circle cx="23" cy="15.5" r="1.1" fill="${f}" opacity=".6"/>`,
+      7:`<ellipse cx="15" cy="20.5" rx="12" ry="2.6" fill="${f}" opacity=".5"/><ellipse cx="13" cy="20" rx="6" ry="1.1" fill="#fff" opacity=".25"/>`
     };
-    return `<svg viewBox="0 0 30 26" width="44" height="38" aria-hidden="true">${art[k]}</svg>`;
+    return `<svg viewBox="0 0 30 26" width="40" height="35" aria-hidden="true">${art[k]}</svg>`;
   }
   function bindForm(f){
     if(!f)return;
@@ -465,7 +510,7 @@
       if(a==='poop')w.poops++;else w.pees++;ctx.save();paintLive();
       const last=w.path[w.path.length-1];
       const prevDay=day;day=today();
-      add({type:'poop',kind:a==='poop'?'대변':'소변',where:'산책 중',...(a==='poop'?{shape:3,color:'brown'}:{}),...(last?{at:last}:{})});
+      add({type:'poop',kind:a==='poop'?'대변':'소변',where:'산책 중',...(a==='poop'?{shape:2,scale:SCALE,color:'brown'}:{ucolor:'pale'}),...(last?{at:last}:{})});
       day=prevDay;
       toast(a==='poop'?'대변을 남겼어요.':'소변을 남겼어요.');
     }
@@ -552,6 +597,7 @@
   window.Daily={
     init(c){
       ctx=c;if(!Array.isArray(ctx.state.daily))ctx.state.daily=[];
+      migratePoop();
       render();bind();connect(c.user||null);
       if(ctx.state.walkLive){if(ctx.state.walkLive.date!==today()&&Date.now()-ctx.state.walkLive.startedAt>6*3600e3){ctx.state.walkLive=null;ctx.save();}else{startGps();clearInterval(tick);tick=setInterval(paintLive,1000);}}
     },
