@@ -115,7 +115,7 @@
   };
   function sizeFromWeight(kg){kg=Number(kg);if(!kg)return '';return kg<5?'소형견':kg<15?'중형견':'대형견';}
   let toastTimer;
-  function toast(msg){let t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';t.setAttribute('role','status');document.body.append(t);}t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3000);}
+  function toast(msg){let t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';t.setAttribute('role','status');}const host=[...document.querySelectorAll('dialog[open]')].pop()||document.body;if(t.parentNode!==host)host.append(t);t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3000);}
   /* 산책 지도에 놓이는 시설 (손그림 배치를 따름) */
   const NODES=[
     {id:'grooming',kind:'grooming',label:'미용실',pos:[-.6,-.8],bend:1},

@@ -489,8 +489,10 @@
         <div class="live-stats"><div><b class="tnum" id="lv-km">0.00</b><span>거리(km)</span></div><div class="mid"><b class="tnum" id="lv-time">00:00</b><span>시간</span></div><div><b class="tnum" id="lv-poop">0</b><span>배변</span></div></div>
         <div class="live-quick"><button type="button" data-live="poop">${icon('poop')}대변</button><button type="button" data-live="pee">${icon('drop')}소변</button><button type="button" data-live="photo">${icon('camera')}사진</button></div>
         <div class="live-ctrl"><button type="button" class="lc" data-live="pause" id="lv-pause" aria-label="잠깐 멈추기">${icon('pause')}</button><button type="button" class="lc stop" data-live="stop" aria-label="산책 끝내기">${icon('stop')}</button><button type="button" class="lc" data-live="min" aria-label="작게 보기">${icon('chev-down')}</button></div>
+        <div class="live-confirm" id="live-confirm" role="alertdialog" aria-label="산책 끝내기" hidden></div>
       </div>`;
     if(!dlg.open)dlg.showModal();
+    const w0=ctx.state.walkLive;if(w0&&'wasPaused' in w0){if(!w0.wasPaused){w0.since=Date.now();w0.paused=false;}delete w0.wasPaused;ctx.save();}
     startGps();keepAwake(true);
     clearInterval(tick);tick=setInterval(paintLive,1000);paintLive();
   }
@@ -515,20 +517,30 @@
       toast(a==='poop'?'대변을 남겼어요.':'소변을 남겼어요.');
     }
     if(a==='photo')document.querySelector('#moment-file').click();
+    /* 끝내기: 누르는 즉시 시간을 멈추고, 같은 화면에서 저장할지 묻는다 */
     if(a==='stop'){
-      const ms=liveMs(w),min=Math.round(ms/60000);
-      const b=document.querySelector('[data-live=stop]');
-      if(!b.dataset.armed){b.dataset.armed='1';b.classList.add('armed');toast(min<1?'1분이 안 됐어요. 한 번 더 누르면 기록하지 않고 끝내요.':'한 번 더 누르면 산책을 끝내고 저장해요.');setTimeout(()=>{delete b.dataset.armed;b.classList.remove('armed');},2500);return;}
+      w.wasPaused=w.paused;if(!w.paused){w.acc+=Date.now()-w.since;w.paused=true;}ctx.save();paintLive();
+      const ms=liveMs(w),short=ms<30000;
+      const box=document.querySelector('#live-confirm');
+      box.innerHTML=`<p><b>산책을 끝낼까요?</b><span class="tnum">${fmtDur(ms)}${w.km>=.01?` · ${w.km.toFixed(2)}km`:''}${w.poops+w.pees?` · 배변 ${w.poops+w.pees}번`:''}</span></p>${short?'<small>30초가 안 돼서 기록하지 않아요.</small>':''}<div><button type="button" class="btn btn-soft" data-live="resume">계속 걷기</button><button type="button" class="btn btn-primary" data-live="finish">${short?'기록 없이 끝내기':'저장하고 끝내기'}</button></div>`;
+      box.hidden=false;box.querySelector('[data-live=finish]').focus();
+    }
+    if(a==='resume'){
+      if(!w.wasPaused){w.since=Date.now();w.paused=false;}delete w.wasPaused;ctx.save();
+      document.querySelector('#live-confirm').hidden=true;paintLive();
+    }
+    if(a==='finish'){
+      const ms=liveMs(w),min=Math.max(1,Math.round(ms/60000));
       stopGps();keepAwake(false);clearInterval(tick);
       ctx.state.walkLive=null;
-      if(min>=1){
+      if(ms>=30000){
         const step=Math.ceil(w.path.length/200)||1;
         const prevDay=day;day=w.date;
         add({type:'walk',time:w.start,min,km:Math.round(w.km*100)/100,path:w.path.filter((_,i)=>i%step===0),poops:w.poops,pees:w.pees,group:guide(ctx.pet||{}).key,live:true});
-        if(prevDay!==w.date)day=prevDay;
+        day=prevDay;
+        document.querySelector('#walk-live').close();render();
         toast(`산책 ${min}분${w.km>=.01?` · ${w.km.toFixed(2)}km`:''}을 남겼어요.`);
-      }else{ctx.save();}
-      document.querySelector('#walk-live').close();render();
+      }else{ctx.save();document.querySelector('#walk-live').close();render();toast('산책을 끝냈어요.');}
     }
   }
 

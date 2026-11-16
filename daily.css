@@ -187,7 +187,6 @@ dialog.walk-live[open]{display:flex}
 .lc .i{width:30px;height:30px;stroke-width:2.6}
 .lc.stop{background:#FF6B3D;color:#fff}
 .lc.stop .i{fill:currentColor}
-.lc.stop.armed{background:var(--danger);box-shadow:0 0 0 6px rgba(179,64,47,.2)}
 .lc.on{background:#FFF1EC}
 .lc:not(.stop)[data-live="min"]{color:var(--ink-3)}
 
@@ -214,3 +213,10 @@ dialog.walk-live[open]{display:flex}
 }
 
 .src-hint{margin-top:14px;font-size:12.5px}
+.live-panel{position:relative}
+.live-confirm{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;justify-content:center;gap:12px;padding:24px 22px calc(24px + env(safe-area-inset-bottom));border-radius:30px 30px 0 0;background:#fff}
+.live-confirm p{margin:0;display:grid;gap:2px;text-align:center}
+.live-confirm b{font-size:20px}
+.live-confirm span{font-size:15px;color:var(--ink-3)}
+.live-confirm small{text-align:center;color:var(--ink-3)}
+.live-confirm div{display:grid;grid-template-columns:1fr 1.4fr;gap:10px}
