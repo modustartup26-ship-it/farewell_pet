@@ -23,10 +23,10 @@ grant update (client_id, type, log_date, log_time, data, media_id) on public.dai
 
 create policy "guardians read own daily logs" on public.daily_logs for select to authenticated using (guardian_id = (select auth.uid()));
 create policy "guardians write own daily logs" on public.daily_logs for insert to authenticated
-  with check (guardian_id = auth.uid() and (media_id is null or exists (select 1 from public.media m where m.id = media_id and m.owner_id = (select auth.uid()))));
+  with check (guardian_id = (select auth.uid()) and (media_id is null or exists (select 1 from public.media m where m.id = media_id and m.owner_id = (select auth.uid()))));
 create policy "guardians edit own daily logs" on public.daily_logs for update to authenticated
   using (guardian_id = (select auth.uid()))
-  with check (guardian_id = auth.uid() and (media_id is null or exists (select 1 from public.media m where m.id = media_id and m.owner_id = (select auth.uid()))));
+  with check (guardian_id = (select auth.uid()) and (media_id is null or exists (select 1 from public.media m where m.id = media_id and m.owner_id = (select auth.uid()))));
 create policy "guardians delete own daily logs" on public.daily_logs for delete to authenticated using (guardian_id = (select auth.uid()));
 
 -- 같은 체급 그룹(data.group) 보호자들의 최근 7일 하루 평균 산책 시간과 비교한 '상위 %'.
