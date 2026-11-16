@@ -332,7 +332,7 @@
     switch(l.type){
       case 'meal':return [l.food||'밥',[l.amount,l.grams?l.grams+'g':''].filter(Boolean).join(' · ')];
       case 'walk':return [`산책 ${l.min}분`,[l.km?Number(l.km).toFixed(2)+'km':'',l.poops?`대변 ${l.poops}`:'',l.pees?`소변 ${l.pees}`:'',l.where].filter(Boolean).join(' · ')];
-      case 'poop':{const s=SHAPES.find(x=>x.k===Number(l.shape)),c=COLORS.find(x=>x.k===l.color),u=UCOLORS.find(x=>x.k===l.ucolor);return [l.kind==='소변'?'소변':l.kind==='둘 다'?'대변 · 소변':'대변',[s?`${s.k}점 ${s.l}`:'',c?c.l:'',u?'소변 '+u.l:'',...(l.flags||[]),...(l.pee||[]),l.where].filter(Boolean).join(' · ')];}
+      case 'poop':{const s=SHAPES.find(x=>x.k===Number(l.shape)),c=COLORS.find(x=>x.k===l.color),u=UCOLORS.find(x=>x.k===l.ucolor);return [l.kind==='소변'?'소변':l.kind==='둘 다'?'대변 · 소변':'대변',[s?`${s.k}점 ${s.l}`:'',c?c.l:'',u?'소변 '+u.l:'',...(l.flags||[]),...(l.pee||[]),l.where,l.at?'위치 기록됨':''].filter(Boolean).join(' · ')];}
       case 'supp':return [l.name||'영양제',l.count>1?`${l.count}개`:''];
       case 'snack':return [l.name||'간식',l.count>1?`${l.count}개`:''];
       case 'play':return [l.kind||'놀이',`${l.min}분`];
@@ -355,7 +355,7 @@
     const fac=(ctx.state.diary||[]).filter(e=>e.date===d);
     if(!list.length&&!fac.length)return `<div class="tl-empty"><b>${d===today()?'아직 오늘 기록이 없어요':'이날은 기록이 없어요'}</b><p>위 버튼을 누르면 지금 시각으로 바로 남겨요.</p></div>`;
     const rows=list.map(l=>{const T=TYPES[l.type]||TYPES.meal,[a,b]=summary(l);
-      return `<li class="tl-row" style="--c:${T.c}"><span class="tl-time tnum">${esc(l.time)}</span><span class="tl-ic">${icon(T.icon)}</span><div class="tl-tx"><b>${esc(a)}</b>${b?`<span>${esc(b)}</span>`:''}${l.note?`<p>${esc(l.note)}</p>`:''}</div>${l.type==='walk'?pathSvg(l.path):''}${l.type==='photo'?`<img class="tl-photo" ${photoSrc(l)} alt="">`:''}<button type="button" class="icon-btn tl-del" data-del="${esc(l.id)}" aria-label="${esc(a)} 기록 지우기">${icon('trash')}</button></li>`;});
+      return `<li class="tl-row" style="--c:${T.c}"><span class="tl-time tnum">${esc(l.time)}</span><span class="tl-ic">${icon(T.icon)}</span><div class="tl-tx"><b>${esc(a)}</b>${b?`<span>${esc(b)}</span>`:''}${l.note?`<p>${esc(l.note)}</p>`:''}</div>${l.type==='walk'?`<button type="button" class="tl-route" data-route="${esc(l.id)}" aria-label="산책 경로 지도로 보기">${pathSvg(l.path)||icon('map')}</button>`:''}${l.type==='photo'?`<img class="tl-photo" ${photoSrc(l)} alt="">`:''}<button type="button" class="icon-btn tl-del" data-del="${esc(l.id)}" aria-label="${esc(a)} 기록 지우기">${icon('trash')}</button></li>`;});
     const facRows=fac.map(e=>`<li class="tl-row fac" style="--c:#1E56C2"><span class="tl-time tnum">${esc(e.time||'')}</span><span class="tl-ic">${icon('building-h')}</span><div class="tl-tx"><b>${esc(e.place)}</b><span>시설 기록${e.mood&&Diary.MOODS[e.mood]?' · '+Diary.MOODS[e.mood]:''}</span></div><button type="button" class="btn-ghost" data-act="facility">보기</button></li>`);
     return `<ol class="timeline">${facRows.join('')}${rows.join('')}</ol>`;
   }
@@ -363,11 +363,15 @@
   /* ---------- 빠른 기록 창 ---------- */
   const chips=(name,list,sel,type='radio')=>list.map(o=>`<label class="chip"><input type="${type}" name="${name}" value="${esc(o)}" ${(Array.isArray(sel)?sel.includes(o):sel===o)?'checked':''}>${esc(o)}</label>`).join('');
   const recent=(type,key)=>[...new Set(logs().filter(l=>l.type===type&&l[key]).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time)).map(l=>l[key]))].slice(0,5);
-  const timeField=()=>`<label class="field-l q-time">시각<input type="time" name="time" value="${day===today()?nowHM():'12:00'}" required></label>`;
+  /* 시각은 저장하는 순간으로 자동 기록. 필요할 때만 '시각 바꾸기'로 고친다. 지난 날짜는 시각을 고르게 한다 */
+  const timeField=()=>day===today()
+    ?`<div class="q-auto">${icon('clock')}<span>저장하는 시각으로 자동 기록돼요</span><button type="button" class="btn-ghost" data-timeedit>시각 바꾸기</button><input type="time" name="time" value="${nowHM()}" hidden></div>`
+    :`<label class="field-l q-time">시각 <small>(${esc(nice(day))})</small><input type="time" name="time" value="12:00" required></label>`;
+  const pickTime=fd=>{const el=document.querySelector('#modal-form [name=time]');return el&&el.hidden?nowHM():(fd.get('time')||nowHM());};
   const stepper=(name,val,unit,step,max)=>`<div class="stepper"><button type="button" data-step="-${step}" data-for="${name}" aria-label="${step} 줄이기">${icon('minus')}</button><label><input type="number" name="${name}" value="${val}" min="0" max="${max}" inputmode="numeric"><span>${unit}</span></label><button type="button" data-step="${step}" data-for="${name}" aria-label="${step} 늘리기">${icon('plus')}</button></div>`;
   function openLog(type){
     const pet=ctx.pet||{},g=guide(pet),T=TYPES[type];
-    if(type==='photo'){document.querySelector('#moment-file').click();return;}
+    if(type==='photo'){openCamera();return;}
     if(type==='walk'&&ctx.state.walkLive){openLive();return;}
     let body='';
     if(type==='meal'){const foods=recent('meal','food');body=`${timeField()}<div class="field-l"><span>얼마나 먹었나요</span><div class="chips">${chips('amount',MEAL_AMT,'다 먹었어요')}</div></div><div class="row2f"><label class="field-l">사료 <small>(선택)</small><input name="food" maxlength="40" list="dl-food" placeholder="예: 시니어 사료" value="${esc(foods[0]||'')}"><datalist id="dl-food">${foods.map(f=>`<option value="${esc(f)}">`).join('')}</datalist></label><label class="field-l">양 <small>(선택)</small><span class="unit"><input type="number" name="grams" min="0" max="2000" inputmode="numeric" placeholder="0">g</span></label></div>`;}
@@ -379,7 +383,7 @@
     if(type==='water'){const left=Math.max(0,g.water-totals(day).water);body=`${timeField()}<div class="field-l"><span>얼마나 마셨나요 <small>(하루 목표 ${g.water}ml${left?` · ${left}ml 남음`:''})</small></span><div class="chips">${[50,100,200,300].map(v=>`<button type="button" class="chip" data-fill="ml" data-v="${v}">${v}ml</button>`).join('')}</div>${stepper('ml',100,'ml',50,3000)}</div><p class="hint">물그릇에 채운 양에서 남은 양을 빼면 돼요. 몸무게 1kg당 하루 50~60ml가 흔히 쓰는 기준이에요.</p>`;}
     body+=`<label class="field-l">메모 <small>(선택)</small><input name="note" maxlength="120" placeholder="특이사항이 있으면 적어 주세요"></label>`;
     ctx.modal(`${T.label} 기록`,body,`<button type="submit" form="modal-form" class="btn btn-primary">${icon('check')}${T.label} 남기기</button>`,fd=>{
-      const rec={type,time:fd.get('time')||nowHM()};const note=String(fd.get('note')||'').trim();if(note)rec.note=note;
+      const rec={type,time:pickTime(fd)};const note=String(fd.get('note')||'').trim();if(note)rec.note=note;
       const num=(k,max)=>{const v=Number(fd.get(k));return Number.isFinite(v)&&v>=0&&v<=max?Math.round(v*10)/10:0;};
       if(type==='meal'){rec.amount=fd.get('amount')||'';const f=String(fd.get('food')||'').trim();if(f)rec.food=f;const gr=num('grams',2000);if(gr)rec.grams=gr;}
       if(type==='walk'){rec.min=Math.round(num('min',600));if(!rec.min){toast('몇 분 걸었는지 적어 주세요.');return;}const km=num('km',50);if(km)rec.km=km;rec.group=g.key;}
@@ -433,6 +437,8 @@
     f.addEventListener('click',e=>{
       const s=e.target.closest('[data-step]');
       if(s){const inp=f.elements[s.dataset.for];const max=Number(inp.max)||9999;inp.value=Math.min(max,Math.max(0,(Number(inp.value)||0)+Number(s.dataset.step)));return;}
+      const te=e.target.closest('[data-timeedit]');
+      if(te){const inp=f.querySelector('[name=time]');inp.value=nowHM();inp.hidden=false;te.parentNode.classList.add('editing');te.remove();inp.focus();return;}
       const fl=e.target.closest('[data-fill]');
       if(fl){f.elements[fl.dataset.fill].value=fl.dataset.v;return;}
       if(e.target.closest('[data-act="walk-start"]')){ctx.close();startWalk();}
@@ -464,7 +470,7 @@
   const fmtDur=ms=>{const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?`${h}:${pad(m)}:${pad(s%60)}`:`${pad(m)}:${pad(s%60)}`;};
   const liveMs=w=>w.acc+(w.paused?0:Date.now()-w.since);
   function hav(a,b){const R=6371,r=x=>x*Math.PI/180;const dA=r(b[0]-a[0]),dO=r(b[1]-a[1]);const h=Math.sin(dA/2)**2+Math.cos(r(a[0]))*Math.cos(r(b[0]))*Math.sin(dO/2)**2;return 2*R*Math.asin(Math.sqrt(h));}
-  let watchId=null,tick=null,wakeLock=null;
+  let watchId=null,tick=null,wakeLock=null,here=null;
   function startWalk(){
     ctx.state.walkLive={startedAt:Date.now(),since:Date.now(),acc:0,paused:false,km:0,path:[],poops:0,pees:0,date:today(),start:nowHM()};
     ctx.save();openLive();
@@ -472,19 +478,63 @@
   function startGps(){
     if(watchId!=null||!navigator.geolocation)return;
     watchId=navigator.geolocation.watchPosition(pos=>{
-      const w=ctx.state.walkLive;if(!w||w.paused)return;
       const {latitude:la,longitude:lo,accuracy}=pos.coords;if(accuracy>60)return;
-      const p=[+la.toFixed(6),+lo.toFixed(6)],last=w.path[w.path.length-1];
-      if(last){const d=hav(last,p);if(d<.004||d>.5)return;w.km+=d;}
-      w.path.push(p);if(w.path.length>1500)w.path=w.path.filter((_,i)=>i%2===0);
-      ctx.save();paintLive();
-    },err=>{const el=document.querySelector('#live-gps');if(el)el.textContent=err.code===1?'위치 권한이 꺼져 있어 시간만 재요.':'위치를 찾는 중이에요…';},{enableHighAccuracy:true,maximumAge:3000,timeout:20000});
+      const p=[+la.toFixed(6),+lo.toFixed(6)];here=p;
+      const w=ctx.state.walkLive;
+      if(w&&!w.paused){
+        const last=w.path[w.path.length-1];
+        if(last){const d=hav(last,p);if(d>=.004&&d<=.5){w.km+=d;w.path.push(p);}}
+        else w.path.push(p);
+        if(w.path.length>1500)w.path=w.path.filter((_,i)=>i%2===0);
+        ctx.save();
+      }
+      paintLive();
+    },err=>{const el=document.querySelector('#live-gps');if(el)el.textContent=err.code===1?'위치 권한이 꺼져 있어 시간만 재요. 브라우저 설정에서 위치를 허용해 주세요.':'위치를 찾는 중이에요…';},{enableHighAccuracy:true,maximumAge:3000,timeout:20000});
   }
   function stopGps(){if(watchId!=null&&navigator.geolocation)navigator.geolocation.clearWatch(watchId);watchId=null;}
   async function keepAwake(on){try{if(on&&'wakeLock' in navigator&&!wakeLock)wakeLock=await navigator.wakeLock.request('screen');else if(!on&&wakeLock){wakeLock.release();wakeLock=null;}}catch{}}
+
+  /* ---------- 카카오 지도 ---------- */
+  const DEFAULT_CENTER=[35.0186,126.7836];
+  const POOP_IMG='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="46" viewBox="0 0 40 46"><path d="M20 45c-1.5-4-10-10.5-10-10.5H6a6 6 0 0 1-6-6V6a6 6 0 0 1 6-6h28a6 6 0 0 1 6 6v22.5a6 6 0 0 1-6 6h-4S21.5 41 20 45z" fill="#7A4A22"/><path d="M19 7.5c2.2.8 3 2.6 2.2 4.1 2.8 0 4.5 1.6 4.2 3.8 2.6.5 4.2 2.2 4.2 4.3 0 3-3.7 5-9.6 5s-9.6-2-9.6-5c0-2.1 1.6-3.8 4.2-4.3-.5-2.3 1.6-4 4.1-3.8.7-1.5.8-2.8.3-4.1z" fill="#fff"/></svg>');
+  const live={map:null,line:null,me:null,poops:new Map(),follow:true,placing:null,failed:false};
+  async function mapIn(el,center){
+    if(!window.KMap||!KMap.ready)throw new Error('no-kmap');
+    const maps=await KMap.ready();
+    if(!el.isConnected)throw new Error('gone');
+    el.innerHTML='';
+    const map=new maps.Map(el,{center:new maps.LatLng(center[0],center[1]),level:3});
+    return {maps,map};
+  }
+  const LL=(maps,p)=>new maps.LatLng(p[0],p[1]);
+  function meOverlay(maps,map,p){
+    const el=document.createElement('div');el.className='km-me';el.innerHTML=Minimi.svg(Minimi.config(ctx.pet||{}),{shadow:false});
+    return new maps.CustomOverlay({map,position:LL(maps,p),content:el,yAnchor:.5,zIndex:3});
+  }
+  /* 끌어서 옮길 수 있는 배변 표시. 옮기면 그 기록의 위치를 고친다 */
+  function poopMarker(maps,map,rec){
+    const m=new maps.Marker({map,position:LL(maps,rec.at),image:new maps.MarkerImage(POOP_IMG,new maps.Size(34,39),{offset:new maps.Point(17,39)}),draggable:true,title:`${rec.time} 대변`,zIndex:4});
+    maps.event.addListener(m,'dragend',()=>{const p=m.getPosition();rec.at=[+p.getLat().toFixed(6),+p.getLng().toFixed(6)];ctx.save();push(rec);toast('배변 위치를 옮겼어요.');});
+    return m;
+  }
+  async function initLiveMap(){
+    const el=document.querySelector('#km-live');if(!el)return;
+    const w=ctx.state.walkLive;
+    const start=(w&&w.path[w.path.length-1])||here||DEFAULT_CENTER;
+    try{
+      const {maps,map}=await mapIn(el,start);
+      live.map=map;live.maps=maps;live.failed=false;live.poops.clear();
+      live.line=new maps.Polyline({map,path:(w?w.path:[]).map(p=>LL(maps,p)),strokeWeight:7,strokeColor:'#FF6B3D',strokeOpacity:.92,strokeStyle:'solid'});
+      live.me=meOverlay(maps,map,start);
+      maps.event.addListener(map,'dragstart',()=>{if(!live.placing){live.follow=false;document.querySelector('#km-recenter').hidden=false;}});
+      logs().filter(l=>l.type==='poop'&&l.at&&w&&l.walk===w.startedAt).forEach(r=>live.poops.set(r.id,poopMarker(maps,map,r)));
+      document.querySelector('#live-map').classList.add('has-map');
+      setTimeout(()=>{map.relayout();map.setCenter(LL(maps,start));},60);
+    }catch(e){live.map=null;live.failed=true;document.querySelector('#live-map').classList.remove('has-map');paintLive();}
+  }
   function openLive(){
     const dlg=document.querySelector('#walk-live');
-    dlg.innerHTML=`<div class="live-map" id="live-map"><div class="live-face">${Minimi.svg(Minimi.config(ctx.pet||{}),{shadow:false})}</div><p class="live-gps" id="live-gps">위치를 찾는 중이에요…</p></div>
+    dlg.innerHTML=`<div class="live-map" id="live-map"><div class="km" id="km-live"></div><div class="live-face">${Minimi.svg(Minimi.config(ctx.pet||{}),{shadow:false})}</div><span class="km-pin" id="km-pin" hidden>${icon('poop')}</span><button type="button" class="km-recenter" id="km-recenter" data-live="recenter" hidden>${icon('pin')}내 위치</button><p class="live-gps" id="live-gps">위치를 찾는 중이에요…</p></div>
       <div class="live-panel">
         <div class="live-stats"><div><b class="tnum" id="lv-km">0.00</b><span>거리(km)</span></div><div class="mid"><b class="tnum" id="lv-time">00:00</b><span>시간</span></div><div><b class="tnum" id="lv-poop">0</b><span>배변</span></div></div>
         <div class="live-quick"><button type="button" data-live="poop">${icon('poop')}대변</button><button type="button" data-live="pee">${icon('drop')}소변</button><button type="button" data-live="photo">${icon('camera')}사진</button></div>
@@ -493,7 +543,8 @@
       </div>`;
     if(!dlg.open)dlg.showModal();
     const w0=ctx.state.walkLive;if(w0&&'wasPaused' in w0){if(!w0.wasPaused){w0.since=Date.now();w0.paused=false;}delete w0.wasPaused;ctx.save();}
-    startGps();keepAwake(true);
+    live.follow=true;live.placing=null;
+    startGps();keepAwake(true);initLiveMap();
     clearInterval(tick);tick=setInterval(paintLive,1000);paintLive();
   }
   function paintLive(){
@@ -502,23 +553,54 @@
     const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
     set('lv-time',t);set('lv-km',w.km.toFixed(2));set('lv-poop',w.poops+w.pees);set('live-mini',t);
     const pb=document.getElementById('lv-pause');if(pb){pb.innerHTML=icon(w.paused?'play':'pause');pb.setAttribute('aria-label',w.paused?'다시 걷기':'잠깐 멈추기');pb.classList.toggle('on',w.paused);}
-    if(w.path.length){set('live-gps','');const m=document.getElementById('live-map');if(m){let svg=m.querySelector('.live-path');const html=pathSvg(w.path,320,320).replace('mini-path','live-path');if(svg)svg.outerHTML=html;else m.insertAdjacentHTML('afterbegin',html);}}
+    const cur=w.path[w.path.length-1]||here;
+    if(cur)set('live-gps','');
+    if(live.map&&cur){
+      const maps=live.maps;
+      live.line.setPath(w.path.map(p=>LL(maps,p)));
+      live.me.setPosition(LL(maps,cur));
+      if(live.follow&&!live.placing)live.map.panTo(LL(maps,cur));
+    }else if(!live.map&&w.path.length){
+      /* 카카오 지도를 못 불러오면 경로만 그린다 */
+      const m=document.getElementById('live-map');if(m){let svg=m.querySelector('.live-path');const html=pathSvg(w.path,320,320).replace('mini-path','live-path');if(svg)svg.outerHTML=html;else m.insertAdjacentHTML('afterbegin',html);}
+    }
+  }
+  /* 배변 위치 정하기: 지도를 움직여 가운데 핀에 맞춘다 */
+  function startPlacing(kind){
+    const w=ctx.state.walkLive;
+    if(!live.map){finishPoop(kind,w.path[w.path.length-1]||here);return;}
+    live.placing=kind;
+    const cur=w.path[w.path.length-1]||here;if(cur)live.map.setCenter(LL(live.maps,cur));
+    document.querySelector('#km-pin').hidden=false;
+    document.querySelector('#live-map').classList.add('placing');
+    const box=document.querySelector('#live-confirm');
+    box.innerHTML=`<p><b>${kind==='poop'?'대변':'소변'}을 어디서 봤나요?</b><span>지도를 움직여 가운데 핀에 맞춰 주세요. 지금 위치 그대로 둬도 돼요.</span></p><div><button type="button" class="btn btn-soft" data-live="place-cancel">취소</button><button type="button" class="btn btn-primary" data-live="place-ok">${icon('check')}여기로 정하기</button></div>`;
+    box.hidden=false;box.classList.add('placing-box');
+  }
+  function endPlacing(){live.placing=null;document.querySelector('#km-pin').hidden=true;document.querySelector('#live-map').classList.remove('placing');const box=document.querySelector('#live-confirm');box.hidden=true;box.classList.remove('placing-box');}
+  function finishPoop(kind,at){
+    const w=ctx.state.walkLive;
+    if(kind==='poop')w.poops++;else w.pees++;ctx.save();
+    const prevDay=day;day=today();
+    const rec=add({type:'poop',kind:kind==='poop'?'대변':'소변',where:'산책 중',walk:w.startedAt,...(kind==='poop'?{shape:2,scale:SCALE,color:'brown'}:{ucolor:'pale'}),...(at?{at}:{})});
+    day=prevDay;
+    if(at&&kind==='poop'&&live.map)live.poops.set(rec.id,poopMarker(live.maps,live.map,rec));
+    paintLive();
+    toast(`${kind==='poop'?'대변':'소변'}을 남겼어요.${at&&kind==='poop'&&live.map?' 지도의 아이콘을 끌면 위치를 고칠 수 있어요.':''}`);
   }
   function liveAction(a){
+    if(a==='close-route'){document.querySelector('#walk-live').close();render();return;}
     const w=ctx.state.walkLive;if(!w)return;
     if(a==='pause'){if(w.paused){w.since=Date.now();w.paused=false;}else{w.acc+=Date.now()-w.since;w.paused=true;}ctx.save();paintLive();}
     if(a==='min'){document.querySelector('#walk-live').close();render();}
-    if(a==='poop'||a==='pee'){
-      if(a==='poop')w.poops++;else w.pees++;ctx.save();paintLive();
-      const last=w.path[w.path.length-1];
-      const prevDay=day;day=today();
-      add({type:'poop',kind:a==='poop'?'대변':'소변',where:'산책 중',...(a==='poop'?{shape:2,scale:SCALE,color:'brown'}:{ucolor:'pale'}),...(last?{at:last}:{})});
-      day=prevDay;
-      toast(a==='poop'?'대변을 남겼어요.':'소변을 남겼어요.');
-    }
-    if(a==='photo')document.querySelector('#moment-file').click();
+    if(a==='recenter'){live.follow=true;document.querySelector('#km-recenter').hidden=true;paintLive();}
+    if(a==='poop'||a==='pee')startPlacing(a);
+    if(a==='place-ok'){const c=live.map.getCenter();const kind=live.placing;endPlacing();finishPoop(kind,[+c.getLat().toFixed(6),+c.getLng().toFixed(6)]);}
+    if(a==='place-cancel')endPlacing();
+    if(a==='photo')openCamera();
     /* 끝내기: 누르는 즉시 시간을 멈추고, 같은 화면에서 저장할지 묻는다 */
     if(a==='stop'){
+      if(live.placing)endPlacing();
       w.wasPaused=w.paused;if(!w.paused){w.acc+=Date.now()-w.since;w.paused=true;}ctx.save();paintLive();
       const ms=liveMs(w),short=ms<30000;
       const box=document.querySelector('#live-confirm');
@@ -534,14 +616,81 @@
       stopGps();keepAwake(false);clearInterval(tick);
       ctx.state.walkLive=null;
       if(ms>=30000){
-        const step=Math.ceil(w.path.length/200)||1;
+        const step=Math.ceil(w.path.length/300)||1;
         const prevDay=day;day=w.date;
-        add({type:'walk',time:w.start,min,km:Math.round(w.km*100)/100,path:w.path.filter((_,i)=>i%step===0),poops:w.poops,pees:w.pees,group:guide(ctx.pet||{}).key,live:true});
-        day=prevDay;
-        document.querySelector('#walk-live').close();render();
-        toast(`산책 ${min}분${w.km>=.01?` · ${w.km.toFixed(2)}km`:''}을 남겼어요.`);
+        const rec=add({type:'walk',time:w.start,min,km:Math.round(w.km*100)/100,path:w.path.filter((_,i)=>i%step===0||i===w.path.length-1),poops:w.poops,pees:w.pees,group:guide(ctx.pet||{}).key,live:true,walkId:w.startedAt});
+        day=prevDay;render();
+        showRoute(rec,{done:true});
       }else{ctx.save();document.querySelector('#walk-live').close();render();toast('산책을 끝냈어요.');}
     }
+  }
+
+  /* 산책 경로 보기: 산책이 끝난 직후와 기록에서 산책을 눌렀을 때. 배변 아이콘은 끌어서 위치를 고친다 */
+  async function showRoute(rec,{done=false}={}){
+    const dlg=document.querySelector('#walk-live');
+    const poops=logs().filter(l=>l.type==='poop'&&rec.walkId&&l.walk===rec.walkId);
+    const placed=poops.filter(l=>l.at&&l.kind!=='소변');
+    dlg.innerHTML=`<div class="live-map route" id="live-map"><div class="km" id="km-route"></div><p class="live-gps" id="live-gps">${rec.path&&rec.path.length>1?'지도를 불러오는 중이에요…':'이 산책은 위치 기록이 없어요.'}</p></div>
+      <div class="live-panel route-panel">
+        ${done?`<p class="route-done">${icon('check')}산책을 저장했어요</p>`:`<p class="route-done plain">${esc(nice(rec.date))} ${esc(rec.time)}</p>`}
+        <div class="live-stats"><div><b class="tnum">${Number(rec.km||0).toFixed(2)}</b><span>거리(km)</span></div><div class="mid"><b class="tnum">${rec.min}분</b><span>시간</span></div><div><b class="tnum">${(rec.poops||0)+(rec.pees||0)}</b><span>배변</span></div></div>
+        ${placed.length?'<p class="route-hint">지도의 배변 아이콘을 끌면 위치를 고칠 수 있어요.</p>':''}
+        <button type="button" class="btn btn-primary route-ok" data-live="close-route">${done?'확인':'닫기'}</button>
+      </div>`;
+    if(!dlg.open)dlg.showModal();
+    if(!rec.path||rec.path.length<2){if(placed.length===0)return;}
+    try{
+      const pts=(rec.path||[]).concat(placed.map(l=>l.at));
+      const {maps,map}=await mapIn(document.querySelector('#km-route'),pts[0]);
+      document.querySelector('#live-gps').textContent='';
+      document.querySelector('#live-map').classList.add('has-map');
+      if(rec.path&&rec.path.length>1){
+        new maps.Polyline({map,path:rec.path.map(p=>LL(maps,p)),strokeWeight:7,strokeColor:'#FF6B3D',strokeOpacity:.92});
+        const dot=(p,label,cls)=>{const el=document.createElement('span');el.className='km-dot '+cls;el.textContent=label;new maps.CustomOverlay({map,position:LL(maps,p),content:el,yAnchor:.5,zIndex:2});};
+        dot(rec.path[0],'출발','start');dot(rec.path[rec.path.length-1],'도착','end');
+      }
+      placed.forEach(r=>poopMarker(maps,map,r));
+      const fit=()=>{map.relayout();const b=new maps.LatLngBounds();pts.forEach(p=>b.extend(LL(maps,p)));map.setBounds(b,40,40,40,40);};
+      setTimeout(fit,60);
+    }catch{
+      const el=document.querySelector('#live-gps');if(el)el.textContent='';
+      const m=document.querySelector('#live-map');if(m&&rec.path&&rec.path.length>1)m.insertAdjacentHTML('afterbegin',pathSvg(rec.path,320,320).replace('mini-path','live-path'));
+    }
+  }
+
+  /* ---------- 카메라: 앱 안에서 바로 찍기 (안 되면 기기 카메라·앨범으로) ---------- */
+  const cam={stream:null,facing:'environment'};
+  async function openCamera(){
+    const dlg=document.querySelector('#camera');
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){document.querySelector('#moment-file').click();return;}
+    dlg.innerHTML=`<video id="cam-video" playsinline autoplay muted></video><p class="cam-msg" id="cam-msg">카메라를 켜는 중이에요…</p>
+      <div class="cam-top"><button type="button" class="icon-btn" data-cam="close" aria-label="카메라 닫기">${icon('close')}</button><span class="cam-stamp tnum" id="cam-stamp"></span></div>
+      <div class="cam-bar"><button type="button" class="cam-side" data-cam="album" aria-label="앨범에서 고르기">${icon('grid')}<span>앨범</span></button><button type="button" class="cam-shutter" data-cam="shot" aria-label="사진 찍기"></button><button type="button" class="cam-side" data-cam="flip" aria-label="카메라 바꾸기">${icon('refresh')}<span>전환</span></button></div>`;
+    if(!dlg.open)dlg.showModal();
+    await startStream();
+  }
+  async function startStream(){
+    stopStream();
+    const msg=document.querySelector('#cam-msg');
+    try{
+      cam.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:cam.facing},width:{ideal:1920},height:{ideal:1440}},audio:false});
+      const v=document.querySelector('#cam-video');v.srcObject=cam.stream;await v.play().catch(()=>{});
+      v.classList.toggle('mirror',cam.facing==='user');
+      if(msg)msg.hidden=true;
+      const st=document.querySelector('#cam-stamp');if(st)st.textContent=[nowHM(),stampText()].filter(Boolean).join(' · ');
+    }catch(err){
+      if(msg){msg.hidden=false;msg.innerHTML=`카메라를 쓸 수 없어요${err&&err.name==='NotAllowedError'?' (권한이 꺼져 있어요)':''}.<br><button type="button" class="btn btn-soft" data-cam="native">기기 카메라로 찍기</button>`;}
+    }
+  }
+  function stopStream(){if(cam.stream){cam.stream.getTracks().forEach(t=>t.stop());cam.stream=null;}}
+  function closeCamera(){stopStream();const d=document.querySelector('#camera');if(d.open)d.close();}
+  async function shoot(){
+    const v=document.querySelector('#cam-video');if(!v||!v.videoWidth){toast('카메라가 아직 준비되지 않았어요.');return;}
+    const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;
+    const g=c.getContext('2d');if(cam.facing==='user'){g.translate(c.width,0);g.scale(-1,1);}g.drawImage(v,0,0);
+    document.querySelector('#camera').classList.add('flash');setTimeout(()=>document.querySelector('#camera').classList.remove('flash'),180);
+    const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.9));
+    await onPhoto(new File([blob],'moment.jpg',{type:'image/jpeg'}));
   }
 
   /* ---------- 그 순간 사진: 시각과 활동을 사진에 새긴다 ---------- */
@@ -587,6 +736,7 @@
       if(b.dataset.shift){day=addDays(day,Number(b.dataset.shift));if(day>today())day=today();render();}
       if(b.dataset.day){day=b.dataset.day;render();}
       if(b.dataset.log)openLog(b.dataset.log);
+      if(b.dataset.route){const r=logs().find(l=>l.id===b.dataset.route);if(r)showRoute(r);}
       if(b.dataset.del){
         if(!b.dataset.armed){b.dataset.armed='1';b.classList.add('armed');b.setAttribute('aria-label','한 번 더 누르면 지워져요');setTimeout(()=>{delete b.dataset.armed;b.classList.remove('armed');},2500);return;}
         const i=logs().findIndex(l=>l.id===b.dataset.del);if(i>-1){const [l]=logs().splice(i,1);ctx.save();drop(l);render();toast('기록을 지웠어요.');}
@@ -600,8 +750,18 @@
       if(act==='goals')openGoals();if(act==='body')openBody();if(act==='facility')openFacility();if(act==='walk-open')openLive();
     });
     document.querySelector('#moment-file').addEventListener('change',e=>{onPhoto(e.target.files[0]);e.target.value='';});
+    document.querySelector('#album-file').addEventListener('change',e=>{onPhoto(e.target.files[0]);e.target.value='';});
+    const camDlg=document.querySelector('#camera');
+    camDlg.addEventListener('click',e=>{const b=e.target.closest('[data-cam]');if(!b)return;const k=b.dataset.cam;
+      if(k==='close')closeCamera();
+      if(k==='shot')shoot();
+      if(k==='flip'){cam.facing=cam.facing==='environment'?'user':'environment';startStream();}
+      if(k==='album'){closeCamera();document.querySelector('#album-file').click();}
+      if(k==='native'){closeCamera();document.querySelector('#moment-file').click();}
+    });
+    camDlg.addEventListener('close',stopStream);
     document.querySelector('#walk-live').addEventListener('click',e=>{const b=e.target.closest('[data-live]');if(b)liveAction(b.dataset.live);});
-    document.querySelector('#walk-live').addEventListener('cancel',e=>{e.preventDefault();liveAction('min');});
+    document.querySelector('#walk-live').addEventListener('cancel',e=>{if(ctx.state.walkLive){e.preventDefault();liveAction('min');}});
     document.querySelector('#diary-facility').addEventListener('click',openFacility);
     document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ctx.state.walkLive)paintLive();});
   }

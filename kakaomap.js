@@ -89,5 +89,5 @@
     }
   }
 
-  window.KMap={showOne,showMany,routeUrl,roadAddress};
+  window.KMap={ready,showOne,showMany,routeUrl,roadAddress};
 })();

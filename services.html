@@ -51,6 +51,7 @@
     <div class="list-head daily-head"><div><h1 id="diary-title">오늘 하루</h1><p class="lead">밥·산책·배변을 버튼 한 번으로 남겨요. 쌓인 기록은 병원과 시설에 보여 줄 수 있어요.</p></div><div class="head-actions"><button type="button" class="btn btn-soft" id="diary-facility"><svg class="i" aria-hidden="true"><use href="#i-building-h"/></svg>시설 기록</button><a class="btn btn-soft" href="album.html"><svg class="i" aria-hidden="true"><use href="#i-camera"/></svg>앨범</a></div></div>
     <div id="daily"></div>
     <input type="file" accept="image/*" capture="environment" id="moment-file" hidden>
+    <input type="file" accept="image/*" id="album-file" hidden>
   </section>
 </main>
 
@@ -69,6 +70,9 @@
 
 <!-- 실시간 산책 -->
 <dialog class="walk-live" id="walk-live" aria-label="산책 중"></dialog>
+
+<!-- 그 순간 사진: 앱 안 카메라 -->
+<dialog class="camera" id="camera" aria-label="사진 찍기"></dialog>
 
 <!-- 필터링 -->
 <dialog class="sheet" id="filter" aria-labelledby="filter-title">
