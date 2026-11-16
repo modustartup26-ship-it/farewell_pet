@@ -14,6 +14,15 @@
 .wk-day:disabled{opacity:.35;cursor:default}
 .wk-day .rings{width:38px;height:38px}
 
+/* 로그인 없이 쓰는 중 */
+.guest-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 14px;padding:14px 16px;border-radius:18px;background:var(--surface-2)}
+.guest-bar p{flex:1 1 260px;margin:0;font-size:13.5px;color:var(--ink-2)}
+.guest-bar b{display:block;font-size:15px;color:var(--ink)}
+.guest-bar>div{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.guest-bar .btn{min-height:42px;padding:0 14px;font-size:14px}
+.guest-bar .btn-ghost{font-size:13.5px}
+.guest-bar .btn-ghost[data-armed]{color:var(--danger)}
+
 /* 링 카드 */
 .ring-card{position:relative;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:26px;padding:26px 26px 22px;border-radius:30px;background:#0F2348;color:#fff;overflow:hidden}
 .ring-card::after{content:'';position:absolute;inset:auto -60px -90px auto;width:260px;height:260px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,107,61,.16),transparent);pointer-events:none}

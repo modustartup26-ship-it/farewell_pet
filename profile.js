@@ -16,7 +16,7 @@
       try{await FPChat.savePetProfile(pet);}
       catch(error){console.error('Unable to save pet profile.',error);showError('아이 정보를 계정에 저장하지 못했어요. 연결을 확인하고 다시 시도해 주세요.');return false;}
     }
-    if(!FP.save(state))FP.toast(guestMode?'아이 정보를 현재 탭에 저장하지 못했어요.':'계정에는 저장됐지만 이 기기에 표시용 정보를 저장하지 못했어요.');
+    if(!FP.save(state))FP.toast(guestMode?'아이 정보를 이 기기에 저장하지 못했어요.':'계정에는 저장됐지만 이 기기에 표시용 정보를 저장하지 못했어요.');
     return true;
   }
 
@@ -233,6 +233,7 @@
       for(const key of Object.keys(pet))delete pet[key];
       Object.assign(pet,result.pet||{});
       state.pet=pet;
+      FP.markSignedIn(state);
       if(!FP.save(state))FP.toast('아이 정보는 계정에 저장돼 있지만 이 기기에 표시용 정보를 저장하지 못했어요.');
       gate.hidden=true;shell.hidden=false;
       const start=new URLSearchParams(location.search).get('step');

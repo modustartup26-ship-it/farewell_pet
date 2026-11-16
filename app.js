@@ -409,13 +409,14 @@
       else if(legacyPet.name)Object.assign(pet,legacyPet);
       if(user){
         state.pet=pet;
+        FP.markSignedIn(state);
         if(!FP.save(state))toast('아이 정보는 계정에 저장돼 있지만 이 기기에 표시용 정보를 저장하지 못했어요.');
       }
     }catch(error){
       console.error('Unable to load pet profile.',error);
       if(legacyPet.name){
         Object.assign(pet,legacyPet);
-        toast('계정 정보를 불러오지 못해 이 탭에 임시 저장된 아이 정보로 표시해요.');
+        toast('계정 정보를 불러오지 못해 이 기기에 저장된 아이 정보로 표시해요.');
       }else toast('아이 정보를 불러오지 못했어요. 연결을 확인해 주세요.');
     }
     hasPet=!!pet.name;

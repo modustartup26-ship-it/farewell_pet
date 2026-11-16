@@ -1,5 +1,5 @@
 /* 돌봄 체크리스트 만들기: 업체와 연결되지 않아도 아이 프로필로 미리 만들어 저장해 둔다.
-   로그인하면 계정에, 아니면 이 탭에 저장한다. 업체 문의함에서 체크리스트를 정할 때 이 내용으로 시작한다. */
+   로그인하면 계정에, 아니면 이 기기 브라우저에 저장한다. 업체 문의함에서 체크리스트를 정할 때 이 내용으로 시작한다. */
 (function(){
   const {esc,icon,toast,josa}=FP;
   const app=document.querySelector('#care-app');
@@ -60,7 +60,7 @@
         <p>앱으로 문의를 받는 업체와 대화할 때 이 체크리스트가 그대로 채워져요. 아직 앱을 쓰지 않는 업체에는 ‘문구 복사하기’로 문자나 메시지에 붙여 보내 주세요.</p>
         <p class="muted">체크리스트는 건강 상태를 판단하지 않아요. 걱정되는 답이 있으면 업체나 병원에 바로 물어봐 주세요.</p>
       </section>
-      ${user?'':`<p class="care-guest">지금은 이 탭에만 저장돼요. 탭을 닫으면 사라지니, 계속 쓰려면 <button type="button" class="link" data-act="login">로그인</button>해 주세요.</p>`}
+      ${user?'':`<p class="care-guest">지금은 이 기기에만 저장돼요. 다른 기기에서도 쓰려면 <button type="button" class="link" data-act="login">로그인</button>해 주세요.</p>`}
       <p class="care-del"><button type="button" class="link" data-act="delete">체크리스트 지우기</button></p>
     </div>`;
   }

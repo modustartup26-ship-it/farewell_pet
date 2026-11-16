@@ -62,9 +62,48 @@
   }
   const icon=(name,cls='')=>`<svg class="i ${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  function load(){let s={};try{s=JSON.parse(sessionStorage.getItem(KEY))||{};}catch{}return {saved:[],records:[],...s,pet:{...(s.pet||{})}};}
-  function save(state){try{sessionStorage.setItem(KEY,JSON.stringify(state));return true;}catch{return false;}}
-  function clearPetCache(state=load()){delete state.pet;return save(state);}
+  /* 로그인하지 않은 보호자(게스트)의 기록은 이 기기 브라우저(localStorage)에 남겨 탭을 닫아도 이어 쓴다.
+     로그인하면 계정으로 옮긴 뒤 기기 사본을 지운다. 계정에 저장된 기록(serverId가 있는 것)은 기기에 남기지 않는다. */
+  const GUEST_KEY='farewell-pet-guest-v1';
+  function guestBundle(state){
+    const local=a=>(Array.isArray(a)?a:[]).filter(e=>!e.serverId);
+    return {pet:state.pet||{},saved:state.saved||[],daily:local(state.daily),diary:local(state.diary),dailyGoals:state.dailyGoals||null,walkLive:state.walkLive||null,careChecklist:state.careChecklist||null,savedAt:Date.now()};
+  }
+  function readGuest(){try{return JSON.parse(localStorage.getItem(GUEST_KEY))||null;}catch{return null;}}
+  function writeGuest(state){
+    if(state.signedIn)return true;
+    let b=guestBundle(state);
+    try{localStorage.setItem(GUEST_KEY,JSON.stringify(b));return true;}
+    catch{
+      /* 용량이 넘치면 오래된 사진부터 빼고 다시 저장한다 */
+      b.daily=b.daily.map(l=>l.type==='photo'?{...l,photo:''}:l);
+      try{localStorage.setItem(GUEST_KEY,JSON.stringify(b));return 'nophoto';}catch{return false;}
+    }
+  }
+  function load(){
+    let s=null;try{s=JSON.parse(sessionStorage.getItem(KEY));}catch{}
+    if(!s){const g=readGuest();s=g?{...g}:{};delete s.savedAt;}
+    return {saved:[],records:[],...s,pet:{...(s.pet||{})}};
+  }
+  function save(state){
+    let ok=true;try{sessionStorage.setItem(KEY,JSON.stringify(state));}catch{ok=false;}
+    const g=writeGuest(state);
+    return ok||g===true;
+  }
+  /* 로그인 확인 후 부른다: 기기 사본은 계정으로 옮겨지므로 지운다 */
+  function markSignedIn(state){state.signedIn=true;try{localStorage.removeItem(GUEST_KEY);}catch{}try{sessionStorage.setItem(KEY,JSON.stringify(state));}catch{}}
+  function markSignedOut(state){
+    state.signedIn=false;delete state.pet;
+    ['daily','diary'].forEach(k=>{if(Array.isArray(state[k]))state[k]=state[k].filter(e=>!e.serverId);});
+    delete state.walkLive;
+    return save(state);
+  }
+  function clearGuest(state){
+    try{localStorage.removeItem(GUEST_KEY);}catch{}
+    if(state){delete state.pet;state.daily=[];state.diary=[];delete state.dailyGoals;delete state.walkLive;delete state.careChecklist;state.saved=[];try{sessionStorage.setItem(KEY,JSON.stringify(state));}catch{}}
+  }
+  const hasGuest=()=>!!readGuest();
+  function clearPetCache(state=load()){return markSignedOut(state);}
   /* 받침이 있으면 '이'를 붙여 부르는 이름으로: 콩 → 콩이, 초롱이 → 초롱이 */
   function hasBatchim(word){const ch=String(word).trim().slice(-1);const c=ch.charCodeAt(0);if(c<0xAC00||c>0xD7A3)return false;return (c-0xAC00)%28!==0;}
   const call=name=>{name=String(name||'').trim()||'우리 아이';return hasBatchim(name)?name+'이':name;};
@@ -87,6 +126,6 @@
     {id:'hotel',kind:'hotel',label:'호텔',pos:[.64,.8],bend:-1},
     {id:'together',kind:'together',label:'커뮤니티',pos:[0,1.02],cpos:[0,1.02],soon:true,detached:true}
   ];
-  window.FP={KEY,NODES,icon,esc,load,save,clearPetCache,josa,call,sizeFromWeight,toast,sprite};
+  window.FP={KEY,GUEST_KEY,NODES,icon,esc,load,save,clearPetCache,markSignedIn,markSignedOut,clearGuest,hasGuest,josa,call,sizeFromWeight,toast,sprite};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sprite);else sprite();
 })();

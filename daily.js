@@ -1,7 +1,7 @@
 /* 하루 기록: 산책 일기의 메인 화면.
    밥·산책·배변·영양제·간식·놀이·물을 버튼 한 번으로 남기고, 산책·놀이·물을 링으로 채운다.
    시설 방문 일기(diary.js)는 '시설 기록' 창에서 따로 연다.
-   로그인하면 daily_logs 테이블에 저장하고, 없으면 이 탭에만 둔다. */
+   로그인하면 daily_logs 테이블에 저장하고, 로그인하지 않으면 이 기기 브라우저에 둔다(FP의 게스트 저장). */
 (function(){
   const {esc,icon,josa,toast}=FP;
   const WEEK=['일','월','화','수','목','금','토'];
@@ -139,8 +139,8 @@
     if(error)handleCloudError(error);
   }
   function handleCloudError(err){
-    if(err&&(err.code==='42P01'||err.code==='PGRST205'||/daily_logs/.test(err.message||''))){cloud.off=true;console.warn('daily_logs 테이블이 없어 하루 기록은 이 탭에만 저장해요. supabase/migrations/20261116_daily_logs.sql 을 실행하세요.');return;}
-    console.error(err);toast('계정에 저장하지 못했어요. 이 탭에는 남아 있어요.');
+    if(err&&(err.code==='42P01'||err.code==='PGRST205'||/daily_logs/.test(err.message||''))){cloud.off=true;console.warn('daily_logs 테이블이 없어 하루 기록은 이 기기에만 저장해요. supabase/migrations/20261116_daily_logs.sql 을 실행하세요.');return;}
+    console.error(err);toast('계정에 저장하지 못했어요. 이 화면에는 남아 있어요.');
   }
   async function connect(user){
     cloud.user=user;cloud.client=window.FPChat&&FPChat.client;cloud.off=false;rankCache={};
@@ -199,6 +199,7 @@
         <button type="button" class="icon-btn" data-shift="1" aria-label="다음날" ${isToday?'disabled':''}>${icon('chev-right')}</button>
       </div>
       <div class="wk-strip">${strip}</div>
+      ${cloud.user?'':`<aside class="guest-bar"><p><b>로그인 없이 쓰는 중이에요</b>기록은 이 기기 브라우저에 남아서 창을 닫아도 이어 쓸 수 있어요. 로그인하면 계정으로 옮겨서 다른 기기에서도 볼 수 있어요.</p><div><button type="button" class="btn btn-soft" data-act="login">로그인하고 옮기기</button><button type="button" class="btn-ghost" data-act="wipe">이 기기 기록 지우기</button></div></aside>`}
 
       <section class="ring-card" aria-label="오늘 채운 링">
         <div class="ring-wrap">${ringsSvg([{p:t.walk/goal.walk,c:RING_C[0]},{p:t.play/goal.play,c:RING_C[1]},{p:t.water/goal.water,c:RING_C[2]}])}<span class="ring-face">${Minimi.svg(Minimi.config(pet),{shadow:false})}</span></div>
@@ -534,6 +535,11 @@
         const i=logs().findIndex(l=>l.id===b.dataset.del);if(i>-1){const [l]=logs().splice(i,1);ctx.save();drop(l);render();toast('기록을 지웠어요.');}
       }
       const act=b.dataset.act;
+      if(act==='login'&&window.FPAuth)FPAuth.open({onSuccess:()=>location.reload()});
+      if(act==='wipe'){
+        if(!b.dataset.armed){b.dataset.armed='1';b.textContent='한 번 더 누르면 모두 지워져요';setTimeout(()=>{delete b.dataset.armed;b.textContent='이 기기 기록 지우기';},3000);return;}
+        FP.clearGuest(ctx.state);location.href='index.html';return;
+      }
       if(act==='goals')openGoals();if(act==='body')openBody();if(act==='facility')openFacility();if(act==='walk-open')openLive();
     });
     document.querySelector('#moment-file').addEventListener('change',e=>{onPhoto(e.target.files[0]);e.target.value='';});
