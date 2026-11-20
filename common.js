@@ -53,7 +53,18 @@
     'drop':'<path d="M12 3.5s6.5 7 6.5 11a6.5 6.5 0 0 1-13 0c0-4 6.5-11 6.5-11z"/><path d="M9 15a3 3 0 0 0 3 3"/>',
     'pause':'<path d="M8.5 5.5v13M15.5 5.5v13"/>',
     'stop':'<rect x="6" y="6" width="12" height="12" rx="2.5"/>',
-    'building-h':'<path d="M4 20V6.5L12 3l8 3.5V20"/><path d="M10 20v-5h4v5M12 7.5v4M10 9.5h4"/>'
+    'building-h':'<path d="M4 20V6.5L12 3l8 3.5V20"/><path d="M10 20v-5h4v5M12 7.5v4M10 9.5h4"/>',
+    /* 가족 방 · 건강토픽 */
+    'family':'<circle cx="8.5" cy="8" r="3"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M3 19.5a5.5 5.5 0 0 1 11 0M13.5 19.5a4 4 0 0 1 7.5-1.8"/>',
+    'video':'<rect x="3.5" y="6.5" width="12" height="11" rx="2.5"/><path d="M15.5 10.5l5-3v9l-5-3"/>',
+    'bell':'<path d="M6.5 16.5V11a5.5 5.5 0 0 1 11 0v5.5l1.5 2h-14z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/>',
+    'ticket':'<path d="M4 7.5A1.5 1.5 0 0 1 5.5 6h13A1.5 1.5 0 0 1 20 7.5V10a2 2 0 0 0 0 4v2.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 16.5V14a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="1.6 2.2"/>',
+    'home':'<path d="M4 11l8-6.5 8 6.5"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5.5h4V20"/>',
+    'share':'<path d="M12 15V4M7.5 8.5L12 4l4.5 4.5"/><path d="M5 13v5.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V13"/>',
+    'lock':'<rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/>',
+    'volume':'<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/>',
+    'mute':'<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>',
+    'flip':'<path d="M4.5 9.5A7.5 7.5 0 0 1 18 7l1.5 1.5"/><path d="M19.5 4.5v4h-4"/><path d="M19.5 14.5A7.5 7.5 0 0 1 6 17l-1.5-1.5"/><path d="M4.5 19.5v-4h4"/>'
   };
   function sprite(){
     if(document.getElementById('fp-icons'))return;

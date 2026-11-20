@@ -4,7 +4,7 @@ body.app{min-height:100dvh;background:var(--meadow)}
 .tabbar{display:flex;gap:4px;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:4px}
 .tabbar button,.tabbar a{display:inline-flex;align-items:center;gap:7px;border:0;background:none;border-radius:10px;min-height:40px;padding:0 14px;font-weight:700;font-size:15px;color:var(--ink-3)}
 .tabbar button:hover,.tabbar a:hover{color:var(--ink)}
-.tabbar button[aria-current=page]{background:var(--primary);color:#fff}
+.tabbar button[aria-current=page],.tabbar a[aria-current=page]{background:var(--primary);color:#fff}
 .tabbar .i{width:18px;height:18px}
 .badge{font-size:11px;line-height:1;padding:3px 6px;border-radius:8px;background:var(--sun);color:#3B2C00}
 .me{display:inline-flex;align-items:center;gap:9px;text-decoration:none;font-weight:700;font-size:15px;color:var(--ink);padding:4px 12px 4px 4px;border-radius:999px;background:#fff;border:1.5px solid var(--line)}

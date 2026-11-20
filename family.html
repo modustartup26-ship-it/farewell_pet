@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>가족 방 · farewell pet</title>
+<meta name="theme-color" content="#FFFFFF">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="family.css">
+</head>
+<body class="app family-page">
+<header class="topbar app-top">
+  <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-paw"/></svg></span>farewell pet</a>
+  <nav class="tabbar" aria-label="주 메뉴">
+    <a href="services.html"><svg class="i" aria-hidden="true"><use href="#i-map"/></svg><span>산책 지도</span></a>
+    <a href="services.html?go=diary"><svg class="i" aria-hidden="true"><use href="#i-book"/></svg><span>산책 일기</span></a>
+    <a href="family.html" aria-current="page"><svg class="i" aria-hidden="true"><use href="#i-family"/></svg><span>가족</span><b class="badge tnum" id="new-count" hidden>0</b></a>
+    <a href="topics.html"><svg class="i" aria-hidden="true"><use href="#i-heart"/></svg><span>건강토픽</span></a>
+    <a href="inbox.html"><svg class="i" aria-hidden="true"><use href="#i-chat"/></svg><span>문의함</span></a>
+  </nav>
+  <button type="button" class="icon-btn bell" id="bell" aria-label="새 글 알림 켜기"><svg class="i" aria-hidden="true"><use href="#i-bell"/></svg></button>
+</header>
+
+<main class="family" id="family-app"></main>
+
+<button type="button" class="shutter-fab" id="fab" aria-label="10초 영상이나 사진 찍어 올리기"><span class="ring"><svg class="i" aria-hidden="true"><use href="#i-camera"/></svg></span><span class="fab-t">지금 남기기</span></button>
+
+<!-- 찍기: 사진 또는 10초 영상 -->
+<dialog class="cam" id="cam" aria-label="사진·영상 찍기"></dialog>
+
+<!-- 초대 / 들어오기 / 구성원 -->
+<dialog class="sheet" id="sheet" aria-labelledby="sheet-title">
+  <div class="grip" aria-hidden="true"></div>
+  <div class="sheet-head"><span></span><h2 id="sheet-title"></h2><button type="button" class="icon-btn" data-close aria-label="닫기"><svg class="i" aria-hidden="true"><use href="#i-close"/></svg></button></div>
+  <form class="sheet-body" id="sheet-form"></form>
+  <div class="sheet-foot" id="sheet-foot"></div>
+</dialog>
+
+<input type="file" id="pick" accept="image/*,video/*" capture="environment" hidden>
+
+<script src="common.js"></script>
+<script src="minimi.js"></script>
+<script src="family.js"></script>
+</body>
+</html>

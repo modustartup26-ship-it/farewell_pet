@@ -1,0 +1,118 @@
+/* 건강토픽 · 가족 방 공통으로 쓰는 상단 메뉴 보정 */
+.top-spacer{width:44px;flex:none}
+@media (max-width:760px){.top-spacer{display:none}}
+
+/* 강아지 그림 */
+.dog{display:block;width:100%;height:auto;overflow:visible}
+.dog .d-body>*{fill:#fff;stroke:var(--forest);stroke-width:2.6;stroke-linejoin:round}
+.dog .d-body .d-far{fill:#E7EEFC}
+.dog .d-tail{fill:none;stroke:var(--forest);stroke-width:2.6;stroke-linecap:round}
+.dog .d-ear{fill:var(--forest);stroke:var(--forest);stroke-width:2.6;stroke-linejoin:round}
+.dog .d-nose,.dog .d-eye{fill:var(--forest)}
+.dog .d-mouth{fill:none;stroke:var(--forest);stroke-width:2;stroke-linecap:round}
+.dog .rg>*{fill:transparent;stroke:transparent;stroke-width:2;transition:fill .2s,stroke .2s}
+.dog .rg.on>*{fill:var(--sun);stroke:var(--soil-edge)}
+.dog .rg[data-part]{cursor:pointer;outline:none}
+.dog .rg[data-part]:not(.on)>*{fill:rgba(30,86,194,.08);stroke:rgba(30,86,194,.45);stroke-dasharray:3 3}
+.dog .rg[data-part]:hover:not(.on)>*,.dog .rg[data-part]:focus-visible>*{fill:rgba(255,212,0,.45);stroke:var(--soil-edge);stroke-dasharray:none}
+
+/* 페이지 */
+.topics{max-width:1080px;margin:0 auto;padding:22px clamp(16px,4vw,40px) 130px}
+.t-hero h1{margin:6px 0 0;font-size:clamp(26px,3.4vw,36px);line-height:1.28;letter-spacing:-.02em;color:var(--forest)}
+.eyebrow{display:inline-flex;align-items:center;gap:6px;margin:0;font-size:14px;font-weight:700;color:var(--primary)}
+.eyebrow .i{width:17px;height:17px}
+.demo-note{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-8px 0 0;padding:10px 14px;border-radius:14px;background:var(--soil-pale);color:#5C4300;font-size:14px}
+.demo-note a{font-weight:700;color:var(--primary)}
+.t-sec{margin-top:38px}
+.t-sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.t-sec-head h2{margin:0;font-size:24px;letter-spacing:-.02em;color:var(--ink)}
+.t-sec-head .count{font-size:14px;font-weight:700;color:var(--primary)}
+.t-sec-head .note{font-size:13px;color:var(--ink-3)}
+.empty-line{color:var(--ink-3)}
+
+/* 토픽 줄 */
+.t-list{list-style:none;margin:0;padding:0}
+.t-list.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:28px}
+.t-list.mine{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:28px}
+.t-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.t-open{flex:1;min-width:0;display:flex;align-items:center;gap:14px;border:0;background:none;padding:0;text-align:left}
+.t-ico{flex:none;display:grid;place-items:center;width:56px;height:56px;border-radius:50%;background:var(--surface-2);overflow:hidden}
+.t-ico .dog{width:46px;margin-top:2px}
+.t-ico.gen{background:var(--primary-tint);color:var(--primary)}
+.t-ico.gen .i{width:26px;height:26px}
+.t-txt{min-width:0;display:flex;flex-direction:column}
+.t-txt b{font-size:18px;letter-spacing:-.01em}
+.t-txt small{font-size:14px;color:var(--ink-3)}
+.t-txt em{display:inline-flex;align-items:center;gap:4px;margin-top:3px;font-style:normal;font-size:13px;font-weight:600;color:#6B4C00}
+.t-txt em .i{width:14px;height:14px;color:var(--sun-deep)}
+.t-open:hover b{color:var(--primary)}
+.sub{flex:none;display:inline-flex;align-items:center;gap:4px;min-height:40px;padding:0 15px;border-radius:999px;border:1.5px solid var(--primary);background:#fff;color:var(--primary);font-weight:700;font-size:14px;transition:background-color .15s,color .15s}
+.sub .i{width:16px;height:16px;stroke-width:2.4}
+.sub:hover{background:var(--primary-tint)}
+.sub.on{background:var(--primary);color:#fff}
+
+/* 몸 부위로 찾기 */
+.body-pick{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:28px;align-items:start;background:var(--surface-2);border-radius:28px;padding:24px}
+.body-art{background:#fff;border-radius:22px;padding:18px 18px 8px}
+.body-panel h3{margin:4px 0 6px;font-size:22px;color:var(--forest)}
+.body-panel h3 small{font-size:14px;font-weight:500;color:var(--ink-3);margin-left:6px}
+.body-panel .t-row:last-child{border-bottom:0}
+
+/* 전체 건강토픽 카드 */
+.p-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.p-card{position:relative;display:grid;grid-template-columns:1fr 46%;grid-template-rows:1fr auto;gap:8px;min-height:190px;padding:22px 20px 18px 24px;border-radius:24px;border:2px solid transparent;background:var(--surface-2);text-align:left;overflow:hidden;transition:border-color .15s,transform .2s cubic-bezier(.2,.8,.2,1)}
+.p-card:hover{transform:translateY(-2px)}
+.p-card.sel{border-color:var(--sun);background:var(--soil-pale)}
+.p-txt b{display:block;font-size:22px;letter-spacing:-.02em;color:var(--ink)}
+.p-txt small{font-size:15px;color:var(--ink-2)}
+.p-art{grid-row:1/3;grid-column:2;align-self:center;position:relative}
+.p-art .emblem{position:absolute;right:4%;bottom:6%;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--sun);color:#3B2C00;box-shadow:0 4px 10px -4px rgba(0,0,0,.25)}
+.p-chips{display:flex;flex-wrap:wrap;gap:6px;align-self:end}
+.p-chips i{font-style:normal;font-size:13px;padding:4px 10px;border-radius:999px;background:#fff;color:var(--ink-2);border:1px solid var(--line)}
+.t-foot{display:flex;gap:8px;align-items:flex-start;margin:34px 0 0;font-size:14px;color:var(--ink-3)}
+.t-foot a{color:var(--primary);font-weight:700}
+
+/* 토픽 안 */
+.topic-sheet .sheet-body{padding-top:4px}
+.tp-head{display:flex;align-items:center;gap:14px;padding:6px 0 18px;border-bottom:1px solid var(--line)}
+.tp-head>div{flex:1;min-width:0;display:flex;flex-direction:column}
+.tp-head b{font-size:20px}
+.tp-head small{color:var(--ink-3);font-size:14px}
+.tp-head em{display:inline-flex;align-items:center;gap:4px;font-style:normal;font-size:13px;font-weight:600;color:#6B4C00}
+.tp-head em .i{width:14px;height:14px}
+.tp-care{margin-top:18px;padding:18px;border-radius:20px;background:var(--soil-pale)}
+.tp-care h3{display:flex;align-items:center;gap:6px;margin:0 0 12px;font-size:16px;color:#5C4300}
+.tp-conds{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.tp-conds span{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:999px;background:#fff;font-size:14px;font-weight:600;color:var(--ink-2)}
+.tp-conds .i{width:15px;height:15px;color:var(--primary);stroke-width:2.6}
+.tp-care .btn{min-height:46px;width:100%}
+.tp-sub{margin:24px 0 6px;font-size:17px}
+.tp-sub small{font-size:13px;font-weight:500;color:var(--ink-3)}
+.tp-posts{list-style:none;margin:0;padding:0}
+.tp-posts li{padding:16px 0;border-bottom:1px solid var(--line)}
+.tp-posts b{font-size:16px}
+.tp-posts p{margin:4px 0 0;color:var(--ink-2);font-size:15px}
+.tp-posts .tp-meta{margin:0 0 3px;font-size:13px;color:var(--ink-3)}
+.tp-like{display:flex;align-items:center;gap:4px;font-size:13px!important;color:var(--ink-3)!important}
+.tp-like .i{width:15px;height:15px}
+.tp-vet{display:flex;gap:10px;align-items:flex-start;margin-top:10px;padding:12px 14px;border-radius:14px;background:var(--primary-tint)}
+.tp-vet>span:last-child{display:flex;flex-direction:column;font-size:14px;color:var(--ink-2)}
+.tp-vet b{font-size:14px;color:var(--primary)}
+.tier{flex:none;font-size:12px;font-weight:700;padding:4px 8px;border-radius:8px}
+.tier.gold{background:#FFE58F;color:#5C4300}
+.tier.silver{background:#E4E8EF;color:#434C5E}
+.tier.dia{background:#CFE0FF;color:#13305F}
+.tp-actions{display:flex;gap:10px;margin-top:20px}
+.tp-actions .btn{flex:1}
+
+@media (max-width:900px){
+  .t-list.grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .p-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:760px){
+  .t-list.grid,.t-list.mine{grid-template-columns:1fr}
+  .body-pick{grid-template-columns:1fr;padding:14px;gap:14px}
+  .p-grid{grid-template-columns:1fr}
+  .p-card{min-height:160px}
+  .t-ico{width:50px;height:50px}
+}
