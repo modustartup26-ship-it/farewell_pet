@@ -497,7 +497,7 @@
   /* ---------- 카카오 지도 ---------- */
   const DEFAULT_CENTER=[35.0186,126.7836];
   const POOP_IMG='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="46" viewBox="0 0 40 46"><path d="M20 45c-1.5-4-10-10.5-10-10.5H6a6 6 0 0 1-6-6V6a6 6 0 0 1 6-6h28a6 6 0 0 1 6 6v22.5a6 6 0 0 1-6 6h-4S21.5 41 20 45z" fill="#7A4A22"/><path d="M19 7.5c2.2.8 3 2.6 2.2 4.1 2.8 0 4.5 1.6 4.2 3.8 2.6.5 4.2 2.2 4.2 4.3 0 3-3.7 5-9.6 5s-9.6-2-9.6-5c0-2.1 1.6-3.8 4.2-4.3-.5-2.3 1.6-4 4.1-3.8.7-1.5.8-2.8.3-4.1z" fill="#fff"/></svg>');
-  const live={map:null,line:null,me:null,poops:new Map(),follow:true,placing:null,failed:false};
+  const live={map:null,line:null,me:null,poops:new Map(),follow:true,placing:null,failed:false,shown:null,target:null,raf:0};
   async function mapIn(el,center){
     if(!window.KMap||!KMap.ready)throw new Error('no-kmap');
     const maps=await KMap.ready();
@@ -525,12 +525,32 @@
       const {maps,map}=await mapIn(el,start);
       live.map=map;live.maps=maps;live.failed=false;live.poops.clear();
       live.line=new maps.Polyline({map,path:(w?w.path:[]).map(p=>LL(maps,p)),strokeWeight:7,strokeColor:'#FF6B3D',strokeOpacity:.92,strokeStyle:'solid'});
-      live.me=meOverlay(maps,map,start);
+      live.me=meOverlay(maps,map,start);live.shown=start;live.target=start;
       maps.event.addListener(map,'dragstart',()=>{if(!live.placing){live.follow=false;document.querySelector('#km-recenter').hidden=false;}});
       logs().filter(l=>l.type==='poop'&&l.at&&w&&l.walk===w.startedAt).forEach(r=>live.poops.set(r.id,poopMarker(maps,map,r)));
       document.querySelector('#live-map').classList.add('has-map');
       setTimeout(()=>{map.relayout();map.setCenter(LL(maps,start));},60);
     }catch(e){live.map=null;live.failed=true;document.querySelector('#live-map').classList.remove('has-map');paintLive();}
+  }
+  /* 미니미가 이전 위치에서 새 위치까지 산책로를 따라 걸어가게 한다 (GPS가 새 위치를 줄 때마다) */
+  function glideMe(cur){
+    const maps=live.maps,el=live.me.getContent(),to=live.target;
+    if(to&&to[0]===cur[0]&&to[1]===cur[1])return;
+    const from=live.shown||cur;live.target=cur;
+    cancelAnimationFrame(live.raf);
+    if(cur[1]<from[1])el.classList.add('west');else if(cur[1]>from[1])el.classList.remove('west');
+    /* 처음이거나, 움직임 줄이기 설정이거나, 위치가 크게 튀었으면(200m 넘게) 바로 옮긴다 */
+    if(!live.shown||hav(from,cur)>.2||matchMedia('(prefers-reduced-motion: reduce)').matches){live.shown=cur;live.me.setPosition(LL(maps,cur));el.classList.remove('moving');return;}
+    el.classList.add('moving');
+    const t0=performance.now(),dur=950;
+    const step=t=>{
+      if(!live.me)return;
+      const k=Math.min(1,(t-t0)/dur);
+      live.shown=[from[0]+(cur[0]-from[0])*k,from[1]+(cur[1]-from[1])*k];
+      live.me.setPosition(LL(maps,live.shown));
+      if(k<1)live.raf=requestAnimationFrame(step);else el.classList.remove('moving');
+    };
+    live.raf=requestAnimationFrame(step);
   }
   function openLive(){
     const dlg=document.querySelector('#walk-live');
@@ -558,7 +578,7 @@
     if(live.map&&cur){
       const maps=live.maps;
       live.line.setPath(w.path.map(p=>LL(maps,p)));
-      live.me.setPosition(LL(maps,cur));
+      glideMe(cur);
       if(live.follow&&!live.placing)live.map.panTo(LL(maps,cur));
     }else if(!live.map&&w.path.length){
       /* 카카오 지도를 못 불러오면 경로만 그린다 */

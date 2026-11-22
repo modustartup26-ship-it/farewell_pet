@@ -235,6 +235,14 @@ dialog.walk-live[open]{display:flex}
 .live-map.has-map>.live-face{display:none}
 .km-me{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:#FF6B3D;box-shadow:0 0 0 7px rgba(255,107,61,.25),0 4px 12px rgba(0,0,0,.25)}
 .km-me svg{width:38px;height:38px}
+/* 산책 중 미니미: 걸을 때 통통 튀고, 가는 방향을 바라본다 */
+.km-me svg{transition:transform .2s}
+.km-me.west svg{transform:scaleX(-1)}
+.km-me.moving svg{animation:km-walk .3s ease-in-out infinite alternate}
+.km-me.west.moving svg{animation-name:km-walk-west}
+@keyframes km-walk{from{transform:translateY(1px) rotate(-5deg)}to{transform:translateY(-3px) rotate(5deg)}}
+@keyframes km-walk-west{from{transform:scaleX(-1) translateY(1px) rotate(-5deg)}to{transform:scaleX(-1) translateY(-3px) rotate(5deg)}}
+@media (prefers-reduced-motion: reduce){.km-me.moving svg{animation:none}}
 .km-pin{position:absolute;left:50%;top:50%;z-index:3;transform:translate(-50%,-100%);display:grid;place-items:center;width:46px;height:46px;border-radius:50% 50% 50% 0;rotate:-45deg;background:#7A4A22;box-shadow:0 6px 14px rgba(0,0,0,.3);pointer-events:none}
 .km-pin .i{rotate:45deg;width:24px;height:24px;color:#fff;fill:#fff;stroke:#fff}
 .km-pin::after{content:'';position:absolute;left:-4px;bottom:-4px;width:8px;height:8px;border-radius:50%;background:rgba(0,0,0,.35)}
