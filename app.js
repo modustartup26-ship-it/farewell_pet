@@ -30,10 +30,12 @@
     save();
     petName=pet.name||'우리 아이';
     hasPet=!!pet.name;
-    Diary.updatePetProfile(pet,petName);Daily.updatePetProfile(pet,petName);
-    renderHeader();map.redraw();
-    location.reload();
+    const reload=()=>location.reload();
+    /* 로그인한 경우 계정의 '지금 보는 아이'도 바꿔 둬야 새로고침 뒤에도 유지된다 */
+    if(user&&window.FPChat)FPChat.savePetProfile({...next,_pets:state.pets.map(p=>({...p})),_activePetId:id}).catch(err=>{console.error(err);toast('계정에 반영하지 못해 이 기기에서만 바뀌었어요.');}).finally(reload);
+    else reload();
   }
+  const FREE_PETS=2;
   const DIST=['우리 동네','가까운 동네','옆 동네','시내','먼 동네'];
 
   /* ---------- 상단 · 프로필 ---------- */
@@ -52,7 +54,7 @@
     $('#profile-menu').innerHTML=hasPet
       ?`<span class="profile-menu-pet">${esc(josa.name(pet.name))} · <b class="tnum">${points}P</b></span>${petSwitch}
         <a href="profile.html"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg><span>아이 정보 수정</span></a>
-        <a href="profile.html?add=1"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg><span>아이 추가하기</span></a>
+        ${(state.pets||[]).length>=FREE_PETS&&!state.extraPetSlots?`<button type="button" data-act="pet-paywall"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg><span>아이 추가하기 (유료)</span></button>`:`<a href="profile.html?add=1"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg><span>아이 추가하기</span></a>`}
         <a href="shop.html"><svg class="i" aria-hidden="true"><use href="#i-bone"/></svg><span>포인트 샵</span></a>
         <a href="intro.html"><svg class="i" aria-hidden="true"><use href="#i-paw"/></svg><span>farewell pet 이야기</span></a>${accountAction}`
       :`<a href="profile.html"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg><span>아이 등록</span></a><a href="intro.html"><svg class="i" aria-hidden="true"><use href="#i-paw"/></svg><span>farewell pet 이야기</span></a>${accountAction}`;
@@ -130,9 +132,19 @@
   function renderMy(){
     const el=$('#my-root');if(!el)return;
     const points=(window.FPPoints&&FPPoints.get().points)||state.points||0;
-    const facts=hasPet?[pet.breed,pet.years!==''&&pet.years!=null?`${pet.years}살`:'',pet.weight?`${pet.weight}kg`:'',pet.size].filter(Boolean).join(' · '):'';
+    const facts=hasPet?[pet.breed,pet.years!==''&&pet.years!=null?`${pet.years}살`:'',pet.weight?`${pet.weight}kg`:'',pet.size,pet.sex?pet.sex+(pet.neutered==='했어요'?' · 중성화':''):''].filter(Boolean).join(' · '):'';
     const row=(href,ic,label,sub,attr='')=>`<${href?`a href="${href}"`:`button type="button" ${attr}`} class="my-row">${icon(ic)}<span class="my-l">${label}</span>${sub?`<span class="my-sub tnum">${sub}</span>`:''}${icon('chev-right')}</${href?'a':'button'}>`;
+    const pets=state.pets||[];
+    const locked=pets.length>=FREE_PETS&&!state.extraPetSlots;
+    const tile=p=>`<button type="button" class="pf-tile${p.id===state.activePetId||(!state.activePetId&&p.name===pet.name)?' on':''}" data-pet-switch="${esc(p.id||p.name)}" aria-label="${esc(p.name||'이름 없음')} 프로필로 바꾸기"${p.id===state.activePetId?' aria-current="true"':''}><span class="pf-av">${p.photo?`<img src="${p.photo}" alt="">`:Minimi.svg(Minimi.config(p))}</span><b>${esc(p.name||'이름 없음')}</b></button>`;
+    const switcher=hasPet?`<section class="pf-switch" aria-label="아이 프로필 전환">
+        <h2>누구의 하루를 볼까요?</h2>
+        <div class="pf-row">${pets.map(tile).join('')}
+          <${locked?'button type="button" data-act="pet-paywall"':'a href="profile.html?add=1"'} class="pf-tile pf-add"><span class="pf-av">${icon(locked?'lock':'plus')}</span><b>${locked?'아이 추가':'아이 추가'}</b>${locked?'<small>유료</small>':`<small>${pets.length}/${FREE_PETS} 무료</small>`}</${locked?'button':'a'}>
+        </div>
+      </section>`:'';
     el.innerHTML=`
+      ${switcher}
       <section class="my-card">
         <span class="my-avatar">${avatar()}</span>
         <div class="my-who"><b>${hasPet?esc(josa.name(pet.name)):'아직 등록한 아이가 없어요'}</b><span>${hasPet?esc(facts||'프로필을 채워 주세요'):'몸무게, 약, 성격을 알려주시면 맞는 곳을 찾아 드려요.'}</span></div>
@@ -142,7 +154,6 @@
         ${row('','heart','찜한 곳',`${state.saved.length}곳`,'data-view="saved"')}
         ${row('inbox.html','chat','문의함',inboxUnread?`<span class="new-badge">새 답장 ${inboxUnread}</span>`:'업체와 주고받은 대화')}
         ${row('shop.html','bone','포인트샵',`${points}P`)}
-        ${hasPet?row('profile.html?add=1','plus','아이 추가하기',''):''}
         ${row('intro.html','paw','farewell pet 이야기','')}
         ${user?row('','user','로그아웃','','data-logout'):row('inbox.html','user','로그인','')}
       </nav>`;
@@ -367,7 +378,7 @@
   }
   function inquiryText(p,date){
     const lines=[`안녕하세요. ${josa.name(petName)} 보호자예요.`];
-    const facts=[pet.breed,pet.years!==''&&pet.years!=null?`${pet.years}살`:'',pet.weight?`${pet.weight}kg`:'',pet.sex].filter(Boolean).join(', ');
+    const facts=[pet.breed,pet.years!==''&&pet.years!=null?`${pet.years}살`:'',pet.weight?`${pet.weight}kg`:'',pet.sex?pet.sex+(pet.neutered==='했어요'?'(중성화)':pet.neutered==='안 했어요'?'(중성화 안 함)':''):''].filter(Boolean).join(', ');
     if(facts)lines.push(`${josa.topic(petName)} ${facts}이에요.`);
     lines.push(`${date?date+'에 ':''}${p.cat==='hospital'?'진료':'이용'}가 가능할지 문의드려요.`);
     const asks=[];
@@ -450,6 +461,10 @@
     if(e.target.closest('#me')){
       menu.hidden=!menu.hidden;
       menuButton.setAttribute('aria-expanded',String(!menu.hidden));
+      return;
+    }
+    if(e.target.closest('[data-act="pet-paywall"]')){
+      modal('세 번째 아이부터는 유료예요',`<div class="soon"><p>아이 프로필은 두 마리까지 무료예요. 세 번째 아이부터는 유료 플랜으로 추가할 수 있어요.</p><p class="muted">결제 기능은 준비 중이에요. 열리면 바로 알려 드릴게요.</p></div>`,`<button type="button" class="btn btn-primary" data-close>알겠어요</button>`);
       return;
     }
     if(e.target.closest('[data-act="ai"]')){const t=document.querySelector('.ai-chat-toggle');if(t){t.click();}else toast('AI 상담을 불러오지 못했어요.');return;}

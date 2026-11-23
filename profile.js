@@ -3,7 +3,7 @@
   const state=FP.load();
   const addMode=new URLSearchParams(location.search).get('add')==='1';
   const initialPet=addMode?{}:(state.pet||{});
-  const pet={breed:'',years:'',months:'',sex:'',dogs:'',people:'',separation:'',weight:'',concerns:[],hasMedication:'',medications:[],photo:'',...initialPet};
+  const pet={breed:'',years:'',months:'',sex:'',neutered:'',dogs:'',people:'',separation:'',weight:'',concerns:[],hasMedication:'',medications:[],photo:'',...initialPet};
   const form=document.querySelector('#wizard');
   const shell=document.querySelector('#wizard-shell');
   const gate=document.querySelector('#profile-gate');
@@ -29,6 +29,8 @@
     return true;
   }
 
+  /* 아이는 두 마리까지 무료. 세 번째부터는 유료(결제 연동 전이라 안내만) */
+  const FREE_PETS=2;
   const steps=[
     {key:'name',
      q:()=>'우리 아이 이름을 알려주세요',
@@ -44,8 +46,8 @@
     {key:'age',optional:true,
      q:p=>`${josa.topic(p.name)} 몇 살이에요?`,
      hint:()=>'노령견 돌봄이 가능한 곳을 고를 때 참고해요. 정확하지 않아도 괜찮아요.',
-     render:p=>`<div class="row2"><label class="field"><input name="years" type="number" inputmode="numeric" min="0" max="30" placeholder="0" value="${esc(p.years)}"><span class="unit">살</span></label><label class="field"><input name="months" type="number" inputmode="numeric" min="0" max="11" placeholder="0" value="${esc(p.months)}"><span class="unit">개월</span></label></div><p class="sub" style="margin-top:28px">성별</p><div class="chips grid3">${radio('sex',['암컷','수컷'],p.sex)}</div>`,
-     read:f=>{const y=f.years.value,m=f.months.value;if(y!==''&&(+y<0||+y>30))return '나이는 0살에서 30살 사이로 입력해 주세요.';if(m!==''&&(+m<0||+m>11))return '개월은 0에서 11 사이로 입력해 주세요.';pet.years=y===''?'':+y;pet.months=m===''?'':+m;pet.sex=f.sex.value||pet.sex;}},
+     render:p=>`<div class="row2"><label class="field"><input name="years" type="number" inputmode="numeric" min="0" max="30" placeholder="0" value="${esc(p.years)}"><span class="unit">살</span></label><label class="field"><input name="months" type="number" inputmode="numeric" min="0" max="11" placeholder="0" value="${esc(p.months)}"><span class="unit">개월</span></label></div><p class="sub" style="margin-top:28px">성별</p><div class="chips grid3">${radio('sex',['암컷','수컷'],p.sex)}</div><p class="sub" style="margin-top:22px">중성화 여부</p><div class="chips grid3">${radio('neutered',['했어요','안 했어요','모르겠어요'],p.neutered)}</div>`,
+     read:f=>{const y=f.years.value,m=f.months.value;if(y!==''&&(+y<0||+y>30))return '나이는 0살에서 30살 사이로 입력해 주세요.';if(m!==''&&(+m<0||+m>11))return '개월은 0에서 11 사이로 입력해 주세요.';pet.years=y===''?'':+y;pet.months=m===''?'':+m;pet.sex=f.sex.value||pet.sex;pet.neutered=f.neutered.value||pet.neutered||'';}},
     {key:'temper',optional:true,
      q:p=>`${josa.of(p.name)} 성격은 어때요?`,
      hint:()=>'합사나 단독 돌봄이 필요한지 판단할 때 써요.',
@@ -194,7 +196,7 @@
   function done(){
     progress(total);
     $('#count').textContent='';$('#skip').hidden=true;
-    const summary=[pet.breed,pet.years!==''&&pet.years!=null?`${pet.years}살${pet.months?` ${pet.months}개월`:''}`:'',pet.weight?`${pet.weight}kg · ${pet.size}`:'',pet.concerns&&pet.concerns.length?`건강 고민: ${Concerns.labels(pet.concerns).join(', ')}`:'',pet.hasMedication==='있음'?`약 ${pet.medications.length}가지`:pet.hasMedication==='없음'?'먹는 약 없음':'',pet.mcpq&&pet.mcpq.type?pet.mcpq.type:''].filter(Boolean);
+    const summary=[pet.breed,pet.years!==''&&pet.years!=null?`${pet.years}살${pet.months?` ${pet.months}개월`:''}`:'',pet.sex?`${pet.sex}${pet.neutered==='했어요'?' · 중성화 했어요':pet.neutered==='안 했어요'?' · 중성화 안 했어요':''}`:'',pet.weight?`${pet.weight}kg · ${pet.size}`:'',pet.concerns&&pet.concerns.length?`건강 고민: ${Concerns.labels(pet.concerns).join(', ')}`:'',pet.hasMedication==='있음'?`약 ${pet.medications.length}가지`:pet.hasMedication==='없음'?'먹는 약 없음':'',pet.mcpq&&pet.mcpq.type?pet.mcpq.type:''].filter(Boolean);
     document.querySelector('.ask').hidden=true;showError('');
     $('#answer').innerHTML=`<div class="done">${Minimi.svg(Minimi.config(pet),{title:`${josa.of(pet.name)} 미니미`})}<div><h1>${esc(josa.name(pet.name))} 등록 완료!</h1><p>이제 산책로를 따라 ${esc(josa.name(pet.name))}에게 맞는 곳을 찾아볼까요?</p><div class="summary">${summary.map(t=>`<span>${esc(t)}</span>`).join('')||'<span>입력하지 않은 항목은 나중에 채울 수 있어요</span>'}</div></div></div>`;
     $('#next').textContent='산책 지도로 가기';$('#next').disabled=false;
@@ -225,14 +227,32 @@
     if(message){authError.textContent=message;authError.hidden=false;}
     $('#guest-profile').addEventListener('click',()=>{
       guestMode=true;
-      gate.hidden=true;shell.hidden=false;
-      const start=new URLSearchParams(location.search).get('step');
-      const si=steps.findIndex(s=>s.key===start);
-      show(si>0&&pet.name?si:0,0);
+      gate.hidden=true;begin();
     },{once:true});
     $('#profile-auth').addEventListener('click',()=>window.FPAuth.open({onSuccess:initialize}));
   }
 
+  function begin(){
+    if(addMode&&(state.pets||[]).length>=FREE_PETS&&!state.extraPetSlots){showPaywall();return;}
+    shell.hidden=false;
+    const start=new URLSearchParams(location.search).get('step');
+    const si=steps.findIndex(s=>s.key===start);
+    show(si>0&&pet.name?si:0,0);
+  }
+  function showPaywall(){
+    shell.hidden=true;gate.hidden=true;
+    const names=(state.pets||[]).map(p=>p.name).filter(Boolean);
+    const box=document.createElement('main');box.className='paywall';
+    box.innerHTML=`<div class="pw-card">
+      <div class="pw-pets" aria-hidden="true">${(state.pets||[]).slice(0,2).map(p=>`<span>${p.photo?`<img src="${p.photo}" alt="">`:Minimi.svg(Minimi.config(p))}</span>`).join('')}<span class="pw-plus">${icon('plus')}</span></div>
+      <h1>세 번째 아이부터는 유료예요</h1>
+      <p>아이 프로필은 두 마리까지 무료예요.${names.length?` 지금 ${names.map(n=>esc(josa.name(n))).join(', ')}를 등록해 두셨어요.`:''} 세 번째 아이부터는 유료 플랜으로 프로필을 더 추가할 수 있어요.</p>
+      <ul><li>아이마다 따로 쌓이는 하루 기록·캘린더</li><li>아이마다 맞춘 시설 추천과 문의</li><li>마이에서 아이 프로필 바로 전환</li></ul>
+      <p class="pw-note">결제 기능은 준비 중이에요. 열리면 바로 알려 드릴게요.</p>
+      <div class="pw-act"><button type="button" class="btn btn-primary" disabled>${icon('lock')}결제 준비 중</button><a class="btn btn-soft" href="index.html?go=my">마이로 돌아가기</a></div>
+    </div>`;
+    document.body.append(box);
+  }
   async function initialize(){
     if(!window.FPChat||!FPChat.client){showGate('로그인 연결을 사용할 수 없어요. 로그인 없이 임시 등록은 계속할 수 있어요.');return;}
     try{
@@ -250,10 +270,7 @@
       state.pet=pet;
       FP.markSignedIn(state);
       if(!FP.save(state))FP.toast('아이 정보는 계정에 저장돼 있지만 이 기기에 표시용 정보를 저장하지 못했어요.');
-      gate.hidden=true;shell.hidden=false;
-      const start=new URLSearchParams(location.search).get('step');
-      const si=steps.findIndex(s=>s.key===start);
-      show(si>0&&pet.name?si:0,0);
+      gate.hidden=true;begin();
     }catch(error){
       console.error('Unable to load pet profile.',error);
       showGate('아이 정보를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.');

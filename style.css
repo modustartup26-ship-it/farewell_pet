@@ -88,6 +88,21 @@ main:has(> .view-home:not([hidden])){max-width:1480px}
 .tab-dot{position:absolute;top:6px;right:8px;width:9px;height:9px;border-radius:50%;background:#E5484D;box-shadow:0 0 0 2px #fff}
 .new-badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#E5484D;color:#fff;font-size:12px;font-weight:800}
 @media (max-width:760px){.tab-dot{top:6px;right:calc(50% - 18px)}}
+.pf-switch{margin:18px 0 6px}
+.pf-switch h2{margin:0 0 12px;font-size:17px;color:var(--ink-2)}
+.pf-row{display:flex;gap:16px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:none}
+.pf-tile{display:grid;justify-items:center;gap:6px;flex:none;width:92px;padding:0;border:0;background:none;font:inherit;color:var(--ink-2);text-decoration:none;cursor:pointer}
+.pf-av{display:grid;place-items:center;width:84px;height:84px;border-radius:24px;background:var(--soil-pale);overflow:hidden;box-shadow:0 0 0 3px transparent;transition:box-shadow .15s,transform .15s}
+.pf-av .minimi{width:118%;height:118%;margin-top:22%}
+.pf-av img{width:100%;height:100%;object-fit:cover}
+.pf-tile:hover .pf-av{transform:translateY(-2px)}
+.pf-tile.on .pf-av{box-shadow:0 0 0 3px #fff,0 0 0 6px var(--primary)}
+.pf-tile b{font-size:14px;max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pf-tile.on b{color:var(--primary)}
+.pf-add .pf-av{background:var(--surface-2);border:2px dashed var(--line-2);color:var(--ink-3)}
+.pf-add .pf-av .i{width:30px;height:30px}
+.pf-add small{margin-top:-4px;font-size:11.5px;color:var(--ink-3)}
+button.pf-add small{color:#8A6A00;font-weight:800}
 /* 아이 등록 알림창 */
 .reg-notice{position:fixed;top:84px;right:24px;z-index:90;display:flex;gap:14px;align-items:flex-start;width:min(380px,calc(100vw - 28px));padding:16px 14px 14px 16px;border-radius:22px;background:#fff;border:1.5px solid var(--line);box-shadow:0 18px 48px -12px rgba(19,48,95,.35);animation:rnIn .25s ease-out}
 .reg-notice.out{opacity:0;transform:translateY(-8px);transition:.2s}
