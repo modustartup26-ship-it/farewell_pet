@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>포인트 샵 · farewell pet</title>
+<meta name="theme-color" content="#FFFFFF">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="shop.css">
+</head>
+<body class="app shop-page">
+<header class="topbar app-top">
+  <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-paw"/></svg></span>farewell pet</a>
+  <nav class="tabbar" aria-label="주 메뉴">
+    <a href="services.html"><svg class="i" aria-hidden="true"><use href="#i-map"/></svg><span>산책 지도</span></a>
+    <a href="services.html?go=diary"><svg class="i" aria-hidden="true"><use href="#i-book"/></svg><span>산책 일기</span></a>
+    <a href="family.html"><svg class="i" aria-hidden="true"><use href="#i-family"/></svg><span>가족</span></a>
+    <a href="shop.html" aria-current="page"><svg class="i" aria-hidden="true"><use href="#i-bone"/></svg><span>포인트샵</span></a>
+  </nav>
+  <div class="shop-owner"><span>보유 포인트</span><strong id="owner-points" class="tnum">0 P</strong></div>
+</header>
+<main class="shop-main">
+  <section class="shop-hero">
+    <div><p>오늘의 산책 포인트</p><h1><span id="today-steps" class="tnum">0</span> 걸음</h1><span id="today-earned" class="tnum">오늘 0 P 획득</span></div>
+    <div class="step-ring" id="step-ring"><span id="step-percent">0%</span></div>
+  </section>
+  <div class="step-actions">
+    <button type="button" class="btn btn-primary" id="enable-steps">걸음 센서 켜기</button>
+    <button type="button" class="btn btn-soft" id="test-step">걸음 테스트 +100</button>
+  </div>
+  <section class="shop-section"><div class="shop-title"><h2>아이 간식</h2><span>포인트로 구매</span></div><div class="products" id="snacks"></div></section>
+  <section class="shop-section"><div class="shop-title"><h2>장난감</h2><span>포인트로 구매</span></div><div class="products" id="toys"></div></section>
+  <section class="walk-guide"><h2>산책 포인트 받는 법</h2><p>100걸음마다 1포인트가 쌓이고 하루 최대 2,000포인트까지 받을 수 있어요.</p><p class="note">정확한 걸음 수는 기기의 센서 권한과 앱 종류에 따라 달라질 수 있어요.</p></section>
+</main>
+<script src="common.js"></script>
+<script src="points.js"></script>
+<script src="shop.js"></script>
+</body>
+</html>

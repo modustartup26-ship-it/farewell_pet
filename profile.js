@@ -1,7 +1,9 @@
 (function(){
   const {esc,icon,josa}=FP;
   const state=FP.load();
-  const pet={breed:'',years:'',months:'',sex:'',dogs:'',people:'',separation:'',weight:'',concerns:[],hasMedication:'',medications:[],photo:'',...state.pet};
+  const addMode=new URLSearchParams(location.search).get('add')==='1';
+  const initialPet=addMode?{}:(state.pet||{});
+  const pet={breed:'',years:'',months:'',sex:'',dogs:'',people:'',separation:'',weight:'',concerns:[],hasMedication:'',medications:[],photo:'',...initialPet};
   const form=document.querySelector('#wizard');
   const shell=document.querySelector('#wizard-shell');
   const gate=document.querySelector('#profile-gate');
@@ -11,9 +13,16 @@
   const radio=(name,values,selected)=>values.map(v=>`<label class="chip"><input type="radio" name="${name}" value="${esc(v)}" ${v===selected?'checked':''}>${esc(v)}</label>`).join('');
 
   async function persist(){
-    state.pet=pet;
+    const id=pet.id||pet.name||('pet-'+Date.now());
+    pet.id=id;
+    const pets=(state.pets||[]).filter(p=>p.id!==id);
+    pets.push({...pet});
+    state.pets=pets;
+    state.activePetId=id;
+    state.pet={...pet};
+    const cloudPet={...pet,_pets:pets.map(p=>({...p})),_activePetId:id};
     if(!guestMode){
-      try{await FPChat.savePetProfile(pet);}
+      try{await FPChat.savePetProfile(cloudPet);}
       catch(error){console.error('Unable to save pet profile.',error);showError('아이 정보를 계정에 저장하지 못했어요. 연결을 확인하고 다시 시도해 주세요.');return false;}
     }
     if(!FP.save(state))FP.toast(guestMode?'아이 정보를 이 기기에 저장하지 못했어요.':'계정에는 저장됐지만 이 기기에 표시용 정보를 저장하지 못했어요.');
@@ -231,7 +240,13 @@
       const result=await FPChat.loadPetProfile(legacyPet);
       if(!result.user){showGate();return;}
       for(const key of Object.keys(pet))delete pet[key];
-      Object.assign(pet,result.pet||{});
+      const payload=result.pet||state.pet||{};
+      if(payload._pets){
+        state.pets=payload._pets;
+        state.activePetId=payload._activePetId||payload._pets[0].id;
+      }
+      const active=payload._pets?(payload._pets.find(p=>p.id===state.activePetId)||payload._pets[0]):payload;
+      if(!addMode&&active)Object.assign(pet,active);
       state.pet=pet;
       FP.markSignedIn(state);
       if(!FP.save(state))FP.toast('아이 정보는 계정에 저장돼 있지만 이 기기에 표시용 정보를 저장하지 못했어요.');

@@ -1,0 +1,13 @@
+body.shop-page{padding-bottom:110px}
+.shop-owner{display:grid;text-align:right}.shop-owner span{font-size:12px;color:var(--ink-3)}.shop-owner strong{color:var(--primary);font-size:18px}
+.shop-main{max-width:980px!important;padding:28px 18px}
+.shop-hero{display:flex;justify-content:space-between;align-items:center;padding:24px;border-radius:24px;background:linear-gradient(135deg,var(--primary-tint),#fff5cf)}
+.shop-hero p{margin:0;color:var(--ink-3)}.shop-hero h1{margin:3px 0 8px;font-size:38px}.shop-hero h1 span{color:var(--primary)}.shop-hero #today-earned{font-weight:700;color:#755500}
+.step-ring{width:110px;height:110px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--primary) 0deg,var(--line) 0deg)}
+.step-ring span{width:82px;height:82px;border-radius:50%;background:#fff;display:grid;place-items:center;font-weight:800}
+.step-actions{display:flex;gap:10px;margin:14px 0 28px}.step-actions .btn{min-height:48px}
+.shop-section{margin-top:24px}.shop-title{display:flex;justify-content:space-between;align-items:end}.shop-title h2{margin:0}.shop-title span{font-size:13px;color:var(--ink-3)}
+.products{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+.product{border:1.5px solid var(--line);border-radius:18px;padding:16px;background:#fff}.product-icon{height:90px;display:grid;place-items:center;border-radius:14px;background:var(--surface-2);font-size:44px}.product h3{margin:12px 0 4px;font-size:16px}.product p{margin:0;color:var(--ink-3);font-size:13px}.product-foot{display:flex;justify-content:space-between;align-items:center;margin-top:12px}.product-price{font-weight:800;color:#755500}.product .buy{min-height:38px;padding:0 12px;font-size:14px}
+.walk-guide{margin-top:28px;padding:20px;border-radius:18px;background:var(--surface-2)}.walk-guide h2{margin:0 0 6px}.walk-guide p{margin:4px 0}
+@media(max-width:700px){.tabbar{position:fixed}.products{grid-template-columns:repeat(2,1fr)}.shop-owner{position:absolute;right:12px}.shop-owner span{display:none}.shop-hero h1{font-size:30px}.step-ring{width:90px;height:90px}.step-ring span{width:66px;height:66px}.step-actions{flex-direction:column}}

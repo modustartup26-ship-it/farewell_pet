@@ -1,7 +1,6 @@
 /* 공통: 저장소, 이름 조사, 아이콘, 토스트 */
 (function(){
   const KEY='farewell-pet-v1';
-  try{localStorage.removeItem(KEY);}catch(error){console.error('Unable to clear the previous browser profile cache.',error);}
   const ICONS={
     'arrow-left':'<path d="M15 5l-7 7 7 7"/>',
     'arrow-right':'<path d="M5 12h14M13 6l6 6-6 6"/>',
@@ -78,7 +77,7 @@
   const GUEST_KEY='farewell-pet-guest-v1';
   function guestBundle(state){
     const local=a=>(Array.isArray(a)?a:[]).filter(e=>!e.serverId);
-    return {pet:state.pet||{},saved:state.saved||[],daily:local(state.daily),diary:local(state.diary),dailyGoals:state.dailyGoals||null,walkLive:state.walkLive||null,careChecklist:state.careChecklist||null,savedAt:Date.now()};
+    return {pet:state.pet||{},pets:state.pets||[],activePetId:state.activePetId||'',points:state.points||0,walkPointsToday:state.walkPointsToday||0,stepsToday:state.stepsToday||0,walkStepsDate:state.walkStepsDate||'',saved:state.saved||[],daily:local(state.daily),diary:local(state.diary),dailyGoals:state.dailyGoals||null,walkLive:state.walkLive||null,careChecklist:state.careChecklist||null,savedAt:Date.now()};
   }
   function readGuest(){try{return JSON.parse(localStorage.getItem(GUEST_KEY))||null;}catch{return null;}}
   function writeGuest(state){
@@ -94,7 +93,19 @@
   function load(){
     let s=null;try{s=JSON.parse(sessionStorage.getItem(KEY));}catch{}
     if(!s){const g=readGuest();s=g?{...g}:{};delete s.savedAt;}
-    return {saved:[],records:[],...s,pet:{...(s.pet||{})}};
+    const out={saved:[],records:[],points:0,walkPointsToday:0,stepsToday:0,walkStepsDate:'',pets:[],activePetId:'',...s,pet:{...(s.pet||{})}};
+    if(!out.pets.length&&out.pet&&out.pet.name){
+      out.activePetId=out.pet.id||out.pet.name;
+      out.pet.id=out.activePetId;
+      out.pets=[{...out.pet}];
+    }else if(out.pets.length){
+      const active=out.pets.find(p=>p.id===out.activePetId)||out.pets[0];
+      out.activePetId=active.id||active.name;
+      active.id=out.activePetId;
+      out.pet={...active};
+    }
+    if(out.walkPointsToday>2000)out.walkPointsToday=2000;
+    return out;
   }
   function save(state){
     let ok=true;try{sessionStorage.setItem(KEY,JSON.stringify(state));}catch{ok=false;}
@@ -105,6 +116,7 @@
   function markSignedIn(state){state.signedIn=true;try{localStorage.removeItem(GUEST_KEY);}catch{}try{sessionStorage.setItem(KEY,JSON.stringify(state));}catch{}}
   function markSignedOut(state){
     state.signedIn=false;delete state.pet;
+    state.pets=[];state.activePetId='';
     ['daily','diary'].forEach(k=>{if(Array.isArray(state[k]))state[k]=state[k].filter(e=>!e.serverId);});
     delete state.walkLive;
     return save(state);
@@ -138,5 +150,6 @@
     {id:'together',kind:'together',label:'커뮤니티',pos:[0,1.02],cpos:[0,1.02],soon:true,detached:true}
   ];
   window.FP={KEY,GUEST_KEY,NODES,icon,esc,load,save,clearPetCache,markSignedIn,markSignedOut,clearGuest,hasGuest,josa,call,sizeFromWeight,toast,sprite};
+  if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sprite);else sprite();
 })();

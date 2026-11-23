@@ -20,6 +20,20 @@
       });
     }
   };
+  function switchPet(id){
+    const next=(state.pets||[]).find(p=>p.id===id);
+    if(!next)return;
+    state.activePetId=id;
+    Object.keys(pet).forEach(key=>delete pet[key]);
+    Object.assign(pet,next);
+    state.pet={...next};
+    save();
+    petName=pet.name||'우리 아이';
+    hasPet=!!pet.name;
+    Diary.updatePetProfile(pet,petName);Daily.updatePetProfile(pet,petName);
+    renderHeader();map.redraw();
+    location.reload();
+  }
   const DIST=['우리 동네','가까운 동네','옆 동네','시내','먼 동네'];
 
   /* ---------- 상단 · 프로필 ---------- */
@@ -31,9 +45,15 @@
     const accountAction=user
       ?`<button type="button" id="logout"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg><span>로그아웃</span></button>`
       :`<a href="inbox.html"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg><span>로그인</span></a>`;
+    const petSwitch=state.pets&&state.pets.length>1
+      ?`<div class="pet-switch">${state.pets.map(p=>`<button type="button" data-pet-switch="${esc(p.id||p.name)}" ${p.id===state.activePetId?'aria-current="true"':''}>${esc(p.name||'이름 없음')}</button>`).join('')}</div>`
+      :'';
+    const points=(FPPoints&&FPPoints.get().points)||state.points||0;
     $('#profile-menu').innerHTML=hasPet
-      ?`<span class="profile-menu-pet">${esc(josa.name(pet.name))}</span>
-        <a href="profile.html"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg><span>아이 정보 수정</span></a>${accountAction}`
+      ?`<span class="profile-menu-pet">${esc(josa.name(pet.name))} · <b class="tnum">${points}P</b></span>${petSwitch}
+        <a href="profile.html"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg><span>아이 정보 수정</span></a>
+        <a href="profile.html?add=1"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg><span>아이 추가하기</span></a>
+        <a href="shop.html"><svg class="i" aria-hidden="true"><use href="#i-bone"/></svg><span>포인트 샵</span></a>${accountAction}`
       :`<a href="profile.html"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg><span>아이 등록</span></a>${accountAction}`;
     $('#saved-count').textContent=state.saved.length;
     $('#saved-count').hidden=!state.saved.length;
@@ -350,6 +370,8 @@
   /* ---------- 이벤트 ---------- */
   document.addEventListener('click',e=>{
     const menu=$('#profile-menu'),menuButton=$('#me');
+    const petSwitch=e.target.closest('[data-pet-switch]');
+    if(petSwitch){e.preventDefault();switchPet(petSwitch.dataset.petSwitch);return;}
     if(!e.target.closest('.me-menu-wrap')){
       menu.hidden=true;
       menuButton.setAttribute('aria-expanded','false');
@@ -405,8 +427,18 @@
       if(!window.FPChat||!FPChat.client)throw new Error('supabase_unavailable');
       const result=await FPChat.loadPetProfile(legacyPet);
       user=result.user;
-      if(result.pet)Object.assign(pet,result.pet);
-      else if(legacyPet.name)Object.assign(pet,legacyPet);
+      const payload=result.pet||legacyPet;
+      if(payload&&payload._pets){
+        state.pets=payload._pets;
+        state.activePetId=payload._activePetId||payload._pets[0].id||payload._pets[0].name;
+      }else if(payload&&payload.name){
+        const id=payload.id||payload.name;
+        payload.id=id;
+        state.pets=[payload];
+        state.activePetId=id;
+      }
+      const active=state.pets.find(p=>p.id===state.activePetId)||state.pets[0];
+      if(active)Object.assign(pet,active);
       if(user){
         state.pet=pet;
         FP.markSignedIn(state);
