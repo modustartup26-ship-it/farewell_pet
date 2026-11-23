@@ -90,12 +90,12 @@
   }
 
   /* ---------- 산책 지도 ---------- */
-  /* 맞춤 시설 찾기: 위쪽 2×2에 미용실·병원·유치원·호텔, 가운데 아이, 아래 줄에 별들의 공간·커뮤니티·수의사 상담.
-     intro 장면은 FP.NODES의 원래 자리를 그대로 쓴다 */
-  const HOME_LAYOUT={grooming:[-.56,-2.05],hospital:[.56,-2.05],kinder:[-.56,-1.02],hotel:[.56,-1.02],star:[-.7,1],together:[0,1],consult:[.7,1]};
-  const HOME_NODES=FP.NODES.map(n=>({...n,pos:HOME_LAYOUT[n.id]||n.pos,cpos:HOME_LAYOUT[n.id]||n.cpos||n.pos,clines:n.id==='star'?['별들의','공간']:n.id==='consult'?['수의사','상담']:n.clines}));
+  /* 맞춤 시설 찾기: 호텔·병원 / 유치원·미용실 네 곳만 2×2로, 가운데에 아이. 별들의 공간은 지도 아래 카드로,
+     수의사 상담은 상단 메뉴의 '수의사 상담'(consult.html)에서 다룬다. intro 장면은 FP.NODES 원래 자리를 그대로 쓴다 */
+  const HOME_LAYOUT={hotel:[-.56,-.92],hospital:[.56,-.92],kinder:[-.56,.78],grooming:[.56,.78]};
+  const HOME_NODES=['hotel','hospital','kinder','grooming'].map(id=>{const n=FP.NODES.find(x=>x.id===id);return {...n,pos:HOME_LAYOUT[id],cpos:HOME_LAYOUT[id]};});
   const map=TrailMap.create($('#map'),{
-    nodes:HOME_NODES,interactive:true,seed:23,trails:false,centerY:.66,
+    nodes:HOME_NODES,interactive:true,seed:23,trails:false,centerY:.5,
     label:`${josa.name(petName)} 맞춤 시설 찾기 지도`,
     center:()=>Minimi.svg(Minimi.config(pet),{inner:true}),
     onSelect:id=>{
@@ -104,6 +104,11 @@
     }
   });
 
+  function renderStar(){
+    const el=$('#star-card');if(!el)return;const st=SOON.star;
+    el.innerHTML=`<svg class="star-art" viewBox="-60 -66 120 116" aria-hidden="true">${TrailMap.art('star')}</svg><div class="star-tx"><h2 id="star-title">${esc(st.title)}<span class="soon-tag">준비 중</span></h2><p>${esc(st.body)}</p><p class="muted">준비가 끝나면 여기에서 만날 수 있어요.</p></div>`;
+  }
+  renderStar();
   function openNode(id){
     if(FILTERS[id]){current=id;openFilter();}
     else if(id==='consult')location.href='consult.html';

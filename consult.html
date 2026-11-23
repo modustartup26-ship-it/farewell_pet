@@ -6,14 +6,24 @@
 <title>수의사 상담 · farewell pet</title>
 <meta name="theme-color" content="#FFFFFF">
 <link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="consult.css">
 <link rel="stylesheet" href="ai-chat.css">
 <link rel="stylesheet" href="auth.css">
 </head>
-<body class="consult-page">
-<header class="topbar">
+<body class="app consult-page">
+<header class="topbar app-top">
   <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-paw"/></svg></span>farewell pet</a>
-  <a class="consult-nav" href="index.html">홈</a>
+  <nav class="tabbar" aria-label="주 메뉴">
+    <a href="index.html"><svg class="i" aria-hidden="true"><use href="#i-home"/></svg><span>홈</span></a>
+    <a href="index.html?go=calendar"><svg class="i" aria-hidden="true"><use href="#i-calendar"/></svg><span>캘린더</span></a>
+    <a href="consult.html" aria-current="page"><svg class="i" aria-hidden="true"><use href="#i-steth"/></svg><span>수의사 상담</span></a>
+    <a href="shop.html"><svg class="i" aria-hidden="true"><use href="#i-bone"/></svg><span>포인트샵</span></a>
+    <a href="family.html"><svg class="i" aria-hidden="true"><use href="#i-family"/></svg><span>가족</span></a>
+    <a href="topics.html"><svg class="i" aria-hidden="true"><use href="#i-heart"/></svg><span>건강토픽</span></a>
+    <a href="inbox.html"><svg class="i" aria-hidden="true"><use href="#i-chat"/></svg><span>문의함</span></a>
+  </nav>
+  <span class="topbar-sp" aria-hidden="true"></span>
 </header>
 <main id="consult-app" aria-live="polite">
   <p class="consult-loading">상담 공간을 여는 중이에요…</p>

@@ -7,7 +7,7 @@
 - 우리 아이 등록(질문 한 개씩 + 건강 고민 + 미니미 꾸미기 + 성격 검사 MCPQ-R): `profile.html`
 - 맞춤 시설 찾기 · 필터링 · 상세: `index.html` (예전 주소 `services.html`은 홈으로 이동)
 - 보호자 문의함: `inbox.html` / 업체 문의함: `partner.html` (Supabase, 스키마는 `supabase/migrations/`)
-- 수의사 1:1 상담: `consult.html` (Supabase 이메일·비밀번호 로그인·실시간 채팅)
+- 수의사 1:1 상담: `consult.html` (상단 메뉴 '수의사 상담') (Supabase 이메일·비밀번호 로그인·실시간 채팅)
 - 강아지 앨범·용량·포토북·생애 기록 신청: `album.html`
 - 가족 방(셋로그식 10초 영상·사진 공유, 초대 코드, 돌봄시설 임시가족): `family.html`
 - 건강토픽(프로필 기반 자동 구독, 몸 부위로 찾기, 토픽→시설 조건 연결): `topics.html`

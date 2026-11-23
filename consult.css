@@ -131,3 +131,7 @@
 .rate-done{margin:0;color:#2D6A3E;font-size:14px}
 
 .vet-tag{background:#fff!important;border:1.5px solid var(--line-2,#d6dbe3)}
+
+/* 상단 메뉴(수의사 상담 카테고리) */
+.consult-page .topbar-sp{width:120px}
+@media (max-width:760px){.consult-page .topbar-sp{display:none}.consult-page main{padding-bottom:calc(100px + env(safe-area-inset-bottom))}}
