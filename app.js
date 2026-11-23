@@ -90,8 +90,12 @@
   }
 
   /* ---------- 산책 지도 ---------- */
+  /* 맞춤 시설 찾기: 위쪽 2×2에 미용실·병원·유치원·호텔, 가운데 아이, 아래 줄에 별들의 공간·커뮤니티·수의사 상담.
+     intro 장면은 FP.NODES의 원래 자리를 그대로 쓴다 */
+  const HOME_LAYOUT={grooming:[-.56,-2.05],hospital:[.56,-2.05],kinder:[-.56,-1.02],hotel:[.56,-1.02],star:[-.7,1],together:[0,1],consult:[.7,1]};
+  const HOME_NODES=FP.NODES.map(n=>({...n,pos:HOME_LAYOUT[n.id]||n.pos,cpos:HOME_LAYOUT[n.id]||n.cpos||n.pos,clines:n.id==='star'?['별들의','공간']:n.id==='consult'?['수의사','상담']:n.clines}));
   const map=TrailMap.create($('#map'),{
-    nodes:FP.NODES,interactive:true,seed:23,trails:false,
+    nodes:HOME_NODES,interactive:true,seed:23,trails:false,centerY:.66,
     label:`${josa.name(petName)} 맞춤 시설 찾기 지도`,
     center:()=>Minimi.svg(Minimi.config(pet),{inner:true}),
     onSelect:id=>{
