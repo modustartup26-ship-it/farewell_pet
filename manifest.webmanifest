@@ -1,7 +1,7 @@
 {
   "name": "farewell pet",
   "short_name": "farewell pet",
-  "start_url": "/services.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",

@@ -16,7 +16,7 @@
       if(!user||!profile||!profile.name)return;
       pet=profile;
       startButton.innerHTML=`${FP.esc(FP.josa.name(pet.name))} 산책 지도 보기 ${FP.icon('arrow-right')}`;
-      startButton.href='services.html';
+      startButton.href='index.html';
       map.redraw();
     }catch(error){
       console.error('Unable to load pet profile for the landing page.',error);

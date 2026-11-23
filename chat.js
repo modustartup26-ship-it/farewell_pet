@@ -97,7 +97,7 @@
   function renderList(){
     const box=document.querySelector('#conv-list');if(!box)return;
     box.innerHTML=conversations.length?conversations.map(c=>`<button type="button" class="conv" data-conv="${esc(c.id)}"${c.id===activeId?' aria-current="true"':''}><b>${esc(titleOf(c))}</b><span class="conv-last">${esc(c.last_message||'')}</span><time>${esc(when(c.last_message_at))}</time></button>`).join(''):
-      `<div class="chat-empty"><b>아직 문의가 없어요</b>${isFacility?'<p>보호자가 문의를 보내면 여기에 바로 나타나요.</p>':'<p>산책 지도에서 업체를 고르고 문의를 보내 보세요.</p><a class="btn btn-soft" href="services.html">산책 지도로 가기</a>'}</div>`;
+      `<div class="chat-empty"><b>아직 문의가 없어요</b>${isFacility?'<p>보호자가 문의를 보내면 여기에 바로 나타나요.</p>':'<p>홈의 맞춤 시설 찾기에서 업체를 고르고 문의를 보내 보세요.</p><a class="btn btn-soft" href="index.html">홈으로 가기</a>'}</div>`;
   }
 
   /* ---------- 메시지 ---------- */

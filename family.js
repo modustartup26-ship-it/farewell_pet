@@ -257,7 +257,7 @@
         ${cell('walk','산책',t.walk?`${t.walk}분`:walkPost?hm(walkPost.at):'아직',t.walk?'하루 기록':walkPost?by(walkPost)+' 올림':'')}
         ${cell('poop','배변',t.poop?`${t.poop}번`:'아직',t.poop?'하루 기록':'')}
       </div>
-      ${isOwner||mode==='local'?`<a class="st-link" href="services.html?go=diary">하루 기록 열기 ${icon('chev-right')}</a>`:'<p class="st-note">보호자가 남긴 하루 기록이에요.</p>'}
+      ${isOwner||mode==='local'?`<a class="st-link" href="index.html?go=diary">하루 기록 열기 ${icon('chev-right')}</a>`:'<p class="st-note">보호자가 남긴 하루 기록이에요.</p>'}
     </section>`;
   }
   function tempBanner(m){

@@ -16,81 +16,130 @@
 <meta name="twitter:description" content="산책 지도에서 함께 걷고, 가족과 오늘을 나누고, 포인트를 모아 보세요.">
 <meta name="twitter:image" content="https://raw.githubusercontent.com/modustartup26-ship-it/farewell_pet/main/share.jpg">
 <meta name="theme-color" content="#FFFFFF">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="theme.css">
-<link rel="stylesheet" href="intro.css">
+<link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="ai-chat.css">
 <link rel="stylesheet" href="auth.css">
+<link rel="stylesheet" href="daily.css">
 </head>
-<body class="intro">
-<header class="topbar">
+<body class="app">
+<header class="topbar app-top">
   <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-paw"/></svg></span>farewell pet</a>
-  <a class="login" href="signup.html">로그인 · 회원가입</a>
+  <nav class="tabbar" aria-label="주 메뉴">
+    <button type="button" data-view="map" aria-current="page"><svg class="i" aria-hidden="true"><use href="#i-home"/></svg><span>홈</span></button>
+    <button type="button" data-view="saved"><svg class="i" aria-hidden="true"><use href="#i-heart"/></svg><span>찜한 곳</span><b class="badge tnum" id="saved-count">0</b></button>
+    <a href="shop.html"><svg class="i" aria-hidden="true"><use href="#i-bone"/></svg><span>포인트샵</span></a>
+    <a href="family.html"><svg class="i" aria-hidden="true"><use href="#i-family"/></svg><span>가족</span></a>
+    <a href="topics.html"><svg class="i" aria-hidden="true"><use href="#i-heart"/></svg><span>건강토픽</span></a>
+    <a href="inbox.html"><svg class="i" aria-hidden="true"><use href="#i-chat"/></svg><span>문의함</span></a>
+  </nav>
+  <div class="me-menu-wrap">
+    <button class="me" type="button" id="me" aria-label="아이 메뉴 열기" aria-expanded="false" aria-controls="profile-menu"></button>
+    <div class="profile-menu" id="profile-menu" hidden>
+      <a href="profile.html"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg><span>아이 정보 수정</span></a>
+      <button type="button" id="logout"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg><span>로그아웃</span></button>
+    </div>
+  </div>
 </header>
+
 <main>
-  <h1 class="title" aria-label="빈틈없는 하루보다, 빈틈을 함께 채워주는 마음으로.">
-    <span class="first">빈틈없는 하루보다,</span>
-    <span class="second" aria-hidden="true">빈틈을 <span class="word" id="changing-word">&nbsp;</span> 채워주는 마음으로.</span>
-  </h1>
-  <div class="scene" id="scene"></div>
-  <div class="cta" id="cta">
-    <p>혼자 다 채우지 않아도 괜찮아요. 우리 아이를 알려주시면, 맞는 곳까지 산책로를 이어 드릴게요.</p>
-    <div class="cta-row">
-      <a class="btn btn-primary" id="start" href="signup.html">내 아이 등록하기 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
-      <a class="btn btn-soft" href="services.html">먼저 둘러볼게요</a>
+  <!-- 홈: 왼쪽(7) 산책 일기 · 오른쪽(3) 맞춤 시설 찾기 -->
+  <section class="view view-home" id="view-map">
+    <div class="home-grid">
+      <div class="home-diary">
+        <div class="list-head daily-head"><div><h1 id="diary-title">오늘 하루</h1><p class="lead">밥·산책·배변을 버튼 한 번으로 남겨요. 쌓인 기록은 병원과 시설에 보여 줄 수 있어요.</p></div><div class="head-actions"><button type="button" class="btn btn-soft" id="diary-facility"><svg class="i" aria-hidden="true"><use href="#i-building-h"/></svg>시설 기록</button><a class="btn btn-soft" href="album.html"><svg class="i" aria-hidden="true"><use href="#i-camera"/></svg>앨범</a></div></div>
+        <div id="daily"></div>
+        <input type="file" accept="image/*" capture="environment" id="moment-file" hidden>
+        <input type="file" accept="image/*" id="album-file" hidden>
+      </div>
+      <aside class="home-map" aria-labelledby="map-title">
+        <div class="map-head">
+          <div>
+            <h2 id="map-title">우리 아이 맞춤 시설 찾기</h2>
+            <p id="map-hint">가고 싶은 곳을 누르면 산책로를 따라 걸어가요.</p>
+          </div>
+          <div class="pet-strip" id="pet-strip"></div>
+        </div>
+        <div class="map" id="map"></div>
+      </aside>
     </div>
-    <button class="replay" id="replay" type="button"><svg class="i" aria-hidden="true"><use href="#i-refresh"/></svg> 이야기 다시 보기</button>
-  </div>
+  </section>
+
+  <section class="view view-list" id="view-saved" hidden>
+    <h1>찜한 곳</h1>
+    <p class="lead">마음에 담아 둔 곳을 모아 봤어요.</p>
+    <div class="list" id="saved-list"></div>
+  </section>
+
 </main>
-<a class="scroll-hint" href="#story">우리 이야기 <svg class="i" aria-hidden="true"><use href="#i-chev-down"/></svg></a>
-<section class="story" id="story" aria-labelledby="story-name">
-  <div class="story-name">
-    <h2 id="story-name">farewell pet이라는 이름</h2>
-    <p class="wordplay" aria-label="FARE WELL을 뒤집으면 WELL FARE, 곧 WELFARE">
-      <span><b class="y">FARE</b> <b class="b">WELL</b></span>
-      <svg class="i arrow" aria-hidden="true"><use href="#i-arrow-right"/></svg>
-      <span><b class="b">WELL</b> <b class="y">FARE</b></span>
-    </p>
-    <p class="welfare">WELFARE</p>
-    <p class="lead">‘작별’이라는 뜻의 Farewell은 어순을 조금 바꾸면 Welfare, 곧 ‘복지’가 돼요.<br>반려동물과 함께하는 짧고도 소중한 시간 내내, 가장 좋은 복지로 지켜 주고 싶은 보호자의 마음을 담았어요.</p>
-    <p class="palette-note"><span class="dot y"></span><span class="dot b"></span>진노랑과 파랑은 강아지 눈에도 또렷하게 보이는 색이에요. 그래서 이 두 색으로 만들었어요.</p>
-  </div>
 
-  <div class="beliefs">
-    <h2>우리가 지키는 약속</h2>
-    <ol>
-      <li><b>개가 먼저, 업체는 나중</b><span>검색은 업체 이름이 아니라 우리 아이 프로필에서 시작해요.</span></li>
-      <li><b>이유를 보여 줘요</b><span>왜 맞는지, 무엇이 아직 확인되지 않았는지 하나씩 보여 드려요.</span></li>
-      <li><b>모르면 모른다고 해요</b><span>확인되지 않은 정보는 ‘확인 필요’로 남겨요. 적합하다고 꾸미지 않아요.</span></li>
-      <li><b>돈은 순서를 사지 못해요</b><span>광고나 제휴는 추천과 분리하고, 눈에 보이게 표시해요.</span></li>
-    </ol>
+<!-- 시설 기록: 병원·호텔·유치원·미용 다녀온 날 -->
+<dialog class="sheet full facility-sheet" id="facility" aria-labelledby="facility-title">
+  <div class="sheet-head"><button type="button" class="icon-btn" data-close aria-label="하루 기록으로 돌아가기"><svg class="i" aria-hidden="true"><use href="#i-arrow-left"/></svg></button><h2 id="facility-title">시설 기록</h2><button type="button" class="icon-btn" data-close aria-label="닫기"><svg class="i" aria-hidden="true"><use href="#i-close"/></svg></button></div>
+  <div class="sheet-body facility-body">
+    <div class="list-head"><div><h3 class="fac-sub">다녀온 곳·다녀올 곳</h3><p class="lead">병원·호텔·유치원·미용실에서의 하루를 남기면 다음에 시설을 고를 때 함께 보여 드려요.</p></div><div class="head-actions"><a class="btn btn-soft" href="care.html"><svg class="i" aria-hidden="true"><use href="#i-list"/></svg>체크리스트</a><button type="button" class="btn btn-primary" id="diary-new"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg>시설 기록 쓰기</button></div></div>
+    <div class="cal" id="cal"></div>
+    <div id="diary-trend"></div>
+    <div class="diary-sum" id="diary-sum"></div>
+    <div class="list diary-list" id="diary-list"></div>
+    <aside class="cal-sync" id="cal-sync"></aside>
   </div>
+</dialog>
 
-  <div class="chorong">
-    <h2>초롱이와 함께한 11년</h2>
-    <div class="photos">
-      <figure class="ph a"><img src="assets/chorong-puppy.jpg" alt="어린 시절의 보호자가 바닥에 엎드려 아기 강아지 초롱이와 인형을 사이에 두고 놀고 있는 사진" loading="lazy"><figcaption>처음 만난 날의 초롱이</figcaption></figure>
-      <figure class="ph b"><img src="assets/chorong-now.jpg" alt="벤치 위에서 혀를 내밀고 웃는 갈색 믹스견 초롱이와, 함께 찍은 즉석사진 두 장" loading="lazy"><figcaption>열한 살이 된 지금</figcaption></figure>
-    </div>
-    <div class="letter">
-      <p>초롱이는 손바닥만 하던 아기 때 우리 집에 왔어요. 그 뒤로 11년, 어린 시절의 저와 함께 자랐고 이제는 노령기를 앞둔 중형 믹스견이 되었어요.</p>
-      <p>함께한 시간이 길어질수록 알게 된 게 있어요. 평판이 좋은 곳이 꼭 우리 아이에게 맞는 곳은 아니라는 것이에요. 여행을 가며 맡긴 호텔이 초롱이와 맞지 않아 많이 힘들어했고, 아이가 아플 때는 나이와 상태에 맞는 병원을 찾느라 한참을 헤맸어요. 정보가 없어서가 아니라, 너무 많은 정보 중에 어디가 우리 아이에게 맞는지 알 수 없어서였어요.</p>
-      <p>믹스견이라 품종 정보만으로는 답을 찾기도 어려웠어요. 그래서 업체가 아니라 우리 아이 한 마리의 프로필에서 출발하는 서비스를 만들기로 했어요. 몸무게, 나이, 먹는 약, 성격을 알려 주면 맞는 곳까지 산책로를 이어 주는 것. farewell pet은 그렇게 시작했어요.</p>
-      <p class="sign">초롱이 보호자이자 farewell pet을 만든 유예서</p>
-    </div>
-  </div>
+<!-- 실시간 산책 -->
+<dialog class="walk-live" id="walk-live" aria-label="산책 중"></dialog>
 
-  <div class="story-cta">
-    <p>우리 아이에게도 맞는 곳을 찾아 볼까요?</p>
-    <a class="btn btn-primary" href="signup.html">우리 아이 등록하기 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
-  </div>
-</section>
+<!-- 그 순간 사진: 앱 안 카메라 -->
+<dialog class="camera" id="camera" aria-label="사진 찍기"></dialog>
+
+<!-- 필터링 -->
+<dialog class="sheet" id="filter" aria-labelledby="filter-title">
+  <div class="grip" aria-hidden="true"></div>
+  <div class="sheet-head"><span></span><h2 id="filter-title">필터링</h2><button type="button" class="icon-btn" data-close aria-label="닫기"><svg class="i" aria-hidden="true"><use href="#i-close"/></svg></button></div>
+  <form class="sheet-body" id="filter-form"></form>
+  <div class="sheet-foot"><button type="button" class="btn-ghost" id="filter-reset"><svg class="i" aria-hidden="true"><use href="#i-refresh"/></svg>초기화</button><button type="submit" form="filter-form" class="btn btn-primary" id="filter-apply">적용하기</button></div>
+</dialog>
+
+<!-- 결과 -->
+<dialog class="sheet full" id="results" aria-labelledby="results-title">
+  <div class="sheet-head"><button type="button" class="icon-btn" id="results-back" aria-label="필터로 돌아가기"><svg class="i" aria-hidden="true"><use href="#i-arrow-left"/></svg></button><h2 id="results-title"></h2><button type="button" class="icon-btn" data-close aria-label="닫기"><svg class="i" aria-hidden="true"><use href="#i-close"/></svg></button></div>
+  <div class="applied" id="applied"></div>
+  <div class="sheet-body" id="results-body"></div>
+</dialog>
+
+<!-- 상세 -->
+<dialog class="sheet full" id="detail" aria-labelledby="detail-title">
+  <div class="sheet-head"><button type="button" class="icon-btn" data-close aria-label="목록으로 돌아가기"><svg class="i" aria-hidden="true"><use href="#i-arrow-left"/></svg></button><span></span><button type="button" class="icon-btn heart-btn" id="detail-heart" aria-pressed="false" aria-label="찜하기"><svg class="i" aria-hidden="true"><use href="#i-heart"/></svg></button></div>
+  <div class="sheet-body detail-body" id="detail-body"></div>
+  <div class="sheet-foot detail-foot"><a class="btn btn-soft" id="call"><svg class="i" aria-hidden="true"><use href="#i-phone"/></svg>전화문의</a><button type="button" class="btn btn-primary" id="ask"><svg class="i" aria-hidden="true"><use href="#i-chat"/></svg>간편 돌봄문의</button></div>
+</dialog>
+
+<!-- 준비 중 / 기록 / 문의 -->
+<dialog class="sheet" id="modal" aria-labelledby="modal-title">
+  <div class="grip" aria-hidden="true"></div>
+  <div class="sheet-head"><span></span><h2 id="modal-title"></h2><button type="button" class="icon-btn" data-close aria-label="닫기"><svg class="i" aria-hidden="true"><use href="#i-close"/></svg></button></div>
+  <form class="sheet-body" id="modal-form"></form>
+  <div class="sheet-foot" id="modal-foot"></div>
+</dialog>
+
 <script src="common.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
 <script src="supabase-client.js"></script>
+<script src="kakaomap.js"></script>
+<script src="media.js"></script>
 <script src="auth-ui.js"></script>
 <script src="minimi.js"></script>
+<script src="concerns.js"></script>
 <script src="trailmap.js"></script>
-<script src="intro.js"></script>
+<script src="hospitals.js"></script>
+<script src="public-places.js"></script>
+<script src="places.js"></script>
+<script src="reports.js"></script>
+<script src="diary.js"></script>
+<script src="daily.js"></script>
+<script src="app.js"></script>
+<script src="points.js"></script>
 <script src="ai-chat.js"></script>
 </body>
 </html>

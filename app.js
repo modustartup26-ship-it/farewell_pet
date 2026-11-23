@@ -53,8 +53,9 @@
       ?`<span class="profile-menu-pet">${esc(josa.name(pet.name))} · <b class="tnum">${points}P</b></span>${petSwitch}
         <a href="profile.html"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg><span>아이 정보 수정</span></a>
         <a href="profile.html?add=1"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg><span>아이 추가하기</span></a>
-        <a href="shop.html"><svg class="i" aria-hidden="true"><use href="#i-bone"/></svg><span>포인트 샵</span></a>${accountAction}`
-      :`<a href="profile.html"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg><span>아이 등록</span></a>${accountAction}`;
+        <a href="shop.html"><svg class="i" aria-hidden="true"><use href="#i-bone"/></svg><span>포인트 샵</span></a>
+        <a href="intro.html"><svg class="i" aria-hidden="true"><use href="#i-paw"/></svg><span>farewell pet 이야기</span></a>${accountAction}`
+      :`<a href="profile.html"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg><span>아이 등록</span></a><a href="intro.html"><svg class="i" aria-hidden="true"><use href="#i-paw"/></svg><span>farewell pet 이야기</span></a>${accountAction}`;
     $('#saved-count').textContent=state.saved.length;
     $('#saved-count').hidden=!state.saved.length;
     $('#map-title').textContent=`${hasPet?josa.name(pet.name):'우리 아이'} 맞춤 시설 찾기`;

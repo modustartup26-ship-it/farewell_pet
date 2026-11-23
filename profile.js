@@ -202,7 +202,7 @@
 
   form.addEventListener('submit',async e=>{
     e.preventDefault();
-    if(index>=total){location.href='services.html';return;}
+    if(index>=total){location.href='index.html';return;}
     if(steps[index].onNext&&steps[index].onNext())return;
     const err=steps[index].read(form.elements);
     if(err){showError(err);const bad=form.querySelector('input:not([type=radio]):not([type=file])');if(bad)bad.focus();return;}
@@ -216,7 +216,7 @@
     if(await persist())show(index+1,1);
     else $('#skip').disabled=false;
   });
-  $('#back').addEventListener('click',()=>{if(steps[index]&&steps[index].onBack&&steps[index].onBack())return;if(index===0){location.href=state.pet&&state.pet.name?'services.html':'index.html';return;}show(index-1,-1);});
+  $('#back').addEventListener('click',()=>{if(steps[index]&&steps[index].onBack&&steps[index].onBack())return;if(index===0){location.href=state.pet&&state.pet.name?'index.html':'intro.html';return;}show(index-1,-1);});
   form.addEventListener('input',()=>showError(''));
 
   function showGate(message=''){

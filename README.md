@@ -2,9 +2,10 @@
 
 반려견 프로필(체급·약·성격)을 먼저 입력하고, 산책로처럼 이어진 지도에서 병원·호텔·유치원·미용실을 골라 조건을 하나씩 대조해 보는 프로토타입입니다.
 
-- 첫 화면: `index.html`
+- 첫 화면(홈): `index.html` — 왼쪽 산책 일기(한 달 캘린더) · 오른쪽 맞춤 시설 찾기 지도
+- 소개·브랜드 이야기: `intro.html`
 - 우리 아이 등록(질문 한 개씩 + 건강 고민 + 미니미 꾸미기 + 성격 검사 MCPQ-R): `profile.html`
-- 산책 지도 · 필터링 · 상세: `services.html`
+- 맞춤 시설 찾기 · 필터링 · 상세: `index.html` (예전 주소 `services.html`은 홈으로 이동)
 - 보호자 문의함: `inbox.html` / 업체 문의함: `partner.html` (Supabase, 스키마는 `supabase/migrations/`)
 - 수의사 1:1 상담: `consult.html` (Supabase 이메일·비밀번호 로그인·실시간 채팅)
 - 강아지 앨범·용량·포토북·생애 기록 신청: `album.html`

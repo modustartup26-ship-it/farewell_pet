@@ -231,7 +231,7 @@
       ${care?`<div class="tp-care">
         <h3>${icon('paw')} ${esc(t.name)} 있는 아이를 맡길 때 볼 조건</h3>
         <div class="tp-conds">${care.conds.map(c=>`<span>${icon('check')}${esc(c)}</span>`).join('')}</div>
-        <a class="btn btn-soft" href="services.html?go=${care.go}">${icon('map')} 이 조건으로 ${GO_LABEL[care.go]} 찾기</a>
+        <a class="btn btn-soft" href="index.html?go=${care.go}">${icon('map')} 이 조건으로 ${GO_LABEL[care.go]} 찾기</a>
       </div>`:''}
       <h3 class="tp-sub">보호자 이야기 <small>예시 글</small></h3>
       <ul class="tp-posts">${posts(t).map(p=>`<li>
