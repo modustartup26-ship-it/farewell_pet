@@ -878,6 +878,7 @@
     document.querySelector('#walk-live').addEventListener('click',e=>{const b=e.target.closest('[data-live]');if(b)liveAction(b.dataset.live);});
     document.querySelector('#walk-live').addEventListener('cancel',e=>{if(ctx.state.walkLive){e.preventDefault();liveAction('min');}});
     document.querySelector('#diary-facility').addEventListener('click',openFacility);
+    const rf=document.querySelector('#rec-facility');if(rf)rf.addEventListener('click',openFacility);
     document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ctx.state.walkLive)paintLive();});
   }
 

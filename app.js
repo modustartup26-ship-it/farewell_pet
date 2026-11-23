@@ -57,7 +57,9 @@
         <a href="intro.html"><svg class="i" aria-hidden="true"><use href="#i-paw"/></svg><span>farewell pet 이야기</span></a>${accountAction}`
       :`<a href="profile.html"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg><span>아이 등록</span></a><a href="intro.html"><svg class="i" aria-hidden="true"><use href="#i-paw"/></svg><span>farewell pet 이야기</span></a>${accountAction}`;
     $('#saved-count').textContent=state.saved.length;
-    $('#saved-count').hidden=!state.saved.length;
+    $('#saved-count').hidden=true;
+    const si=$('#saved-inline');if(si)si.textContent=state.saved.length;
+    renderMy();
     $('#map-title').textContent=`${hasPet?josa.name(pet.name):'우리 아이'} 맞춤 시설 찾기`;
     $('#map-hint').textContent=hasPet?`가고 싶은 곳을 누르면 ${josa.name(pet.name)}에게 맞는 곳을 찾아 드려요.`:'가고 싶은 곳을 누르면 우리 아이에게 맞는 곳을 찾아 드려요.';
     const facts=[];
@@ -104,6 +106,27 @@
     }
   });
 
+  /* 마이: 아이 정보와 가끔 확인하는 것들(찜한 곳·문의함·포인트샵·이야기) */
+  function renderMy(){
+    const el=$('#my-root');if(!el)return;
+    const points=(window.FPPoints&&FPPoints.get().points)||state.points||0;
+    const facts=hasPet?[pet.breed,pet.years!==''&&pet.years!=null?`${pet.years}살`:'',pet.weight?`${pet.weight}kg`:'',pet.size].filter(Boolean).join(' · '):'';
+    const row=(href,ic,label,sub,attr='')=>`<${href?`a href="${href}"`:`button type="button" ${attr}`} class="my-row">${icon(ic)}<span class="my-l">${label}</span>${sub?`<span class="my-sub tnum">${sub}</span>`:''}${icon('chev-right')}</${href?'a':'button'}>`;
+    el.innerHTML=`
+      <section class="my-card">
+        <span class="my-avatar">${avatar()}</span>
+        <div class="my-who"><b>${hasPet?esc(josa.name(pet.name)):'아직 등록한 아이가 없어요'}</b><span>${hasPet?esc(facts||'프로필을 채워 주세요'):'몸무게, 약, 성격을 알려주시면 맞는 곳을 찾아 드려요.'}</span></div>
+        <a class="btn btn-primary" href="profile.html">${icon('edit')}${hasPet?'프로필 수정':'아이 등록'}</a>
+      </section>
+      <nav class="my-list" aria-label="마이 메뉴">
+        ${row('','heart','찜한 곳',`${state.saved.length}곳`,'data-view="saved"')}
+        ${row('inbox.html','chat','문의함','업체와 주고받은 대화')}
+        ${row('shop.html','bone','포인트샵',`${points}P`)}
+        ${hasPet?row('profile.html?add=1','plus','아이 추가하기',''):''}
+        ${row('intro.html','paw','farewell pet 이야기','')}
+        ${user?row('','user','로그아웃','','data-logout'):row('inbox.html','user','로그인','')}
+      </nav>`;
+  }
   function renderStar(){
     const el=$('#star-card');if(!el)return;const st=SOON.star;
     el.innerHTML=`<svg class="star-art" viewBox="-60 -66 120 116" aria-hidden="true">${TrailMap.art('star')}</svg><div class="star-tx"><h2 id="star-title">${esc(st.title)}<span class="soon-tag">준비 중</span></h2><p>${esc(st.body)}</p><p class="muted">준비가 끝나면 여기에서 만날 수 있어요.</p></div>`;
@@ -387,7 +410,9 @@
     if(v==='diary')v='map';
     view=v;
     document.querySelectorAll('.view').forEach(s=>s.hidden=s.id!=='view-'+v);
-    document.querySelectorAll('.tabbar button').forEach(b=>{if(b.dataset.view===v)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
+    const tab=v==='saved'?'my':v;
+    document.querySelectorAll('.tabbar button').forEach(b=>{if(b.dataset.view===tab)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
+    if(v==='my')renderMy();
     if(v==='saved')renderSaved();if(v==='map'||v==='calendar')Daily.render();
     if(v==='map')map.redraw();
     window.scrollTo(0,0);
@@ -407,10 +432,11 @@
       menuButton.setAttribute('aria-expanded',String(!menu.hidden));
       return;
     }
-    if(e.target.closest('#logout')){
+    if(e.target.closest('[data-act="ai"]')){const t=document.querySelector('.ai-chat-toggle');if(t){t.click();}else toast('AI 상담을 불러오지 못했어요.');return;}
+    if(e.target.closest('#logout,[data-logout]')){
       const client=window.FPChat&&window.FPChat.client;
       if(!client){toast('로그인 연결을 사용할 수 없어요.');return;}
-      const button=$('#logout');
+      const button=e.target.closest('#logout,[data-logout]');
       button.disabled=true;
       client.auth.signOut().then(({error})=>{
         if(error){console.error('Unable to sign out.',error);toast('로그아웃하지 못했어요. 잠시 뒤 다시 시도해 주세요.');return;}
@@ -485,7 +511,7 @@
     renderHeader();map.redraw();
     const go=new URLSearchParams(location.search).get('go');
     if(go==='diary')setView('diary');
-    if(go==='calendar')setView('calendar');
+    if(['calendar','health','my','saved'].includes(go))setView(go);
     if(go&&FILTERS[go])setTimeout(()=>map.walkTo(go,()=>openNode(go)),500);
   }
   initializeProfile();
