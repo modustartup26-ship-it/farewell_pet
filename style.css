@@ -26,7 +26,7 @@ body.app{min-height:100dvh;background:var(--meadow)}
 main{max-width:1280px;margin:0 auto}
 main:has(> .view-home:not([hidden])){max-width:1480px}
 /* 홈: 왼쪽 7 산책 일기 · 오른쪽 3 맞춤 시설 찾기 */
-.home-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,3fr);gap:clamp(20px,2.4vw,36px);align-items:start;padding:24px clamp(16px,3vw,40px) 120px}
+.home-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,3fr);gap:clamp(20px,2.4vw,36px);align-items:start;padding:24px clamp(16px,3vw,40px) 150px}
 .home-diary h1{margin:0;font-size:30px;letter-spacing:-.015em;color:var(--forest)}
 .home-map{position:sticky;top:88px;display:flex;flex-direction:column;height:calc(100dvh - 112px);min-height:620px;border:1.5px solid var(--line);border-radius:28px;background:#fff;overflow:hidden}
 .home-map .map-head{flex-direction:column;align-items:stretch;gap:12px;padding:20px 20px 0}
@@ -37,6 +37,11 @@ main:has(> .view-home:not([hidden])){max-width:1480px}
 .home-map .register b{font-size:14px}
 .home-map .register small{font-size:12px}
 .home-map .fact{font-size:12.5px}
+/* 진한 버튼: 노랑 바탕엔 검은 글씨, 파랑 바탕엔 흰 글씨 */
+.daily-head .head-actions .btn,.fac-btn{background:var(--sun);color:#111;box-shadow:0 6px 16px -8px rgba(160,120,0,.6)}
+.daily-head .head-actions .btn:hover,.fac-btn:hover{background:#F2C800}
+.home-map .fact.edit,.fact.edit{background:var(--primary);color:#fff;border-color:var(--primary)}
+.fact.edit:hover{background:var(--primary-hover)}
 .home-map .map{flex:1;min-height:0;margin-top:0}
 @media (max-width:1080px){
   .home-grid{grid-template-columns:minmax(0,1fr)}
@@ -204,7 +209,7 @@ main:has(> .view-home:not([hidden])){max-width:1480px}
   .tabbar button,.tabbar a{flex:1;flex-direction:column;gap:2px;min-height:52px;font-size:12px;padding:0 4px;position:relative}
   .tabbar .badge{position:absolute;top:4px;right:calc(50% - 22px)}
   .view-map{min-height:calc(100dvh - 60px);padding-bottom:84px}
-  .home-grid{padding:16px 14px 110px}
+  .home-grid{padding:16px 14px 210px}
   .home-map{border-radius:22px}
   .map-head{padding-top:16px}
   .map{min-height:max(600px,calc(100dvh - 300px))}

@@ -114,7 +114,7 @@
   function estimateTop(avg,g){const mean=(g.lo+g.hi)/2,sd=Math.max(8,(g.hi-g.lo)/2);const p=.5*(1+erf((avg-mean)/sd/Math.SQRT2));return Math.min(99,Math.max(1,Math.round((1-p)*100)));}
 
   /* ---------- 상태 ---------- */
-  let ctx, day=today(), calMonth=null, rankCache={};
+  let ctx, day=today(), calMonth=null, monthStats=null, rankCache={};
   const ym=s=>s.slice(0,7);
   const addMonths=(m,n)=>{const [y,mo]=m.split('-').map(Number);const d=new Date(y,mo-1+n,1);return `${d.getFullYear()}-${pad(d.getMonth()+1)}`;};
   const cloud={user:null,client:null,off:false,mediaRows:new Map()};
@@ -211,15 +211,19 @@
     if(!calMonth)calMonth=ym(day);
     const avg=weekAvg(day);
     const live=ctx.state.walkLive;
+    const cal=monthHtml(goal);
     root.innerHTML=`
-      ${monthHtml(goal)}
+      <div class="day-top">
+        <div class="day-left">
+          ${cal}
+          ${walkTalkHtml(pet)}
+        </div>
+        <div class="day-right">
       <div class="day-nav">
         <button type="button" class="icon-btn" data-shift="-1" aria-label="전날">${icon('arrow-left')}</button>
         <b class="tnum">${isToday?'오늘 · ':''}${nice(day)}</b>
         <button type="button" class="icon-btn" data-shift="1" aria-label="다음날" ${isToday?'disabled':''}>${icon('chev-right')}</button>
       </div>
-      ${cloud.user?'':`<aside class="guest-bar"><p><b>로그인 없이 쓰는 중이에요</b>기록은 이 기기 브라우저에 남아서 창을 닫아도 이어 쓸 수 있어요. 로그인하면 계정으로 옮겨서 다른 기기에서도 볼 수 있어요.</p><div><button type="button" class="btn btn-soft" data-act="login">로그인하고 옮기기</button><button type="button" class="btn-ghost" data-act="wipe">이 기기 기록 지우기</button></div></aside>`}
-
       <section class="ring-card" aria-label="오늘 채운 링">
         <div class="ring-wrap">${ringsSvg([{p:t.walk/goal.walk,c:RING_C[0]},{p:t.play/goal.play,c:RING_C[1]},{p:t.water/goal.water,c:RING_C[2]}])}<span class="ring-face">${Minimi.svg(Minimi.config(pet),{shadow:false})}</span></div>
         <dl class="ring-legend">
@@ -236,6 +240,10 @@
         ${['meal','walk','poop','supp','snack','play','water','photo'].map(k=>{const T=TYPES[k];return `<button type="button" class="q-btn" data-log="${k}" style="--c:${T.c}"><span class="q-ic">${icon(T.icon)}</span><span class="q-l">${T.label}</span><span class="q-v tnum">${quickValue(k,t,goal,g)}</span></button>`;}).join('')}
       </section>
 
+        </div>
+      </div>
+      ${cloud.user?'':`<aside class="guest-bar"><p><b>로그인 없이 쓰는 중이에요</b>기록은 이 기기 브라우저에 남아서 창을 닫아도 이어 쓸 수 있어요. 로그인하면 계정으로 옮겨서 다른 기기에서도 볼 수 있어요.</p><div><button type="button" class="btn btn-soft" data-act="login">로그인하고 옮기기</button><button type="button" class="btn-ghost" data-act="wipe">이 기기 기록 지우기</button></div></aside>`}
+
       ${healthNote(day)}
       ${momentsHtml(day)}
 
@@ -249,7 +257,12 @@
       <section class="timeline-sec">
         <div class="cmp-head"><h2>${isToday?'오늘':'이날'} 기록</h2><button type="button" class="btn btn-soft fac-btn" data-act="facility">${icon('building-h')}시설 기록</button></div>
         ${timelineHtml(day)}
-      </section>`;
+      </section>
+
+      <div class="fab-dock" role="group" aria-label="바로 하기">
+        <button type="button" class="fab fab-walk${live?' live':''}" data-act="walk-go"><span class="fab-c">${icon('walk')}</span><span class="fab-l">${live?'산책 중':'산책하기'}</span></button>
+        <button type="button" class="fab fab-photo" data-log="photo"><span class="fab-c">${icon('camera')}</span><span class="fab-l">사진 찍기</span></button>
+      </div>`;
     fillPhotos();
     loadRank(g,avg);
   }
@@ -260,7 +273,7 @@
     const [y,m]=calMonth.split('-').map(Number);
     const t0=today(), thisMonth=ym(t0), days=new Date(y,m,0).getDate(), lead=new Date(y,m-1,1).getDay();
     const fac=new Set((ctx.state.diary||[]).map(e=>e.date));
-    let cells='',walkDays=0,walkSum=0,logDays=0,ringDays=0;
+    let cells='',walkDays=0,walkSum=0;
     for(let i=0;i<lead;i++)cells+='<span class="mc-cell blank" aria-hidden="true"></span>';
     for(let d=1;d<=days;d++){
       const ds=`${y}-${pad(m)}-${pad(d)}`, fut=ds>t0, has=onDay(ds).length>0||fac.has(ds);
@@ -268,8 +281,6 @@
       let body='';
       if(!fut){
         if(tt.walk){walkDays++;walkSum+=tt.walk;}
-        if(has)logDays++;
-        if(tt.walk>=goal.walk&&tt.play>=goal.play&&tt.water>=goal.water)ringDays++;
         const counts={meal:tt.meal,poop:tt.poop+tt.pee,supp:tt.supp,snack:tt.snack,photo:tt.photo};
         const dots=DOTS.filter(([k])=>counts[k]).map(([k,l])=>`<i style="--c:${TYPES[k].c}" title="${l} ${counts[k]}"></i>`).join('')+(fac.has(ds)?'<i class="fac" style="--c:#1E56C2" title="시설 기록"></i>':'');
         body=`${ringsSvg([{p:tt.walk/goal.walk,c:RING_C[0]},{p:tt.play/goal.play,c:RING_C[1]},{p:tt.water/goal.water,c:RING_C[2]}],{size:40,stroke:4.5,gap:1.5})}<span class="mc-walk tnum">${tt.walk?tt.walk+'분':''}</span><span class="mc-dots">${dots}</span>`;
@@ -279,6 +290,9 @@
       cells+=`<button type="button" class="mc-cell mc-day${ds===day?' on':''}${ds===t0?' today':''}${wd===0?' sun':wd===6?' sat':''}${has?' has':''}" data-day="${ds}" ${fut?'disabled':''} aria-label="${label}"${ds===day?' aria-pressed="true"':''}><span class="mc-n tnum">${d}</span>${body}</button>`;
     }
     const isThis=calMonth===thisMonth;
+    /* 하루 평균: 이번 달은 오늘까지, 지난달은 그달 전체 날수로 나눈다 */
+    const elapsed=isThis?Number(t0.slice(8)):calMonth<thisMonth?days:0;
+    monthStats={y,m,walkSum,walkDays,elapsed,avg:elapsed?Math.round(walkSum/elapsed):0,isThis};
     return `<section class="mcal" aria-label="${y}년 ${m}월 기록 캘린더">
       <div class="mc-head">
         <button type="button" class="icon-btn" data-month="-1" aria-label="지난달">${icon('arrow-left')}</button>
@@ -286,15 +300,20 @@
         <button type="button" class="icon-btn" data-month="1" aria-label="다음달" ${isThis?'disabled':''}>${icon('chev-right')}</button>
         ${isThis?'':`<button type="button" class="btn-ghost mc-now" data-month="0">이번 달</button>`}
       </div>
-      <dl class="mc-sum">
-        <div><dt>기록한 날</dt><dd class="tnum"><b>${logDays}</b>일</dd></div>
-        <div><dt>산책한 날</dt><dd class="tnum"><b>${walkDays}</b>일</dd></div>
-        <div><dt>총 산책</dt><dd class="tnum"><b>${walkSum>=60?`${Math.floor(walkSum/60)}시간${walkSum%60?' '+walkSum%60+'분':''}`:walkSum+'분'}</b></dd></div>
-        <div><dt>링 다 채운 날</dt><dd class="tnum"><b>${ringDays}</b>일</dd></div>
-      </dl>
       <div class="mc-week" aria-hidden="true">${WEEK.map((w,i)=>`<span class="${i===0?'sun':i===6?'sat':''}">${w}</span>`).join('')}</div>
       <div class="mc-grid">${cells}</div>
       <p class="mc-legend"><span><i style="--c:${RING_C[0]}"></i>산책</span><span><i style="--c:${RING_C[1]}"></i>놀이</span><span><i style="--c:${RING_C[2]}"></i>물</span><span class="sep"></span>${DOTS.map(([k,l])=>`<span class="dot"><i style="--c:${TYPES[k].c}"></i>${l}</span>`).join('')}<span class="dot"><i style="--c:#1E56C2"></i>시설</span></p>
+    </section>`;
+  }
+  const fmtMin=v=>v>=60?`${Math.floor(v/60)}시간${v%60?' '+v%60+'분':''}`:`${v}분`;
+  /* 캘린더 아래: 아이가 말풍선으로 알려 주는 이달 산책 */
+  function walkTalkHtml(pet){
+    const s=monthStats;if(!s)return '';
+    const when=s.isThis?'이번 달':`${s.m}월`;
+    return `<section class="walk-talk" aria-label="${when} 산책 요약">
+      <div class="wt-bubble left"><small>${when} 총 산책시간</small><b class="tnum">${fmtMin(s.walkSum)}</b><span>${s.walkDays?`산책한 날 ${s.walkDays}일`:'아직 산책 기록이 없어요'}</span></div>
+      <div class="wt-dog" aria-hidden="true">${Minimi.svg(Minimi.config(pet),{shadow:false})}</div>
+      <div class="wt-bubble right"><small>평균 산책시간</small><b class="tnum">하루 ${s.avg}분</b><span>${s.elapsed?`${s.elapsed}일 기준`:''}</span></div>
     </section>`;
   }
   function quickValue(k,t,goal,g){
@@ -810,6 +829,7 @@
         if(!b.dataset.armed){b.dataset.armed='1';b.textContent='한 번 더 누르면 모두 지워져요';setTimeout(()=>{delete b.dataset.armed;b.textContent='이 기기 기록 지우기';},3000);return;}
         FP.clearGuest(ctx.state);location.href='index.html';return;
       }
+      if(act==='walk-go'){if(ctx.state.walkLive)openLive();else startWalk();}
       if(act==='goals')openGoals();if(act==='body')openBody();if(act==='facility')openFacility();if(act==='walk-open')openLive();
     });
     document.querySelector('#moment-file').addEventListener('change',e=>{onPhoto(e.target.files[0]);e.target.value='';});
