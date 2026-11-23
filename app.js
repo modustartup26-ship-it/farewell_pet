@@ -379,7 +379,7 @@
     view=v;
     document.querySelectorAll('.view').forEach(s=>s.hidden=s.id!=='view-'+v);
     document.querySelectorAll('.tabbar button').forEach(b=>{if(b.dataset.view===v)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
-    if(v==='saved')renderSaved();if(v==='map')Daily.render();
+    if(v==='saved')renderSaved();if(v==='map'||v==='calendar')Daily.render();
     if(v==='map')map.redraw();
     window.scrollTo(0,0);
   }
@@ -472,10 +472,11 @@
     petName=hasPet?pet.name:'우리 아이';
     lastPetSnapshot=JSON.stringify(pet);
     Diary.init({state,save,PLACES,pet,petName,modal,toast,setView,user,close:()=>$('#modal').close()});
-    Daily.init({state,save,pet,petName,modal,toast,user,close:()=>$('#modal').close()});
+    Daily.init({state,save,pet,petName,modal,toast,user,setView,close:()=>$('#modal').close()});
     renderHeader();map.redraw();
     const go=new URLSearchParams(location.search).get('go');
     if(go==='diary')setView('diary');
+    if(go==='calendar')setView('calendar');
     if(go&&FILTERS[go])setTimeout(()=>map.walkTo(go,()=>openNode(go)),500);
   }
   initializeProfile();

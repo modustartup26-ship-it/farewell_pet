@@ -211,19 +211,15 @@
     if(!calMonth)calMonth=ym(day);
     const avg=weekAvg(day);
     const live=ctx.state.walkLive;
-    const cal=monthHtml(goal);
+    renderCalendar(goal,pet);
     root.innerHTML=`
-      <div class="day-top">
-        <div class="day-left">
-          ${cal}
-          ${walkTalkHtml(pet)}
-        </div>
-        <div class="day-right">
       <div class="day-nav">
         <button type="button" class="icon-btn" data-shift="-1" aria-label="전날">${icon('arrow-left')}</button>
         <b class="tnum">${isToday?'오늘 · ':''}${nice(day)}</b>
         <button type="button" class="icon-btn" data-shift="1" aria-label="다음날" ${isToday?'disabled':''}>${icon('chev-right')}</button>
       </div>
+      <div class="day-top">
+        <div class="day-col">
       <section class="ring-card" aria-label="오늘 채운 링">
         <div class="ring-wrap">${ringsSvg([{p:t.walk/goal.walk,c:RING_C[0]},{p:t.play/goal.play,c:RING_C[1]},{p:t.water/goal.water,c:RING_C[2]}])}<span class="ring-face">${Minimi.svg(Minimi.config(pet),{shadow:false})}</span></div>
         <dl class="ring-legend">
@@ -236,6 +232,8 @@
 
       ${live?`<button type="button" class="live-bar" data-act="walk-open"><span class="dot"></span>산책 중 · <span class="tnum" id="live-mini">${fmtDur(liveMs(live))}</span><span class="sp"></span>돌아가기 ${icon('chev-right')}</button>`:''}
 
+        </div>
+        <div class="day-col">
       <section class="quick" aria-label="빠른 기록">
         ${['meal','walk','poop','supp','snack','play','water','photo'].map(k=>{const T=TYPES[k];return `<button type="button" class="q-btn" data-log="${k}" style="--c:${T.c}"><span class="q-ic">${icon(T.icon)}</span><span class="q-l">${T.label}</span><span class="q-v tnum">${quickValue(k,t,goal,g)}</span></button>`;}).join('')}
       </section>
@@ -304,6 +302,31 @@
       <div class="mc-grid">${cells}</div>
       <p class="mc-legend"><span><i style="--c:${RING_C[0]}"></i>산책</span><span><i style="--c:${RING_C[1]}"></i>놀이</span><span><i style="--c:${RING_C[2]}"></i>물</span><span class="sep"></span>${DOTS.map(([k,l])=>`<span class="dot"><i style="--c:${TYPES[k].c}"></i>${l}</span>`).join('')}<span class="dot"><i style="--c:#1E56C2"></i>시설</span></p>
     </section>`;
+  }
+  /* ---------- 캘린더 화면 ---------- */
+  function renderCalendar(goal,pet){
+    const host=document.querySelector('#calendar-root');if(!host)return;
+    const cal=monthHtml(goal);
+    const t=totals(day),isToday=day===today();
+    const ct=document.querySelector('#cal-title');if(ct)ct.textContent=`${josa.of(ctx.petName)} 한 달 기록`;
+    host.innerHTML=`
+      <div class="cal-layout">
+        <div class="cal-main">${cal}</div>
+        <div class="cal-side">
+          ${walkTalkHtml(pet)}
+          <section class="cal-day-card">
+            <div class="cdc-head"><h2 class="tnum">${isToday?'오늘 · ':''}${nice(day)}</h2>${ringsSvg([{p:t.walk/goal.walk,c:RING_C[0]},{p:t.play/goal.play,c:RING_C[1]},{p:t.water/goal.water,c:RING_C[2]}],{size:56,stroke:6,gap:2})}</div>
+            <dl class="cdc-sum">
+              <div style="--c:${RING_C[0]}"><dt>산책</dt><dd class="tnum"><b>${t.walk}</b>/${goal.walk}분</dd></div>
+              <div style="--c:#5DAE2E"><dt>놀이</dt><dd class="tnum"><b>${t.play}</b>/${goal.play}분</dd></div>
+              <div style="--c:#2BA7D9"><dt>물</dt><dd class="tnum"><b>${t.water}</b>/${goal.water}ml</dd></div>
+            </dl>
+            ${timelineHtml(day)}
+            <button type="button" class="btn btn-primary cdc-go" data-act="open-day">${icon('edit')}이날 기록하러 가기</button>
+          </section>
+        </div>
+      </div>`;
+    fillPhotos();
   }
   const fmtMin=v=>v>=60?`${Math.floor(v/60)}시간${v%60?' '+v%60+'분':''}`:`${v}분`;
   /* 캘린더 아래: 아이가 말풍선으로 알려 주는 이달 산책 */
@@ -383,7 +406,7 @@
     return `<section class="moments" aria-label="그 순간 사진"><h2>그 순간</h2><div class="m-row">${ps.map(l=>`<figure class="moment"><img ${photoSrc(l)} alt="${esc(l.time)}에 찍은 사진"><figcaption><b class="tnum">${esc(l.time)}</b>${l.stamp?`<span>${esc(l.stamp)}</span>`:''}</figcaption></figure>`).join('')}</div></section>`;
   }
   async function fillPhotos(){
-    const slots=[...document.querySelectorAll('#daily img[data-media]')];
+    const slots=[...document.querySelectorAll('#daily img[data-media],#calendar-root img[data-media]')];
     if(!slots.length||!cloud.client)return;
     const paths=slots.map(i=>(cloud.mediaRows.get(i.dataset.media)||{}).path).filter(Boolean);
     try{const map=await Media.urls(cloud.client,paths);slots.forEach(i=>{const m=cloud.mediaRows.get(i.dataset.media);if(m&&map[m.path])i.src=map[m.path];});}catch{}
@@ -831,6 +854,15 @@
       }
       if(act==='walk-go'){if(ctx.state.walkLive)openLive();else startWalk();}
       if(act==='goals')openGoals();if(act==='body')openBody();if(act==='facility')openFacility();if(act==='walk-open')openLive();
+    });
+    const calRoot=document.querySelector('#calendar-root');
+    if(calRoot)calRoot.addEventListener('click',ev=>{
+      const b=ev.target.closest('button');if(!b||b.disabled)return;
+      if(b.dataset.day){day=b.dataset.day;calMonth=ym(day);render();}
+      if(b.dataset.month){const n=Number(b.dataset.month);calMonth=n?addMonths(calMonth,n):ym(today());if(calMonth>ym(today()))calMonth=ym(today());render();}
+      if(b.dataset.route){const r=logs().find(l=>l.id===b.dataset.route);if(r)showRoute(r);}
+      if(b.dataset.act==='facility')openFacility();
+      if(b.dataset.act==='open-day'&&ctx.setView)ctx.setView('map');
     });
     document.querySelector('#moment-file').addEventListener('change',e=>{onPhoto(e.target.files[0]);e.target.value='';});
     document.querySelector('#album-file').addEventListener('change',e=>{onPhoto(e.target.files[0]);e.target.value='';});
