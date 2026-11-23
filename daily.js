@@ -114,7 +114,9 @@
   function estimateTop(avg,g){const mean=(g.lo+g.hi)/2,sd=Math.max(8,(g.hi-g.lo)/2);const p=.5*(1+erf((avg-mean)/sd/Math.SQRT2));return Math.min(99,Math.max(1,Math.round((1-p)*100)));}
 
   /* ---------- 상태 ---------- */
-  let ctx, day=today(), rankCache={};
+  let ctx, day=today(), calMonth=null, rankCache={};
+  const ym=s=>s.slice(0,7);
+  const addMonths=(m,n)=>{const [y,mo]=m.split('-').map(Number);const d=new Date(y,mo-1+n,1);return `${d.getFullYear()}-${pad(d.getMonth()+1)}`;};
   const cloud={user:null,client:null,off:false,mediaRows:new Map()};
   const logs=()=>ctx.state.daily;
   const onDay=d=>logs().filter(l=>l.date===d).sort((a,b)=>(b.time||'').localeCompare(a.time||''));
@@ -206,20 +208,16 @@
     const goal={walk:goals.walk||g.goal,play:goals.play||g.play,water:goals.water||g.water};
     const isToday=day===today();
     document.querySelector('#diary-title').textContent=`${josa.of(name)} 하루`;
-    /* 이번 주 링 줄 */
-    /* 최근 7일: 고른 날이 오래전이면 그 날을 가운데쯤에 둔다 */
-    let end=addDays(day,3);if(end>today())end=today();const start=addDays(end,-6);
-    const strip=[...Array(7)].map((_,i)=>{const d=addDays(start,i),tt=totals(d),fut=d>today();
-      return `<button type="button" class="wk-day ${d===day?'on':''}" data-day="${d}" ${fut?'disabled':''} aria-label="${nice(d)}${fut?'':`, 산책 ${tt.walk}분`}"><span>${WEEK[parse(d).getDay()]}</span>${ringsSvg([{p:tt.walk/goal.walk,c:RING_C[0]},{p:tt.play/goal.play,c:RING_C[1]},{p:tt.water/goal.water,c:RING_C[2]}],{size:40,stroke:4.5,gap:1.5})}</button>`;}).join('');
+    if(!calMonth)calMonth=ym(day);
     const avg=weekAvg(day);
     const live=ctx.state.walkLive;
     root.innerHTML=`
+      ${monthHtml(goal)}
       <div class="day-nav">
         <button type="button" class="icon-btn" data-shift="-1" aria-label="전날">${icon('arrow-left')}</button>
         <b class="tnum">${isToday?'오늘 · ':''}${nice(day)}</b>
         <button type="button" class="icon-btn" data-shift="1" aria-label="다음날" ${isToday?'disabled':''}>${icon('chev-right')}</button>
       </div>
-      <div class="wk-strip">${strip}</div>
       ${cloud.user?'':`<aside class="guest-bar"><p><b>로그인 없이 쓰는 중이에요</b>기록은 이 기기 브라우저에 남아서 창을 닫아도 이어 쓸 수 있어요. 로그인하면 계정으로 옮겨서 다른 기기에서도 볼 수 있어요.</p><div><button type="button" class="btn btn-soft" data-act="login">로그인하고 옮기기</button><button type="button" class="btn-ghost" data-act="wipe">이 기기 기록 지우기</button></div></aside>`}
 
       <section class="ring-card" aria-label="오늘 채운 링">
@@ -254,6 +252,50 @@
       </section>`;
     fillPhotos();
     loadRank(g,avg);
+  }
+  /* ---------- 한 달 캘린더 ----------
+     날마다 링(산책·놀이·물)과 산책 시간, 남긴 기록 점을 보여 주고, 누르면 그날로 간다. */
+  const DOTS=[['meal','밥'],['poop','배변'],['supp','영양제'],['snack','간식'],['photo','사진']];
+  function monthHtml(goal){
+    const [y,m]=calMonth.split('-').map(Number);
+    const t0=today(), thisMonth=ym(t0), days=new Date(y,m,0).getDate(), lead=new Date(y,m-1,1).getDay();
+    const fac=new Set((ctx.state.diary||[]).map(e=>e.date));
+    let cells='',walkDays=0,walkSum=0,logDays=0,ringDays=0;
+    for(let i=0;i<lead;i++)cells+='<span class="mc-cell blank" aria-hidden="true"></span>';
+    for(let d=1;d<=days;d++){
+      const ds=`${y}-${pad(m)}-${pad(d)}`, fut=ds>t0, has=onDay(ds).length>0||fac.has(ds);
+      const tt=fut?null:totals(ds);
+      let body='';
+      if(!fut){
+        if(tt.walk){walkDays++;walkSum+=tt.walk;}
+        if(has)logDays++;
+        if(tt.walk>=goal.walk&&tt.play>=goal.play&&tt.water>=goal.water)ringDays++;
+        const counts={meal:tt.meal,poop:tt.poop+tt.pee,supp:tt.supp,snack:tt.snack,photo:tt.photo};
+        const dots=DOTS.filter(([k])=>counts[k]).map(([k,l])=>`<i style="--c:${TYPES[k].c}" title="${l} ${counts[k]}"></i>`).join('')+(fac.has(ds)?'<i class="fac" style="--c:#1E56C2" title="시설 기록"></i>':'');
+        body=`${ringsSvg([{p:tt.walk/goal.walk,c:RING_C[0]},{p:tt.play/goal.play,c:RING_C[1]},{p:tt.water/goal.water,c:RING_C[2]}],{size:40,stroke:4.5,gap:1.5})}<span class="mc-walk tnum">${tt.walk?tt.walk+'분':''}</span><span class="mc-dots">${dots}</span>`;
+      }
+      const wd=new Date(y,m-1,d).getDay();
+      const label=`${m}월 ${d}일 ${WEEK[wd]}요일${fut?'':has?`, 산책 ${tt.walk}분, 밥 ${tt.meal}번, 배변 ${tt.poop+tt.pee}번`:', 기록 없음'}`;
+      cells+=`<button type="button" class="mc-cell mc-day${ds===day?' on':''}${ds===t0?' today':''}${wd===0?' sun':wd===6?' sat':''}${has?' has':''}" data-day="${ds}" ${fut?'disabled':''} aria-label="${label}"${ds===day?' aria-pressed="true"':''}><span class="mc-n tnum">${d}</span>${body}</button>`;
+    }
+    const isThis=calMonth===thisMonth;
+    return `<section class="mcal" aria-label="${y}년 ${m}월 기록 캘린더">
+      <div class="mc-head">
+        <button type="button" class="icon-btn" data-month="-1" aria-label="지난달">${icon('arrow-left')}</button>
+        <b class="tnum">${y}년 ${m}월</b>
+        <button type="button" class="icon-btn" data-month="1" aria-label="다음달" ${isThis?'disabled':''}>${icon('chev-right')}</button>
+        ${isThis?'':`<button type="button" class="btn-ghost mc-now" data-month="0">이번 달</button>`}
+      </div>
+      <dl class="mc-sum">
+        <div><dt>기록한 날</dt><dd class="tnum"><b>${logDays}</b>일</dd></div>
+        <div><dt>산책한 날</dt><dd class="tnum"><b>${walkDays}</b>일</dd></div>
+        <div><dt>총 산책</dt><dd class="tnum"><b>${walkSum>=60?`${Math.floor(walkSum/60)}시간${walkSum%60?' '+walkSum%60+'분':''}`:walkSum+'분'}</b></dd></div>
+        <div><dt>링 다 채운 날</dt><dd class="tnum"><b>${ringDays}</b>일</dd></div>
+      </dl>
+      <div class="mc-week" aria-hidden="true">${WEEK.map((w,i)=>`<span class="${i===0?'sun':i===6?'sat':''}">${w}</span>`).join('')}</div>
+      <div class="mc-grid">${cells}</div>
+      <p class="mc-legend"><span><i style="--c:${RING_C[0]}"></i>산책</span><span><i style="--c:${RING_C[1]}"></i>놀이</span><span><i style="--c:${RING_C[2]}"></i>물</span><span class="sep"></span>${DOTS.map(([k,l])=>`<span class="dot"><i style="--c:${TYPES[k].c}"></i>${l}</span>`).join('')}<span class="dot"><i style="--c:#1E56C2"></i>시설</span></p>
+    </section>`;
   }
   function quickValue(k,t,goal,g){
     return k==='meal'?`${t.meal}/${g.meals}끼`:k==='walk'?`${t.walk}분`:k==='poop'?`대${t.poop}·소${t.pee}`:k==='supp'?`${t.supp}개`:k==='snack'?`${t.snack}개`:k==='play'?`${t.play}분`:k==='water'?`${t.water}ml`:t.photo?`${t.photo}장`:'바로 찍기';
@@ -753,8 +795,9 @@
   function bind(){
     document.querySelector('#daily').addEventListener('click',ev=>{
       const b=ev.target.closest('button');if(!b||b.disabled)return;
-      if(b.dataset.shift){day=addDays(day,Number(b.dataset.shift));if(day>today())day=today();render();}
-      if(b.dataset.day){day=b.dataset.day;render();}
+      if(b.dataset.shift){day=addDays(day,Number(b.dataset.shift));if(day>today())day=today();calMonth=ym(day);render();}
+      if(b.dataset.day){day=b.dataset.day;calMonth=ym(day);render();}
+      if(b.dataset.month){const n=Number(b.dataset.month);calMonth=n?addMonths(calMonth,n):ym(today());if(calMonth>ym(today()))calMonth=ym(today());render();}
       if(b.dataset.log)openLog(b.dataset.log);
       if(b.dataset.route){const r=logs().find(l=>l.id===b.dataset.route);if(r)showRoute(r);}
       if(b.dataset.del){

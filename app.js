@@ -39,7 +39,7 @@
   /* ---------- 상단 · 프로필 ---------- */
   function avatar(){return pet.photo?`<img src="${pet.photo}" alt="">`:Minimi.svg(Minimi.config(pet));}
   function renderHeader(){
-    map.svg.setAttribute('aria-label',`${josa.of(petName)} 산책 지도`);
+    map.svg.setAttribute('aria-label',`${josa.name(petName)} 맞춤 시설 찾기 지도`);
     $('#me').innerHTML=`<span class="me-avatar">${avatar()}</span><span class="me-name">${hasPet?esc(josa.name(pet.name)):'아이 등록'}</span>`;
     $('#me').setAttribute('aria-label',`${hasPet?pet.name+' 메뉴':'아이 메뉴'} 열기`);
     const accountAction=user
@@ -48,7 +48,7 @@
     const petSwitch=state.pets&&state.pets.length>1
       ?`<div class="pet-switch">${state.pets.map(p=>`<button type="button" data-pet-switch="${esc(p.id||p.name)}" ${p.id===state.activePetId?'aria-current="true"':''}>${esc(p.name||'이름 없음')}</button>`).join('')}</div>`
       :'';
-    const points=(FPPoints&&FPPoints.get().points)||state.points||0;
+    const points=(window.FPPoints&&FPPoints.get().points)||state.points||0;
     $('#profile-menu').innerHTML=hasPet
       ?`<span class="profile-menu-pet">${esc(josa.name(pet.name))} · <b class="tnum">${points}P</b></span>${petSwitch}
         <a href="profile.html"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg><span>아이 정보 수정</span></a>
@@ -57,7 +57,7 @@
       :`<a href="profile.html"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg><span>아이 등록</span></a>${accountAction}`;
     $('#saved-count').textContent=state.saved.length;
     $('#saved-count').hidden=!state.saved.length;
-    $('#map-title').textContent=hasPet?`${josa.of(pet.name)} 산책 지도`:'산책 지도';
+    $('#map-title').textContent=`${hasPet?josa.name(pet.name):'우리 아이'} 맞춤 시설 찾기`;
     $('#map-hint').textContent=hasPet?`가고 싶은 곳을 누르면 ${josa.subj(pet.name)} 산책로를 따라 걸어가요.`:'가고 싶은 곳을 누르면 산책로를 따라 걸어가요.';
     const facts=[];
     if(hasPet){
@@ -77,7 +77,7 @@
   /* ---------- 산책 지도 ---------- */
   const map=TrailMap.create($('#map'),{
     nodes:FP.NODES,interactive:true,seed:23,
-    label:`${josa.of(petName)} 산책 지도`,
+    label:`${josa.name(petName)} 맞춤 시설 찾기 지도`,
     center:()=>Minimi.svg(Minimi.config(pet),{inner:true}),
     onSelect:id=>{
       if(id==='consult'){location.href='consult.html';return;}
@@ -342,7 +342,7 @@
   async function copy(text,msg,close){try{await navigator.clipboard.writeText(text);toast(msg);if(close)$('#modal').close();}catch{toast('복사하지 못했어요. 내용을 길게 눌러 직접 복사해 주세요.');}}
   function openSoon(id){
     const s=SOON[id];
-    modal(s.title,`<div class="soon"><svg viewBox="-60 -66 120 116" aria-hidden="true">${TrailMap.art(s.kind)}</svg><span class="soon-tag">준비 중</span><p>${esc(s.body)}</p><p class="muted">${esc(s.note)}</p></div>`,`<button type="button" class="btn btn-primary" data-close>산책 지도로 돌아가기</button>`);
+    modal(s.title,`<div class="soon"><svg viewBox="-60 -66 120 116" aria-hidden="true">${TrailMap.art(s.kind)}</svg><span class="soon-tag">준비 중</span><p>${esc(s.body)}</p><p class="muted">${esc(s.note)}</p></div>`,`<button type="button" class="btn btn-primary" data-close>맞춤 시설 찾기로 돌아가기</button>`);
   }
 
 
@@ -355,14 +355,16 @@
   }
   function renderSaved(){
     const list=state.saved.map(id=>PLACES.find(p=>p.id===id)).filter(Boolean);
-    $('#saved-list').innerHTML=list.length?list.map(p=>card({p,rows:[]})).join(''):`<div class="empty">${Minimi.svg(Minimi.config(pet))}<b>아직 찜한 곳이 없어요</b><p>산책 지도에서 마음에 드는 곳의 하트를 눌러 담아 보세요.</p><button type="button" class="btn btn-soft" data-goto="map">산책 지도로 가기</button></div>`;
+    $('#saved-list').innerHTML=list.length?list.map(p=>card({p,rows:[]})).join(''):`<div class="empty">${Minimi.svg(Minimi.config(pet))}<b>아직 찜한 곳이 없어요</b><p>홈의 맞춤 시설 찾기에서 마음에 드는 곳의 하트를 눌러 담아 보세요.</p><button type="button" class="btn btn-soft" data-goto="map">홈으로 가기</button></div>`;
   }
 
   function setView(v){
+    /* 산책 일기는 홈 왼쪽에 함께 있다 */
+    if(v==='diary')v='map';
     view=v;
     document.querySelectorAll('.view').forEach(s=>s.hidden=s.id!=='view-'+v);
     document.querySelectorAll('.tabbar button').forEach(b=>{if(b.dataset.view===v)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
-    if(v==='saved')renderSaved();if(v==='diary')Daily.render();
+    if(v==='saved')renderSaved();if(v==='map')Daily.render();
     if(v==='map')map.redraw();
     window.scrollTo(0,0);
   }

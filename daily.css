@@ -1,18 +1,52 @@
 /* 하루 기록 — 링 카드 하나만 어둡게 두고 나머지는 앱의 밝은 톤을 따른다 */
-.view-diary{max-width:760px}
 .daily-head .lead{max-width:44ch}
 
 .day-nav{display:flex;align-items:center;justify-content:space-between;margin:18px 0 6px}
 .day-nav b{font-size:17px;color:var(--forest)}
 .day-nav .icon-btn:disabled{opacity:.25;cursor:default}
 
-/* 이번 주 링 줄 */
-.wk-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:14px}
-.wk-day{display:grid;justify-items:center;gap:4px;padding:6px 0 8px;border:0;border-radius:14px;background:none;color:var(--ink-3);font-size:12.5px;font-weight:700}
-.wk-day:hover:not(:disabled){background:var(--surface-2)}
-.wk-day.on{background:var(--forest);color:#fff}
-.wk-day:disabled{opacity:.35;cursor:default}
-.wk-day .rings{width:38px;height:38px}
+/* 한 달 캘린더 */
+.mcal{margin:2px 0 6px;padding:16px 18px 14px;border:1.5px solid var(--line);border-radius:26px;background:#fff}
+.mc-head{display:flex;align-items:center;gap:6px}
+.mc-head b{font-size:19px;color:var(--forest);min-width:118px;text-align:center}
+.mc-head .icon-btn:disabled{opacity:.25;cursor:default}
+.mc-now{margin-left:auto;font-size:13.5px}
+.mc-sum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0 14px}
+.mc-sum div{padding:10px 12px;border-radius:16px;background:var(--surface-2)}
+.mc-sum dt{font-size:12.5px;color:var(--ink-3);font-weight:600}
+.mc-sum dd{margin:2px 0 0;font-size:13px;color:var(--ink-2)}
+.mc-sum b{font-size:20px;color:var(--ink);margin-right:1px}
+.mc-week,.mc-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.mc-week span{padding:0 0 6px;text-align:center;font-size:12.5px;font-weight:700;color:var(--ink-3)}
+.mc-week .sun,.mc-day.sun .mc-n{color:#D64545}
+.mc-week .sat,.mc-day.sat .mc-n{color:#2F6FD6}
+.mc-cell{min-width:0;min-height:96px}
+.mc-day{position:relative;display:grid;grid-template-rows:auto 1fr auto auto;justify-items:center;align-content:start;gap:2px;padding:6px 2px 7px;border:0;border-radius:16px;background:none;color:var(--ink-2);font:inherit;cursor:pointer}
+.mc-day:hover:not(:disabled){background:var(--surface-2)}
+.mc-day:disabled{cursor:default}
+.mc-day:disabled .mc-n{opacity:.35}
+.mc-n{justify-self:start;padding-left:6px;font-size:13px;font-weight:700;line-height:1.2}
+.mc-day .rings{width:38px;height:38px}
+.mc-day:not(.has) .rings{opacity:.35}
+.mc-walk{min-height:15px;font-size:12px;font-weight:700;color:#E2552B}
+.mc-dots{display:flex;gap:3px;min-height:6px}
+.mc-dots i,.mc-legend i{display:block;width:6px;height:6px;border-radius:50%;background:var(--c)}
+.mc-day.today .mc-n{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 5px;margin-left:2px;border-radius:11px;background:var(--forest);color:#fff!important}
+.mc-day.on{background:#EEF3FB;box-shadow:inset 0 0 0 2px var(--forest)}
+.mc-legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:10px 2px 0;font-size:12px;color:var(--ink-3)}
+.mc-legend span{display:inline-flex;align-items:center;gap:5px}
+.mc-legend span:not(.dot) i{width:10px;height:10px;border-radius:3px}
+.mc-legend .sep{width:1px;height:12px;background:var(--line)}
+@media (max-width:560px){
+  .mcal{padding:12px 10px 12px;border-radius:20px}
+  .mc-sum{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mc-cell{min-height:64px}
+  .mc-day{padding:4px 0 5px;border-radius:12px}
+  .mc-n{justify-self:center;padding-left:0;font-size:12px}
+  .mc-day .rings{width:26px;height:26px}
+  .mc-walk{display:none}
+  .mc-dots i{width:4px;height:4px}
+}
 
 /* 로그인 없이 쓰는 중 */
 .guest-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 14px;padding:14px 16px;border-radius:18px;background:var(--surface-2)}

@@ -144,7 +144,7 @@
     {id:'grooming',kind:'grooming',label:'미용실',pos:[-.6,-.8],bend:1},
     {id:'hospital',kind:'hospital',label:'병원',pos:[.58,-.82],bend:-1},
     {id:'star',kind:'star',label:'별들의 공간',pos:[-.98,-.06],cpos:[-.8,.02],soon:true,detached:true},
-    {id:'consult',kind:'consult',label:'실시간·전문가 상담',pos:[.96,-.06],cpos:[.8,.02],clines:['실시간·','전문가 상담'],detached:true},
+    {id:'consult',kind:'consult',label:'수의사 상담',pos:[.96,-.06],cpos:[.8,.02],clines:['수의사 상담'],detached:true},
     {id:'kinder',kind:'kinder',label:'유치원',pos:[-.66,.8],bend:1},
     {id:'hotel',kind:'hotel',label:'호텔',pos:[.64,.8],bend:-1},
     {id:'together',kind:'together',label:'커뮤니티',pos:[0,1.02],cpos:[0,1.02],soon:true,detached:true}
