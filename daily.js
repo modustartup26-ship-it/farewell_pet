@@ -228,6 +228,7 @@
           <div style="--c:${RING_C[2]}"><dt>${icon('drop')}물</dt><dd class="tnum"><b>${t.water}</b>/${goal.water}ml</dd></div>
         </dl>
         <button type="button" class="ring-goal" data-act="goals">${icon('edit')}목표 바꾸기</button>
+        <a class="ring-points tnum" href="shop.html" aria-label="포인트 ${pointsNow()}P, 포인트샵 열기">${icon('bone')}${pointsNow()} P</a>
       </section>
 
       ${live?`<button type="button" class="live-bar" data-act="walk-open"><span class="dot"></span>산책 중 · <span class="tnum" id="live-mini">${fmtDur(liveMs(live))}</span><span class="sp"></span>돌아가기 ${icon('chev-right')}</button>`:''}
@@ -339,6 +340,7 @@
       <div class="wt-bubble right"><small>평균 산책시간</small><b class="tnum">하루 ${s.avg}분</b><span>${s.elapsed?`${s.elapsed}일 기준`:''}</span></div>
     </section>`;
   }
+  const pointsNow=()=>(window.FPPoints&&FPPoints.get().points)||ctx.state.points||0;
   function quickValue(k,t,goal,g){
     return k==='meal'?`${t.meal}/${g.meals}끼`:k==='walk'?`${t.walk}분`:k==='poop'?`대${t.poop}·소${t.pee}`:k==='supp'?`${t.supp}개`:k==='snack'?`${t.snack}개`:k==='play'?`${t.play}분`:k==='water'?`${t.water}ml`:t.photo?`${t.photo}장`:'바로 찍기';
   }
@@ -887,6 +889,7 @@
       ctx=c;if(!Array.isArray(ctx.state.daily))ctx.state.daily=[];
       migratePoop();
       render();bind();connect(c.user||null);
+      window.addEventListener('fp-points',()=>render());window.addEventListener('load',()=>render(),{once:true});
       if(ctx.state.walkLive){if(ctx.state.walkLive.date!==today()&&Date.now()-ctx.state.walkLive.startedAt>6*3600e3){ctx.state.walkLive=null;ctx.save();}else{startGps();clearInterval(tick);tick=setInterval(paintLive,1000);}}
     },
     setUser:connect,

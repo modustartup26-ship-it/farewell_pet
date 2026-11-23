@@ -106,6 +106,26 @@
     }
   });
 
+  /* 문의함 새 답장: 문의함을 마지막으로 연 뒤 업체가 보낸 메시지가 있으면 '마이' 탭에 빨간 점 */
+  let inboxUnread=0;
+  async function checkInbox(){
+    inboxUnread=0;
+    const c=window.FPChat&&FPChat.client;
+    if(user&&c){
+      try{
+        let seen='1970-01-01T00:00:00Z';try{seen=localStorage.getItem('fp-inbox-seen:'+user.id)||seen;}catch{}
+        const {data:convs,error}=await c.from('conversations').select('id').eq('guardian_id',user.id).gt('last_message_at',seen).limit(50);
+        if(error)throw error;
+        if(convs&&convs.length){
+          const {count,error:e2}=await c.from('inquiry_messages').select('id',{count:'exact',head:true}).in('conversation_id',convs.map(x=>x.id)).eq('sender_role','facility').gt('created_at',seen);
+          if(e2)throw e2;inboxUnread=count||0;
+        }
+      }catch(err){console.warn('문의함 새 답장을 확인하지 못했어요.',err);}
+    }
+    const tab=document.querySelector('.tabbar [data-view="my"]');
+    if(tab){let d=tab.querySelector('.tab-dot');if(inboxUnread&&!d){d=document.createElement('i');d.className='tab-dot';tab.append(d);}if(!inboxUnread&&d)d.remove();tab.setAttribute('aria-label',inboxUnread?`마이, 새 답장 ${inboxUnread}개`:'마이');}
+    renderMy();
+  }
   /* 마이: 아이 정보와 가끔 확인하는 것들(찜한 곳·문의함·포인트샵·이야기) */
   function renderMy(){
     const el=$('#my-root');if(!el)return;
@@ -120,7 +140,7 @@
       </section>
       <nav class="my-list" aria-label="마이 메뉴">
         ${row('','heart','찜한 곳',`${state.saved.length}곳`,'data-view="saved"')}
-        ${row('inbox.html','chat','문의함','업체와 주고받은 대화')}
+        ${row('inbox.html','chat','문의함',inboxUnread?`<span class="new-badge">새 답장 ${inboxUnread}</span>`:'업체와 주고받은 대화')}
         ${row('shop.html','bone','포인트샵',`${points}P`)}
         ${hasPet?row('profile.html?add=1','plus','아이 추가하기',''):''}
         ${row('intro.html','paw','farewell pet 이야기','')}
@@ -509,6 +529,7 @@
     Diary.init({state,save,PLACES,pet,petName,modal,toast,setView,user,close:()=>$('#modal').close()});
     Daily.init({state,save,pet,petName,modal,toast,user,setView,close:()=>$('#modal').close()});
     renderHeader();map.redraw();
+    checkInbox();
     const go=new URLSearchParams(location.search).get('go');
     if(go==='diary')setView('diary');
     if(['calendar','health','my','saved'].includes(go))setView(go);

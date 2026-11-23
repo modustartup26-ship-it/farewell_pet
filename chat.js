@@ -81,7 +81,10 @@
     const {data,error}=await q;
     if(error)throw error;
     conversations=data;
+    markSeen();
   }
+  /* 보호자가 문의함을 열면 '여기까지 봤다'를 이 기기에 남긴다. 홈의 '마이' 탭 빨간 점은 이 시각 뒤에 온 업체 답장으로 판단한다 */
+  function markSeen(){if(isFacility||!user)return;try{localStorage.setItem('fp-inbox-seen:'+user.id,new Date().toISOString());}catch{}}
   const titleOf=c=>isFacility?`${c.pet_name} 보호자`:(facilityNames.get(c.facility_id)||'업체');
   const active=()=>conversations.find(x=>x.id===activeId);
 
@@ -290,6 +293,7 @@
   }
 
   function addMessage(m){
+    markSeen();
     if(messages.some(x=>x.id===m.id))return;
     messages.push(m);
     if(m.kind==='media'&&!media.has(m.payload&&m.payload.media_id)){loadMedia().then(renderMessages);return;}
