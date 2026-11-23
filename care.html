@@ -6,14 +6,22 @@
 <title>돌봄 체크리스트 · farewell pet</title>
 <meta name="theme-color" content="#FFFFFF">
 <link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="nav.css">
 <link rel="stylesheet" href="chat.css">
 <link rel="stylesheet" href="care.css">
 <link rel="stylesheet" href="auth.css">
 </head>
-<body class="chat-page care-page">
-<header class="topbar">
+<body class="chat-page care-page has-tabbar">
+<header class="topbar app-top">
   <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-paw"/></svg></span>farewell pet</a>
-  <nav class="album-nav"><a class="chat-nav" href="index.html">홈</a><a class="chat-nav" href="inbox.html">문의함</a></nav>
+  <nav class="tabbar" aria-label="주 메뉴">
+    <a href="index.html"><svg class="i" aria-hidden="true"><use href="#i-home"/></svg><span>홈</span></a>
+    <a href="index.html?go=calendar" aria-current="page"><svg class="i" aria-hidden="true"><use href="#i-calendar"/></svg><span>기록</span></a>
+    <a href="index.html?go=health"><svg class="i" aria-hidden="true"><use href="#i-steth"/></svg><span>건강</span></a>
+    <a href="family.html"><svg class="i" aria-hidden="true"><use href="#i-family"/></svg><span>가족</span></a>
+    <a href="index.html?go=my"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg><span>마이</span></a>
+  </nav>
+  <span class="topbar-sp" aria-hidden="true"></span>
 </header>
 <main id="care-app"></main>
 <script src="common.js"></script>
