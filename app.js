@@ -59,7 +59,7 @@
     $('#saved-count').textContent=state.saved.length;
     $('#saved-count').hidden=!state.saved.length;
     $('#map-title').textContent=`${hasPet?josa.name(pet.name):'우리 아이'} 맞춤 시설 찾기`;
-    $('#map-hint').textContent=hasPet?`가고 싶은 곳을 누르면 ${josa.subj(pet.name)} 산책로를 따라 걸어가요.`:'가고 싶은 곳을 누르면 산책로를 따라 걸어가요.';
+    $('#map-hint').textContent=hasPet?`가고 싶은 곳을 누르면 ${josa.name(pet.name)}에게 맞는 곳을 찾아 드려요.`:'가고 싶은 곳을 누르면 우리 아이에게 맞는 곳을 찾아 드려요.';
     const facts=[];
     if(hasPet){
       if(pet.size||pet.weight)facts.push([pet.weight?`${pet.weight}kg · ${pet.size}`:pet.size]);
@@ -91,7 +91,7 @@
 
   /* ---------- 산책 지도 ---------- */
   const map=TrailMap.create($('#map'),{
-    nodes:FP.NODES,interactive:true,seed:23,
+    nodes:FP.NODES,interactive:true,seed:23,trails:false,
     label:`${josa.name(petName)} 맞춤 시설 찾기 지도`,
     center:()=>Minimi.svg(Minimi.config(pet),{inner:true}),
     onSelect:id=>{

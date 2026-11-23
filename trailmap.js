@@ -74,7 +74,7 @@
       svg.innerHTML='';
       const trails=el('g',{class:'trails'});
       const trailEls=[];
-      o.nodes.filter(n=>!n.detached).forEach(n=>{
+      o.nodes.filter(n=>!n.detached&&o.trails!==false).forEach(n=>{
         const g=el('g',{class:'trail'+(state.revealed.has(n.id)?' on':''),'data-id':n.id});
         const sw=k;
         g.innerHTML=`<path class="t-edge" d="${state.geo[n.id].d}" stroke-width="${(28*sw).toFixed(1)}" pathLength="1"/><path class="t-soil" d="${state.geo[n.id].d}" stroke-width="${(21*sw).toFixed(1)}" pathLength="1"/><path class="t-pebble" d="${state.geo[n.id].d}" stroke-width="${(3.2*sw).toFixed(1)}"/>`;
