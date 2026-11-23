@@ -70,8 +70,22 @@
       if(pet.dogs)facts.push([`다른 개와 ${pet.dogs.replace('요','').replace('잘 어울려','잘 어울림').replace('천천히 적응해','천천히 적응').replace('혼자가 편해','혼자가 편함')}`]);
       $('#pet-strip').innerHTML=facts.map(([t,c])=>`<span class="fact ${c||''}">${esc(t)}</span>`).join('')+`<a class="fact edit" href="profile.html">${icon('edit')}프로필 수정</a>`;
     }else{
-      $('#pet-strip').innerHTML=`<a class="register" href="profile.html"><span>${Minimi.svg(Minimi.config({}))}</span><span><b>우리 아이를 등록해 주세요</b><small>몸무게, 약, 성격을 알려주시면 맞는 곳인지 하나씩 대조해 드려요.</small></span>${icon('chev-right')}</a>`;
+      $('#pet-strip').innerHTML='';
     }
+    registerNotice(!hasPet);
+  }
+  /* 아이 등록 전이면 화면 위에 알림창으로 안내한다. '나중에'를 누르면 이 탭에서는 다시 띄우지 않는다 */
+  const NOTICE_KEY='fp-register-notice-closed';
+  function registerNotice(show){
+    let n=document.getElementById('reg-notice');
+    let closed=false;try{closed=sessionStorage.getItem(NOTICE_KEY)==='1';}catch{}
+    if(!show||closed){if(n)n.remove();return;}
+    if(n)return;
+    n=document.createElement('div');
+    n.id='reg-notice';n.className='reg-notice';n.setAttribute('role','alertdialog');n.setAttribute('aria-labelledby','reg-notice-t');n.setAttribute('aria-describedby','reg-notice-d');
+    n.innerHTML=`<span class="rn-face" aria-hidden="true">${Minimi.svg(Minimi.config({}))}</span><div class="rn-tx"><b id="reg-notice-t">우리 아이를 등록해 주세요</b><p id="reg-notice-d">몸무게, 약, 성격을 알려주시면 맞는 곳인지 하나씩 대조해 드려요.</p><div class="rn-act"><a class="btn btn-primary" href="profile.html">${icon('edit')}등록하기</a><button type="button" class="btn-ghost" data-rn-close>나중에</button></div></div><button type="button" class="icon-btn rn-x" data-rn-close aria-label="알림 닫기">${icon('close')}</button>`;
+    n.addEventListener('click',e=>{if(!e.target.closest('[data-rn-close]'))return;try{sessionStorage.setItem(NOTICE_KEY,'1');}catch{}n.classList.add('out');setTimeout(()=>n.remove(),200);});
+    document.body.append(n);
   }
 
   /* ---------- 산책 지도 ---------- */
