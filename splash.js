@@ -1,5 +1,5 @@
 /* 시작 화면(스플래시)
-   - 앱을 처음 열 때(브라우저 탭 세션당 한 번) 약 5초 동안 보여 준 뒤 메인 화면으로 넘어간다.
+   - 앱을 처음 열 때(브라우저 탭 세션당 한 번) 약 6초 동안 보여 준 뒤 메인 화면으로 넘어간다.
    - 화면을 누르거나 '건너뛰기'를 누르면 바로 넘어간다.
    - 주소 끝에 ?splash 를 붙이면 언제든 다시 볼 수 있다. */
 (function(){
@@ -62,8 +62,8 @@
       <circle cx="401" cy="198" r="3.2" fill="#A8691E"/><circle cx="408" cy="196" r="3.2" fill="#C47F2C"/><circle cx="415" cy="198" r="3.2" fill="#A8691E"/>
     </g>
     <g class="item treat">
-      <path d="M380 150 h40" stroke="#1A2233" stroke-width="2.2" stroke-linecap="round"/>
-      <g transform="translate(400 140)">
+      <path d="M270 150 h40" stroke="#1A2233" stroke-width="2.2" stroke-linecap="round"/>
+      <g transform="translate(290 140)">
         <rect x="-11" y="-3.5" width="22" height="7" rx="3" fill="#F7D46A" stroke="#8A6400" stroke-width="1.6"/>
         <circle cx="-12" cy="-3.5" r="4" fill="#F7D46A" stroke="#8A6400" stroke-width="1.6"/><circle cx="-12" cy="3.5" r="4" fill="#F7D46A" stroke="#8A6400" stroke-width="1.6"/>
         <circle cx="12" cy="-3.5" r="4" fill="#F7D46A" stroke="#8A6400" stroke-width="1.6"/><circle cx="12" cy="3.5" r="4" fill="#F7D46A" stroke="#8A6400" stroke-width="1.6"/>
@@ -71,10 +71,20 @@
     </g>
 
     <!-- 집 앞 시설 4곳 -->
-    ${place(1,530,22,'병원',ICON.hospital,'#E0483A')}
-    ${place(2,640,22,'호텔',ICON.hotel,'#1E56C2')}
-    ${place(3,530,124,'유치원',ICON.kinder,'#FFD400')}
-    ${place(4,640,124,'미용실',ICON.grooming,'#1E56C2')}
+    ${place(1,510,18,'병원',ICON.hospital,'#E0483A')}
+    ${place(2,668,18,'호텔',ICON.hotel,'#1E56C2')}
+    ${place(3,510,128,'유치원',ICON.kinder,'#FFD400')}
+    ${place(4,668,128,'미용실',ICON.grooming,'#1E56C2')}
+
+    <!-- 연결: 집(일상) → 가운데 허브 → 시설 4곳 -->
+    <g class="links">
+      ${[['home','M444 122 Q530 100 611 108'],['s1','M625 108 L582 54'],['s2','M625 108 L668 54'],['s3','M625 108 L582 164'],['s4','M625 108 L668 164']].map(([k,d])=>`<path class="link-base ${k}" d="${d}" pathLength="1"/><path class="link-flow ${k}" d="${d}"/>`).join('')}
+      <g class="hub">
+        <circle class="hub-ring" cx="625" cy="108" r="14"/>
+        <circle cx="625" cy="108" r="14" fill="#1E56C2"/>
+        <g fill="#fff" transform="translate(625 109)"><ellipse cx="0" cy="3" rx="5" ry="4"/><circle cx="-5.5" cy="-3" r="2.2"/><circle cx="-2" cy="-6.5" r="2.2"/><circle cx="2" cy="-6.5" r="2.2"/><circle cx="5.5" cy="-3" r="2.2"/></g>
+      </g>
+    </g>
 
     <!-- 사람 + 목줄 + 강아지 -->
     <g class="walker" id="sp-walker">
@@ -135,7 +145,7 @@
     timers.push(setTimeout(walk(false),2500)); // 집 안에서 잠깐 멈춤
     timers.push(setTimeout(walk(true),3400));  // 다시 걸어 나감
     timers.push(setTimeout(walk(false),4200)); // 시설 앞 도착
-    timers.push(setTimeout(close,reduced?1500:5300));
+    timers.push(setTimeout(close,reduced?1500:6000));
   }
   if(document.body)mount();else document.addEventListener('DOMContentLoaded',mount,{once:true});
 })();

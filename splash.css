@@ -40,6 +40,18 @@ html:not(.splash-on) .splash{display:none}
 .splash-scene .place.p2{animation-delay:3.95s}
 .splash-scene .place.p3{animation-delay:4.15s}
 .splash-scene .place.p4{animation-delay:4.35s}
+/* 연결선: 집에서 허브로, 허브에서 시설로 선이 그려진 뒤 점선이 계속 흐른다 */
+.splash-scene .link-base{fill:none;stroke:#BFD0F2;stroke-width:4;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;animation:sp-line .45s ease-out forwards}
+.splash-scene .link-flow{fill:none;stroke:#1E56C2;stroke-width:2.6;stroke-linecap:round;stroke-dasharray:3 9;opacity:0;animation:sp-fade .3s ease forwards,sp-flow .9s linear infinite}
+.splash-scene .home{animation-delay:4.45s}
+.splash-scene .s1,.splash-scene .s2,.splash-scene .s3,.splash-scene .s4{animation-delay:4.85s}
+.splash-scene .link-flow.home{animation-delay:4.85s,4.85s}
+.splash-scene .link-flow.s1,.splash-scene .link-flow.s2,.splash-scene .link-flow.s3,.splash-scene .link-flow.s4{animation-delay:5.25s,5.25s}
+.splash-scene .hub{opacity:0;transform-box:fill-box;transform-origin:50% 50%;transform:scale(.3);animation:sp-pop .45s cubic-bezier(.3,1.6,.5,1) 4.7s forwards}
+.splash-scene .hub-ring{fill:none;stroke:#FFD400;stroke-width:3;transform-box:fill-box;transform-origin:50% 50%;animation:sp-ring 1.2s ease-out 5.1s infinite;opacity:0}
+@keyframes sp-line{to{stroke-dashoffset:0}}
+@keyframes sp-flow{to{stroke-dashoffset:-12}}
+@keyframes sp-ring{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(2)}}
 .splash-scene .place-label{font:800 13px var(--font,sans-serif);fill:#1A2233;text-anchor:middle}
 
 /* 사람과 강아지: 들판을 달려 트인 집 안에 잠깐 머물렀다가, 다시 나와 시설 앞으로 */
@@ -49,8 +61,8 @@ html:not(.splash-on) .splash{display:none}
   10%{transform:translateX(0);opacity:1}
   50%{transform:translateX(282px)}
   68%{transform:translateX(282px)}
-  84%{transform:translateX(420px)}
-  100%{transform:translateX(420px);opacity:1}
+  84%{transform:translateX(398px)}
+  100%{transform:translateX(398px);opacity:1}
 }
 .splash-scene .bob{animation:sp-bob .32s ease-in-out infinite alternate}
 .splash-scene .bob.dog{animation-duration:.24s}
