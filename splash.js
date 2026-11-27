@@ -54,19 +54,19 @@
     <path class="roof-fill" d="M250 120 L345 52 L440 120 Z"/>
     <path class="house-line" d="M262 214 V118 M428 118 V214 M250 120 L345 52 L440 120 Z"/>
     <g class="item water">
-      <path d="M270 212 h30 l-4 -13 h-22 z" fill="#fff" stroke="#1A2233" stroke-width="2.2" stroke-linejoin="round"/>
-      <path d="M275 200 q10 -5 20 0" fill="none" stroke="#3B82F6" stroke-width="4" stroke-linecap="round"/>
+      <path d="M276 212 h30 l-4 -13 h-22 z" fill="#fff" stroke="#1A2233" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M281 200 q10 -5 20 0" fill="none" stroke="#3B82F6" stroke-width="4" stroke-linecap="round"/>
     </g>
     <g class="item food">
-      <path d="M392 212 h32 l-4 -13 h-24 z" fill="#fff" stroke="#1A2233" stroke-width="2.2" stroke-linejoin="round"/>
-      <circle cx="401" cy="198" r="3.2" fill="#A8691E"/><circle cx="408" cy="196" r="3.2" fill="#C47F2C"/><circle cx="415" cy="198" r="3.2" fill="#A8691E"/>
+      <path d="M382 212 h32 l-4 -13 h-24 z" fill="#fff" stroke="#1A2233" stroke-width="2.2" stroke-linejoin="round"/>
+      <circle cx="391" cy="198" r="3.2" fill="#A8691E"/><circle cx="398" cy="196" r="3.2" fill="#C47F2C"/><circle cx="405" cy="198" r="3.2" fill="#A8691E"/>
     </g>
     <g class="item treat">
-      <path d="M270 150 h40" stroke="#1A2233" stroke-width="2.2" stroke-linecap="round"/>
-      <g transform="translate(290 140)">
-        <rect x="-11" y="-3.5" width="22" height="7" rx="3" fill="#F7D46A" stroke="#8A6400" stroke-width="1.6"/>
-        <circle cx="-12" cy="-3.5" r="4" fill="#F7D46A" stroke="#8A6400" stroke-width="1.6"/><circle cx="-12" cy="3.5" r="4" fill="#F7D46A" stroke="#8A6400" stroke-width="1.6"/>
-        <circle cx="12" cy="-3.5" r="4" fill="#F7D46A" stroke="#8A6400" stroke-width="1.6"/><circle cx="12" cy="3.5" r="4" fill="#F7D46A" stroke="#8A6400" stroke-width="1.6"/>
+      <path d="M326 212 h38 l-3 -7 h-32 z" fill="#fff" stroke="#1A2233" stroke-width="2.2" stroke-linejoin="round"/>
+      <g transform="translate(345 199)">
+        <rect x="-10" y="-3" width="20" height="6" rx="3" fill="#F7D46A" stroke="#8A6400" stroke-width="1.6"/>
+        <circle cx="-11" cy="-3" r="3.6" fill="#F7D46A" stroke="#8A6400" stroke-width="1.6"/><circle cx="-11" cy="3" r="3.6" fill="#F7D46A" stroke="#8A6400" stroke-width="1.6"/>
+        <circle cx="11" cy="-3" r="3.6" fill="#F7D46A" stroke="#8A6400" stroke-width="1.6"/><circle cx="11" cy="3" r="3.6" fill="#F7D46A" stroke="#8A6400" stroke-width="1.6"/>
       </g>
     </g>
 

@@ -20,7 +20,7 @@ html:not(.splash-on) .splash{display:none}
 
 /* 집: 선이 그려지듯 등장 */
 .splash-scene .house-line{fill:none;stroke:#1A2233;stroke-width:3;stroke-linejoin:round;stroke-linecap:round;stroke-dasharray:900;stroke-dashoffset:900;animation:sp-draw .9s ease-in-out 1.2s forwards}
-.splash-scene .house-fill{fill:#FFF5D1;opacity:0;animation:sp-fade .5s ease 1.8s forwards}
+.splash-scene .house-fill{fill:#FFFFFF;opacity:0;animation:sp-fade .5s ease 1.8s forwards}
 .splash-scene .roof-fill{fill:#FFD400;opacity:0;animation:sp-fade .5s ease 1.8s forwards}
 .splash-scene .door{fill:#1E56C2;opacity:0;animation:sp-fade .4s ease 1.9s forwards}
 @keyframes sp-draw{to{stroke-dashoffset:0}}
@@ -41,7 +41,7 @@ html:not(.splash-on) .splash{display:none}
 .splash-scene .place.p3{animation-delay:4.15s}
 .splash-scene .place.p4{animation-delay:4.35s}
 /* 연결선: 집에서 허브로, 허브에서 시설로 선이 그려진 뒤 점선이 계속 흐른다 */
-.splash-scene .link-base{fill:none;stroke:#BFD0F2;stroke-width:4;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;animation:sp-line .45s ease-out forwards}
+.splash-scene .link-base{fill:none;stroke:#BFD0F2;stroke-width:4;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;opacity:0;animation:sp-line .45s ease-out forwards,sp-fade .01s forwards}
 .splash-scene .link-flow{fill:none;stroke:#1E56C2;stroke-width:2.6;stroke-linecap:round;stroke-dasharray:3 9;opacity:0;animation:sp-fade .3s ease forwards,sp-flow .9s linear infinite}
 .splash-scene .home{animation-delay:4.45s}
 .splash-scene .s1,.splash-scene .s2,.splash-scene .s3,.splash-scene .s4{animation-delay:4.85s}
