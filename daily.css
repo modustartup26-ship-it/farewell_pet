@@ -101,7 +101,7 @@
 .wt-dog .minimi{width:100%;height:auto}
 
 /* 아래 고정 원형 버튼: 산책하기 · 사진 찍기 */
-.fab-dock{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom));z-index:70;display:flex;gap:18px;transform:translateX(-50%)}
+.fab-dock{transition:opacity .2s,transform .2s;position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom));z-index:70;display:flex;gap:18px;transform:translateX(-50%)}
 .fab{display:grid;justify-items:center;gap:5px;padding:0;border:0;background:none;font:inherit;cursor:pointer}
 .fab-c{display:grid;place-items:center;width:66px;height:66px;border-radius:50%;color:#fff;box-shadow:0 10px 24px -8px rgba(15,35,72,.55),0 0 0 4px #fff;transition:transform .15s}
 .fab-c .i{width:30px;height:30px}
@@ -382,3 +382,6 @@ dialog.camera[open]{display:block}
 .ring-points{position:absolute;right:14px;bottom:14px;z-index:1;display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:999px;background:var(--sun);color:#111;font-size:13px;font-weight:800;text-decoration:none}
 .ring-points .i{width:15px;height:15px}
 .ring-points:hover{background:#F2C800}
+
+/* 빠른 기록 칸이 보이는 동안 숨김(모바일). daily.js watchFab 참고 */
+.fab-dock.fab-hide{opacity:0;pointer-events:none;transform:translateX(-50%) translateY(16px)}

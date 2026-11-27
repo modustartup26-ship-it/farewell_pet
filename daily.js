@@ -264,6 +264,19 @@
       </div>`;
     fillPhotos();
     loadRank(g,avg);
+    watchFab();
+  }
+  /* 모바일에서는 떠 있는 '산책하기·사진 찍기' 버튼이 빠른 기록 버튼(산책·배변 등)을 덮어
+     배변을 누르면 사진 찍기가 눌리는 문제가 있었다. 빠른 기록 칸이 화면에 보이는 동안에는 떠 있는 버튼을 숨긴다
+     (같은 버튼이 빠른 기록 칸에도 있다). */
+  let fabObserver=null;
+  function watchFab(){
+    if(fabObserver){fabObserver.disconnect();fabObserver=null;}
+    const dock=document.querySelector('.fab-dock'),quick=document.querySelector('section.quick');
+    if(!dock||!quick||!('IntersectionObserver' in window))return;
+    const mobile=matchMedia('(max-width:760px)');
+    fabObserver=new IntersectionObserver(([e])=>{dock.classList.toggle('fab-hide',mobile.matches&&e.isIntersecting);},{threshold:0});
+    fabObserver.observe(quick);
   }
   /* ---------- 한 달 캘린더 ----------
      날마다 링(산책·놀이·물)과 산책 시간, 남긴 기록 점을 보여 주고, 누르면 그날로 간다. */
