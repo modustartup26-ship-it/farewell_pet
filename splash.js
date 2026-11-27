@@ -15,7 +15,7 @@
 
   const LINE1='일상으로 시작하는 우리 강아지 맞춤형';
   // 글자마다 시간차를 두고 나타나게 해서 왼쪽에서 오른쪽으로 써지는 효과를 낸다
-  const LINE2='care&connection';
+  const LINE2='CARE&CONNECTION';
   const STEP=0.035, START=0.1;
   let i=0;
   const chars=(text,cls)=>[...text].map(c=>`<span class="ch${cls?' '+cls:''}" style="animation-delay:${(START+(i++)*STEP).toFixed(3)}s">${c===' '?' ':c.replace('&','&amp;')}</span>`).join('');
@@ -82,15 +82,23 @@
 
     <!-- 사람 + 목줄 + 강아지 -->
     <g class="walker" id="sp-walker">
+      <!-- 보호자 캐릭터: 포니테일 머리, 파란 원피스 -->
+      <g class="leg-a"><path d="M27 176 V205" stroke="#FFD9BF" stroke-width="5" stroke-linecap="round"/><ellipse cx="29" cy="208" rx="5" ry="3.4" fill="#1A2233"/></g>
+      <g class="leg-b"><path d="M33 176 V205" stroke="#F5C9AA" stroke-width="5" stroke-linecap="round"/><ellipse cx="35" cy="208" rx="5" ry="3.4" fill="#1A2233"/></g>
       <g class="bob">
-        <circle cx="30" cy="140" r="9" fill="#1A2233"/>
-        <path d="M30 150 V180" stroke="#1E56C2" stroke-width="9" stroke-linecap="round"/>
-        <path d="M30 156 L44 168" stroke="#1A2233" stroke-width="4" stroke-linecap="round"/>
-        <path d="M30 156 L18 166" stroke="#1A2233" stroke-width="4" stroke-linecap="round"/>
-        <path d="M44 168 Q58 182 66 186" fill="none" stroke="#D99A00" stroke-width="2" stroke-linecap="round"/>
+        <path d="M25 156 L16 168" stroke="#FFD9BF" stroke-width="4.5" stroke-linecap="round"/>
+        <path d="M23 153 h14 l7 25 h-28 z" fill="#1E56C2" stroke="#13305F" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M36 156 L45 167" stroke="#FFD9BF" stroke-width="4.5" stroke-linecap="round"/>
+        <circle cx="45.5" cy="167.5" r="2.6" fill="#FFD9BF"/>
+        <path d="M45 168 Q70 168 88 189" fill="none" stroke="#D99A00" stroke-width="2" stroke-linecap="round"/>
+        <path d="M18 128 q-12 6 -9 20 q3 -6 9 -8 z" fill="#5B3A29"/>
+        <circle cx="16" cy="131" r="3" fill="#FFD400"/>
+        <circle cx="30" cy="138" r="13" fill="#FFE5D0" stroke="#1A2233" stroke-width="1.8"/>
+        <path d="M17 138 a13 13 0 0 1 26 -2 q-5 -6 -13 -5 q-2 5 -8 6 q-2 2 -5 1 z" fill="#5B3A29"/>
+        <circle cx="34" cy="140" r="1.7" fill="#1A2233"/><circle cx="40" cy="140" r="1.7" fill="#1A2233"/>
+        <circle cx="32" cy="145" r="2.4" fill="#F5A9BC" opacity=".8"/><circle cx="41.5" cy="145" r="2" fill="#F5A9BC" opacity=".8"/>
+        <path d="M35.5 145.5 q1.8 1.8 3.6 0" fill="none" stroke="#1A2233" stroke-width="1.4" stroke-linecap="round"/>
       </g>
-      <path class="leg-a" d="M30 180 L30 212" stroke="#1A2233" stroke-width="4.5" stroke-linecap="round"/>
-      <path class="leg-b" d="M30 180 L30 212" stroke="#1A2233" stroke-width="4.5" stroke-linecap="round"/>
       <g class="bob dog">
         <path d="M62 186 q-8 -10 -4 -16" fill="none" stroke="#1A2233" stroke-width="3" stroke-linecap="round"/>
         <ellipse cx="78" cy="194" rx="16" ry="9" fill="#FFD400" stroke="#1A2233" stroke-width="2.4"/>
