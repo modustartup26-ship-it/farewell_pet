@@ -1,8 +1,8 @@
-const CACHE='farewell-pet-v2';
+const CACHE='farewell-pet-v3';
 const CORE=[
   '/','/index.html','/theme.css','/intro.css','/ai-chat.css','/auth.css',
   '/common.js','/supabase-client.js','/auth-ui.js','/minimi.js','/trailmap.js',
-  '/intro.js','/ai-chat.js','/manifest.webmanifest','/favicon.svg'
+  '/intro.js','/ai-chat.js','/manifest.webmanifest','/favicon.svg','/splash.css','/splash.js'
 ];
 
 self.addEventListener('install',event=>{

@@ -1,0 +1,76 @@
+/* 시작 화면(스플래시): 문구가 왼쪽부터 나타나고, 들판 → 집 → 시설 순서로 이어지는 약 5초 애니메이션 */
+html.splash-on,html.splash-on body{overflow:hidden}
+html.splash-on body>*:not(.splash){visibility:hidden}
+.splash{position:fixed;inset:0;z-index:9999;background:#FFFFFF;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(18px,4vh,40px);padding:24px 16px;cursor:pointer;transition:opacity .55s ease,visibility 0s .55s}
+.splash.out{opacity:0;visibility:hidden}
+html:not(.splash-on) .splash{display:none}
+
+.splash-title{margin:0;text-align:center;font-family:var(--font,'Apple SD Gothic Neo',sans-serif);font-weight:800;letter-spacing:-.02em;line-height:1.35;font-size:clamp(22px,4.2vw,44px);color:#1A2233;max-width:16em;word-break:keep-all}
+.splash-title .ch{display:inline-block;opacity:0;transform:translateX(-6px);animation:sp-ch .32s ease-out forwards;white-space:pre}
+.splash-title .w{white-space:nowrap}
+.splash-title .blue{color:#1E56C2}
+.splash-title .line2{display:block;margin-top:.15em;font-size:1.08em}
+@keyframes sp-ch{to{opacity:1;transform:none}}
+
+.splash-scene{width:min(94vw,760px);height:auto;overflow:visible}
+.splash-scene .ground{stroke:#1A2233;stroke-width:2.5;stroke-linecap:round;opacity:0;animation:sp-fade .4s ease .9s forwards}
+.splash-scene .field{opacity:0;animation:sp-fade .5s ease 1s forwards}
+.splash-scene .hill{fill:#E1ECCD}
+.splash-scene .tuft{fill:none;stroke:#78AE52;stroke-width:2.2;stroke-linecap:round}
+
+/* 집: 선이 그려지듯 등장 */
+.splash-scene .house-line{fill:none;stroke:#1A2233;stroke-width:3;stroke-linejoin:round;stroke-linecap:round;stroke-dasharray:900;stroke-dashoffset:900;animation:sp-draw .9s ease-in-out 1.2s forwards}
+.splash-scene .house-fill{fill:#FFF5D1;opacity:0;animation:sp-fade .5s ease 1.8s forwards}
+.splash-scene .roof-fill{fill:#FFD400;opacity:0;animation:sp-fade .5s ease 1.8s forwards}
+.splash-scene .door{fill:#1E56C2;opacity:0;animation:sp-fade .4s ease 1.9s forwards}
+@keyframes sp-draw{to{stroke-dashoffset:0}}
+@keyframes sp-fade{to{opacity:1}}
+
+/* 집 안 물·밥·간식: 들어간 뒤 하나씩 */
+.splash-scene .item{opacity:0;transform-box:fill-box;transform-origin:50% 100%;transform:scale(.4);animation:sp-pop .45s cubic-bezier(.3,1.6,.5,1) forwards}
+.splash-scene .item.water{animation-delay:2.65s}
+.splash-scene .item.food{animation-delay:2.85s}
+.splash-scene .item.treat{animation-delay:3.05s}
+.splash-scene .item-label{font:700 11px var(--font,sans-serif);fill:#434C5E;text-anchor:middle}
+@keyframes sp-pop{to{opacity:1;transform:none}}
+
+/* 집 앞 시설 4곳 */
+.splash-scene .place{opacity:0;transform-box:fill-box;transform-origin:50% 100%;transform:translateY(10px) scale(.6);animation:sp-pop .5s cubic-bezier(.3,1.5,.5,1) forwards}
+.splash-scene .place.p1{animation-delay:3.75s}
+.splash-scene .place.p2{animation-delay:3.95s}
+.splash-scene .place.p3{animation-delay:4.15s}
+.splash-scene .place.p4{animation-delay:4.35s}
+.splash-scene .place-label{font:800 13px var(--font,sans-serif);fill:#1A2233;text-anchor:middle}
+
+/* 사람과 강아지: 들판을 달려 집으로 들어갔다가, 다시 나와 시설 앞으로 */
+.splash-scene .walker{animation:sp-walk 5s linear forwards}
+@keyframes sp-walk{
+  0%{transform:translateX(0);opacity:0}
+  10%{transform:translateX(0);opacity:1}
+  50%{transform:translateX(262px);opacity:1}
+  53%{transform:translateX(268px);opacity:0}
+  66%{transform:translateX(300px);opacity:0}
+  69%{transform:translateX(306px);opacity:1}
+  84%{transform:translateX(420px);opacity:1}
+  100%{transform:translateX(420px);opacity:1}
+}
+.splash-scene .bob{animation:sp-bob .32s ease-in-out infinite alternate}
+.splash-scene .bob.dog{animation-duration:.24s}
+@keyframes sp-bob{from{transform:translateY(0)}to{transform:translateY(-5px)}}
+.splash-scene .leg-a{transform-box:fill-box;transform-origin:50% 0;animation:sp-leg .32s ease-in-out infinite alternate}
+.splash-scene .leg-b{transform-box:fill-box;transform-origin:50% 0;animation:sp-leg .32s ease-in-out infinite alternate-reverse}
+@keyframes sp-leg{from{transform:rotate(-22deg)}to{transform:rotate(22deg)}}
+.splash-scene .stop .bob,.splash-scene .stop .leg-a,.splash-scene .stop .leg-b{animation-play-state:paused}
+
+.splash-skip{position:absolute;right:18px;bottom:calc(18px + env(safe-area-inset-bottom));border:0;background:none;color:#5D6779;font-size:13px;padding:8px 10px}
+
+@media (prefers-reduced-motion: reduce){
+  .splash *{animation-duration:.01s!important;animation-delay:0s!important;animation-iteration-count:1!important}
+}
+
+@media (max-width:640px){
+  .splash-scene{width:100vw;margin:0 -16px}
+  .splash-scene .place-label{font-size:17px}
+  .splash-scene .item-label{font-size:14px}
+  .splash-title{font-size:clamp(22px,6.4vw,28px)}
+}
