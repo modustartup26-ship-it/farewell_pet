@@ -26,7 +26,7 @@ html:not(.splash-on) .splash{display:none}
 @keyframes sp-draw{to{stroke-dashoffset:0}}
 @keyframes sp-fade{to{opacity:1}}
 
-/* 집 안 물·밥·간식: 들어간 뒤 하나씩 */
+/* 집 안 물·밥·간식: 들어간 뒤 하나씩 (글자 없이 그림만) */
 .splash-scene .item{opacity:0;transform-box:fill-box;transform-origin:50% 100%;transform:scale(.4);animation:sp-pop .45s cubic-bezier(.3,1.6,.5,1) forwards}
 .splash-scene .item.water{animation-delay:2.65s}
 .splash-scene .item.food{animation-delay:2.85s}
@@ -42,16 +42,14 @@ html:not(.splash-on) .splash{display:none}
 .splash-scene .place.p4{animation-delay:4.35s}
 .splash-scene .place-label{font:800 13px var(--font,sans-serif);fill:#1A2233;text-anchor:middle}
 
-/* 사람과 강아지: 들판을 달려 집으로 들어갔다가, 다시 나와 시설 앞으로 */
+/* 사람과 강아지: 들판을 달려 트인 집 안에 잠깐 머물렀다가, 다시 나와 시설 앞으로 */
 .splash-scene .walker{animation:sp-walk 5s linear forwards}
 @keyframes sp-walk{
   0%{transform:translateX(0);opacity:0}
   10%{transform:translateX(0);opacity:1}
-  50%{transform:translateX(262px);opacity:1}
-  53%{transform:translateX(268px);opacity:0}
-  66%{transform:translateX(300px);opacity:0}
-  69%{transform:translateX(306px);opacity:1}
-  84%{transform:translateX(420px);opacity:1}
+  50%{transform:translateX(282px)}
+  68%{transform:translateX(282px)}
+  84%{transform:translateX(420px)}
   100%{transform:translateX(420px);opacity:1}
 }
 .splash-scene .bob{animation:sp-bob .32s ease-in-out infinite alternate}

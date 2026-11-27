@@ -53,25 +53,21 @@
     <path class="house-fill" d="M262 214 V118 H428 V214 Z"/>
     <path class="roof-fill" d="M250 120 L345 52 L440 120 Z"/>
     <path class="house-line" d="M262 214 V118 M428 118 V214 M250 120 L345 52 L440 120 Z"/>
-    <path class="door" d="M330 214 V172 a15 15 0 0 1 30 0 V214 Z"/>
     <g class="item water">
-      <path d="M276 212 h34 l-4 -14 h-26 z" fill="#fff" stroke="#1A2233" stroke-width="2.2" stroke-linejoin="round"/>
-      <path d="M281 200 q12 -5 24 0" fill="none" stroke="#3B82F6" stroke-width="4" stroke-linecap="round"/>
-      <text class="item-label" x="293" y="190">물</text>
+      <path d="M270 212 h30 l-4 -13 h-22 z" fill="#fff" stroke="#1A2233" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M275 200 q10 -5 20 0" fill="none" stroke="#3B82F6" stroke-width="4" stroke-linecap="round"/>
     </g>
     <g class="item food">
-      <path d="M378 212 h36 l-4 -14 h-28 z" fill="#fff" stroke="#1A2233" stroke-width="2.2" stroke-linejoin="round"/>
-      <circle cx="388" cy="197" r="3.4" fill="#A8691E"/><circle cx="396" cy="195" r="3.4" fill="#C47F2C"/><circle cx="404" cy="197" r="3.4" fill="#A8691E"/>
-      <text class="item-label" x="396" y="186">밥</text>
+      <path d="M392 212 h32 l-4 -13 h-24 z" fill="#fff" stroke="#1A2233" stroke-width="2.2" stroke-linejoin="round"/>
+      <circle cx="401" cy="198" r="3.2" fill="#A8691E"/><circle cx="408" cy="196" r="3.2" fill="#C47F2C"/><circle cx="415" cy="198" r="3.2" fill="#A8691E"/>
     </g>
     <g class="item treat">
-      <path d="M326 142 h38" stroke="#1A2233" stroke-width="2.2" stroke-linecap="round"/>
-      <g transform="translate(345 131)">
+      <path d="M380 150 h40" stroke="#1A2233" stroke-width="2.2" stroke-linecap="round"/>
+      <g transform="translate(400 140)">
         <rect x="-11" y="-3.5" width="22" height="7" rx="3" fill="#F7D46A" stroke="#8A6400" stroke-width="1.6"/>
         <circle cx="-12" cy="-3.5" r="4" fill="#F7D46A" stroke="#8A6400" stroke-width="1.6"/><circle cx="-12" cy="3.5" r="4" fill="#F7D46A" stroke="#8A6400" stroke-width="1.6"/>
         <circle cx="12" cy="-3.5" r="4" fill="#F7D46A" stroke="#8A6400" stroke-width="1.6"/><circle cx="12" cy="3.5" r="4" fill="#F7D46A" stroke="#8A6400" stroke-width="1.6"/>
       </g>
-      <text class="item-label" x="345" y="117">간식</text>
     </g>
 
     <!-- 집 앞 시설 4곳 -->
@@ -99,18 +95,19 @@
         <circle cx="32" cy="145" r="2.4" fill="#F5A9BC" opacity=".8"/><circle cx="41.5" cy="145" r="2" fill="#F5A9BC" opacity=".8"/>
         <path d="M35.5 145.5 q1.8 1.8 3.6 0" fill="none" stroke="#1A2233" stroke-width="1.4" stroke-linecap="round"/>
       </g>
+      <!-- 강아지 다리: 통통한 다리 + 발바닥 -->
+      <g class="leg-b"><rect x="68.8" y="197" width="6.4" height="13" rx="3.2" fill="#E8B800" stroke="#1A2233" stroke-width="1.8"/><ellipse cx="72.8" cy="210.5" rx="4.4" ry="2.8" fill="#FFF5D1" stroke="#1A2233" stroke-width="1.6"/></g>
+      <g class="leg-b"><rect x="84.8" y="197" width="6.4" height="13" rx="3.2" fill="#E8B800" stroke="#1A2233" stroke-width="1.8"/><ellipse cx="88.8" cy="210.5" rx="4.4" ry="2.8" fill="#FFF5D1" stroke="#1A2233" stroke-width="1.6"/></g>
+      <g class="leg-a"><rect x="63.8" y="197" width="6.4" height="13" rx="3.2" fill="#FFD400" stroke="#1A2233" stroke-width="1.8"/><ellipse cx="67.8" cy="210.5" rx="4.4" ry="2.8" fill="#FFF5D1" stroke="#1A2233" stroke-width="1.6"/></g>
+      <g class="leg-a"><rect x="89.8" y="197" width="6.4" height="13" rx="3.2" fill="#FFD400" stroke="#1A2233" stroke-width="1.8"/><ellipse cx="93.8" cy="210.5" rx="4.4" ry="2.8" fill="#FFF5D1" stroke="#1A2233" stroke-width="1.6"/></g>
       <g class="bob dog">
-        <path d="M62 186 q-8 -10 -4 -16" fill="none" stroke="#1A2233" stroke-width="3" stroke-linecap="round"/>
+        <path d="M63 188 q-9 -10 -4 -18" fill="none" stroke="#1A2233" stroke-width="7" stroke-linecap="round"/><path d="M63 188 q-9 -10 -4 -18" fill="none" stroke="#FFD400" stroke-width="3.6" stroke-linecap="round"/>
         <ellipse cx="78" cy="194" rx="16" ry="9" fill="#FFD400" stroke="#1A2233" stroke-width="2.4"/>
         <circle cx="96" cy="184" r="9" fill="#FFD400" stroke="#1A2233" stroke-width="2.4"/>
         <path d="M91 177 q-5 4 -3 12" fill="#C98A00" stroke="#1A2233" stroke-width="2" stroke-linejoin="round"/>
-        <circle cx="99" cy="182" r="1.6" fill="#1A2233"/><circle cx="105" cy="186" r="2" fill="#1A2233"/>
+        <circle cx="99" cy="182" r="1.6" fill="#1A2233"/><path d="M100 188 q2.5 2.5 5 0" fill="none" stroke="#1A2233" stroke-width="1.4" stroke-linecap="round"/><circle cx="98" cy="187" r="1.8" fill="#F5A9BC" opacity=".8"/><circle cx="105" cy="186" r="2" fill="#1A2233"/>
         <path d="M89 190 q2 2 0 4" stroke="#E0483A" stroke-width="3" fill="none"/>
       </g>
-      <path class="leg-a" d="M70 200 L70 213" stroke="#1A2233" stroke-width="3.4" stroke-linecap="round"/>
-      <path class="leg-b" d="M75 200 L75 213" stroke="#1A2233" stroke-width="3.4" stroke-linecap="round"/>
-      <path class="leg-a" d="M86 200 L86 213" stroke="#1A2233" stroke-width="3.4" stroke-linecap="round"/>
-      <path class="leg-b" d="M91 200 L91 213" stroke="#1A2233" stroke-width="3.4" stroke-linecap="round"/>
     </g>
   </svg>`;
 
@@ -133,8 +130,11 @@
     (document.body||root).appendChild(el);
     el.addEventListener('click',close);
     const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-    // 시설 앞에 도착하면 걷기 동작을 멈춘다
-    timers.push(setTimeout(()=>{const w=el.querySelector('#sp-walker');if(w)w.classList.add('stop');},4200));
+    const walker=el.querySelector('#sp-walker');
+    const walk=on=>()=>walker&&walker.classList.toggle('stop',!on);
+    timers.push(setTimeout(walk(false),2500)); // 집 안에서 잠깐 멈춤
+    timers.push(setTimeout(walk(true),3400));  // 다시 걸어 나감
+    timers.push(setTimeout(walk(false),4200)); // 시설 앞 도착
     timers.push(setTimeout(close,reduced?1500:5300));
   }
   if(document.body)mount();else document.addEventListener('DOMContentLoaded',mount,{once:true});
