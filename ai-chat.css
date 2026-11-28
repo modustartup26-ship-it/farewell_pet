@@ -36,4 +36,11 @@
   .ai-chat-panel{position:fixed;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));width:min(380px,calc(100vw - 24px));height:min(580px,calc(100dvh - 100px - env(safe-area-inset-bottom)))}
   .app .ai-chat{bottom:calc(84px + env(safe-area-inset-bottom))}
   .app .ai-chat-panel{bottom:calc(144px + env(safe-area-inset-bottom))}
+  /* 홈처럼 아래 가운데에 산책하기·사진 찍기 버튼이 떠 있는 화면: 좁은 폰에서 겹치지 않게
+     AI 상담을 동그란 아이콘 버튼으로 줄이고 산책·사진 버튼과 같은 높이 오른쪽 끝에 둔다 */
+  body:has(.fab-dock) .ai-chat{right:12px;bottom:calc(126px + env(safe-area-inset-bottom))}
+  body:has(.fab-dock) .ai-chat-toggle{width:52px;min-height:52px;height:52px;padding:0;justify-content:center}
+  body:has(.fab-dock) .ai-chat-toggle span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  body:has(.fab-dock) .ai-chat-toggle .i{width:24px;height:24px}
+  body:has(.fab-dock) .ai-chat-panel{bottom:calc(188px + env(safe-area-inset-bottom));height:min(580px,calc(100dvh - 260px - env(safe-area-inset-bottom)))}
 }

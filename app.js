@@ -90,7 +90,7 @@
     n.id='reg-notice';n.className='reg-notice';n.setAttribute('role','alertdialog');n.setAttribute('aria-labelledby','reg-notice-t');n.setAttribute('aria-describedby','reg-notice-d');
     n.innerHTML=`<span class="rn-face" aria-hidden="true">${Minimi.svg(Minimi.config({}))}</span><div class="rn-tx"><b id="reg-notice-t">우리 아이를 등록해 주세요</b><p id="reg-notice-d">몸무게, 약, 성격을 알려주시면 맞는 곳인지 하나씩 대조해 드려요.</p><div class="rn-act"><a class="btn btn-primary" href="profile.html">${icon('edit')}등록하기</a><button type="button" class="btn-ghost" data-rn-close>나중에</button></div></div><button type="button" class="icon-btn rn-x" data-rn-close aria-label="알림 닫기">${icon('close')}</button>`;
     n.addEventListener('click',e=>{if(!e.target.closest('[data-rn-close]'))return;try{sessionStorage.setItem(NOTICE_KEY,'1');}catch{}n.classList.add('out');setTimeout(()=>n.remove(),200);});
-    document.body.append(n);
+    (document.querySelector('.home-diary')||document.body).prepend(n);
   }
 
   /* ---------- 산책 지도 ---------- */

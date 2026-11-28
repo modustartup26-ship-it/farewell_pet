@@ -114,9 +114,10 @@ button.pf-add small{color:#8A6A00;font-weight:800}
 .rn-act{display:flex;align-items:center;gap:6px}
 .rn-act .btn{min-height:42px;padding:0 16px;font-size:14px;text-decoration:none}
 .rn-x{flex:none;margin:-6px -4px 0 0}
+/* 폰에서는 떠 있는 알림창이 위쪽 버튼(시설 기록·앨범 등)을 덮으므로 화면 맨 위 카드로 끼워 넣는다 */
+@media (max-width:760px){.reg-notice{position:relative;top:auto;right:auto;width:auto;margin:0 0 16px;z-index:1;box-shadow:0 8px 24px -14px rgba(19,48,95,.35)}}
 @keyframes rnIn{from{opacity:0;transform:translateY(-10px)}}
 @media (prefers-reduced-motion:reduce){.reg-notice{animation:none}}
-@media (max-width:760px){.reg-notice{top:70px;left:14px;right:14px;width:auto}}
 .home-map .map{flex:1;min-height:0;margin-top:0}
 @media (max-width:1080px){
   .home-grid{grid-template-columns:minmax(0,1fr)}
@@ -378,7 +379,7 @@ button.pf-add small{color:#8A6A00;font-weight:800}
 .diary-sec .mood{font-size:12.5px;font-weight:700;padding:3px 8px;border-radius:7px}
 .diary-sec .tx{color:var(--ink-2)}
 @media (max-width:760px){.page-body{flex-wrap:wrap}.polaroid{width:110px}.cal-sync{flex-direction:column;align-items:flex-start}.cal{padding:10px 8px 12px}.cal-day .n{font-size:13px}}
-@media (max-width:760px){#toast{bottom:calc(100px + env(safe-area-inset-bottom))}}
+@media (max-width:760px){#toast{bottom:calc(100px + env(safe-area-inset-bottom))}body:has(.fab-dock:not(.fab-hide)) #toast{bottom:calc(196px + env(safe-area-inset-bottom));z-index:75}}
 .tabbar a{text-decoration:none;color:var(--ink-3)}
 /* 카카오맵 */
 .kmap{width:100%;height:220px;margin-top:10px;border-radius:14px;overflow:hidden;border:1.5px solid var(--line);background:var(--surface-2);display:grid;place-items:center;color:var(--ink-3);font-size:14px;text-align:center}
